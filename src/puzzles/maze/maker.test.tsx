@@ -68,8 +68,10 @@ describe('the maze maker', () => {
     const user = await openMaker();
     await user.click(screen.getByRole('button', { name: 'Start from the example' }));
     expect(cells()).toHaveLength(196);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Copy player link' })).toBeEnabled(), { timeout: 3000 });
-    await user.click(screen.getByRole('button', { name: 'Copy player link' }));
+    // By its text, not its role: naming the drawing's 364 wall buttons on every try is slow enough to time out in CI.
+    const copy = () => screen.getByText('Copy player link');
+    await waitFor(() => expect(copy()).toBeEnabled(), { timeout: 3000 });
+    await user.click(copy());
     const route = await readRoute(new URL(await navigator.clipboard.readText()).hash, ['maze']);
     const puzzle = readPuzzle(route.page === 'play' ? route.data : null);
     expect(puzzle?.exits).toHaveLength(2);
