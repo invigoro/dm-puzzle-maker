@@ -11,10 +11,17 @@ each with six word-halves or pictures on its spokes. The players turn the discs,
 where two discs touch, until the six pairs around the centre spell six names in order. The first
 puzzle spells the six great towns of the game master's realm.
 
+More are planned. The discs will get [more layouts](#more-layouts): three discs, as in the Defiled
+Temple, and nineteen. Three new kinds of puzzle will follow:
+- a [word guess](#word-guess), tried a letter at a time
+- a [maze](#maze) to find the way out of
+- a [trapped floor](#trapped-floor) to cross by minesweeper's rules
+
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 3 are done and live at https://daedalus.invigoro.me/, and the
-[backlog](#milestones) has what could come next.
+**Current phase:** none. Phases 0 to 3 are done and live at https://daedalus.invigoro.me/. Phase 4
+(more layouts of discs) is next, then Phase 5 (more kinds of puzzle). See
+[Milestones](#milestones).
 
 ## The site
 
@@ -97,6 +104,12 @@ Adding a kind of puzzle takes a folder and a registry entry, and nothing else.
 - The maker says plainly which link is the players' and which holds the answer.
 - The game master's puzzles live in their links and their browser, never in this repository, which
   will be public. Tests use made-up names.
+- **Some puzzles must show what they hide.** A word guess that marks each letter, a maze in the
+  dark, or a trapped floor that counts the traps round each square: the players' page has to know
+  what's there to show it, so the link holds it. It's packed, and where it can be, fingerprinted
+  or sealed, so it's never plain to read. But a programmer reading the page's code could still
+  work it out, and it would take far less effort than undoing the discs' fingerprints. The maker
+  says so beside each choice that does this, and the game master decides.
 
 ## Turning discs
 
@@ -249,6 +262,170 @@ details.
 - **Drawing:** icons are drawn in the text's colour, inlined on the board and as CSS masks in the
   picker, so they suit light and dark alike.
 
+### More layouts
+
+*(Phase 4)* The flower is one layout. Others are data of the same kind: discs, their spokes, and
+the contacts the answer is read at. Two rules keep every scramble solvable:
+- every disc joins the rest through contacts
+- every contact sits at a spoke of both discs
+
+`layoutOf` already checks the second, and will check the first. A test runs the solver on every
+layout.
+
+- **Three discs**, as in the Defiled Temple: three discs touching in a triangle.
+  - Six spokes each, so 18 nodes.
+  - The three contacts hold three names, read clockwise from the top one, with 12 filler.
+  - A quick puzzle, for a door the party meets in the middle of a fight.
+- **Nineteen discs:** the flower with a second ring of twelve, each touching its neighbours and the
+  ring inside it.
+  - Six spokes each, so 114 nodes.
+  - The names are read round the centre (six, with much more filler), or at the twelve contacts
+    between the two rings (twelve names). Which one gets decided when it's built, perhaps both.
+  - It's a lot for a phone: the board will need zooming in, and perhaps panning.
+- **Others** are data too, such as a row of discs read left to right, so a layout of the game
+  master's own could come later.
+
+What changes:
+- **Layouts by name:** a list of layouts, each with:
+  - its id, written into links (`flower`, `trefoil`, `nineteen`)
+  - its name, its discs, and what each disc is called for screen readers ("the left disc")
+  - its goal contacts, in order. These are written out for each layout, rather than always "round
+    the hub", as three discs have no hub.
+- **The mark:** each layout says where its arrow stands and which contact it points at: the
+  centre's hub for the flower, the middle of the triangle for three discs.
+- **The maker:** a choice of layout above the names, each with a small drawing.
+  - The number of names and of filler follows the layout.
+  - Names beyond the new layout's count are kept, greyed out, in case the game master changes back.
+- **Links:** designs and player links name their layout. A link without one is the flower, as
+  every link made so far is.
+- **The board:** it already fits its view to whatever discs there are, and sizes letters to the
+  spoke.
+
+## Word guess
+
+*(Phase 5)* A word or phrase to guess in a set number of tries, each try telling the players which
+letters are right. It suits a password at a door, a name, or the answer to the introduction's
+riddle. It lives in `src/puzzles/word-guess/`, with the id `word-guess`.
+
+### The game master's choices
+
+- **The answer:** a word or a phrase. Its letters are compared in capitals, with accents taken off,
+  as Sator does.
+- **The letters:**
+  - **Tiles:** the players get the answer's letters as tiles, shuffled, each to be used once, as on
+    Sator's player page. A try is an arrangement of every tile.
+  - **Any letters:** the players type each try, knowing only how long the answer is and where its
+    words break. Hiding the word breaks is an option.
+- **Tries:** one (the password spoken once), a few (six, say), or as many as they like.
+- **What a try tells them:**
+  - **Letter by letter:** each letter is in the right place, in the answer elsewhere, or not in it,
+    counting repeated letters as the familiar game does. With tiles every letter is in the answer,
+    so a try only tells them which are in the right place.
+  - **Only right or wrong**, which keeps the answer far safer (see below).
+- **Hints:** as many as the game master allows, a letter at a time, as Sator's hint ladder gives
+  them.
+- **Two lines:** one for solving it, and one for running out of tries ("Your voice echoes, and the
+  door stays shut.").
+
+### The players' page
+
+- Rows of tries, each letter coloured by what it told them. Tiles are dragged or tapped into place,
+  or letters typed, with an on-screen keyboard whose keys take the colours as they're learned.
+- The tries made, and how many are left, are kept in the browser, so a reload doesn't give more.
+
+### Keeping the answer secret
+
+- **Only right or wrong:** the link holds fingerprints of the answer, as the discs' link does, and
+  it's just as safe.
+- **Letter by letter:** the page has to mark letters without the answer, so the link holds:
+  - a fingerprint of each letter in each place
+  - how many times each letter the answer has appears in it
+
+  Each of these is quick to guess (26 tries a place), so a programmer could read the answer from
+  the link in moments. A player at the table won't, and the maker says so beside the choice.
+- A player who clears their browser gets their tries back. That's for the table to settle.
+
+## Maze
+
+*(Phase 5)* The players find their way through a maze, from its way in to a way out. It lives in
+`src/puzzles/maze/`, with the id `maze`.
+
+### The game master's choices
+
+- **Size:** small, medium or large (say 8, 14 and 20 cells square), or numbers of their own.
+- **The maze:**
+  - **Made at random** from a seed, with 🎲: every cell reachable, and one path between any two.
+    Twistiness can be set (long corridors, or many short dead ends), and so can loops: none for one
+    way through, some for several.
+  - **Or drawn by hand:** clicking between two cells puts up a wall or takes it down.
+  - The maker shows the shortest way through ("64 steps"), and warns if a way out can't be reached.
+- **The way in and the ways out:** cells on the edge or anywhere. There's one way in, and one way
+  out or more, each with its own line: one leads on, another to the minotaur.
+- **Light:**
+  - **Lit:** the whole maze shows.
+  - **Lantern:** the players see only the cells near them. The passages they've walked stay drawn,
+    like a map they make as they go.
+  - **Dark:** they see only the walls beside them, and nothing stays drawn.
+- **Pictures** in cells, from the icon set: the way out, a statue, a fountain to steer by.
+
+### The players' page
+
+- A token, moved with the arrow keys, by tapping a neighbouring cell, or by swiping. Steps are
+  counted.
+- Reaching a way out shows its line.
+- Where they are and where they've been are kept in the browser.
+
+### Keeping the answer secret
+
+The maze is the puzzle, so the link holds its walls; in a lit maze the way through is in plain
+sight anyway. With a lantern or in the dark, a programmer could still draw the whole maze from the
+link, and players won't. The walls pack small, two bits a cell: a 20 by 20 maze is 100 bytes.
+
+## Trapped floor
+
+*(Phase 5)* A room's floor of squares, some of them trapped, to cross by minesweeper's rules: a
+safe square, once stepped on, shows how many of the eight squares round it are trapped. Diagonals
+count, as on a D&D grid. It lives in `src/puzzles/trapped-floor/`, with the id `trapped-floor`.
+
+### The game master's choices
+
+- **The room:** its size in squares of 5 ft, so a 30 by 40 ft room is 6 by 8, up to about 20 by 20.
+- **Where they start:** a square, or the whole of one side, as when they come through a wide
+  doorway.
+- **Where they're going:** a square (the door out, the chest), or the whole far side.
+- **The traps:**
+  - How many there are, placed at random from a seed (with 🎲), or by hand.
+  - Never on the start, nor beside it, so the first step tells them something.
+  - Each can be a kind, with its picture and a line for what it does: a pit, darts ("1d4 piercing,
+    DC 12 Dexterity save for half"), a jet of fire.
+- **Fair, or not:** a fair floor can always be crossed by reasoning, never by luck. The maker keeps
+  placing traps until a solver, taking only the steps the counts prove safe, gets from the start to
+  the goal. On an unfair floor the players may have to guess.
+- **When someone steps on a trap:**
+  - It's shown, its line is said, and they carry on, with the game master settling the damage at
+    the table.
+  - Or the floor resets and they go back to the start.
+  - Or, after a number of traps, they fail, with a line for that.
+- **How they move:** onto any square beside one they've stood on (the party spreads out), or only
+  beside where they stand (one at a time, as a token).
+
+### The players' page
+
+- **The room:** a grid of flagstones. Squares stood on show their count, and a square with no traps
+  round it opens the squares round it too, as minesweeper does.
+- **Marking:** a square can be marked as a suspected trap, a chalk mark on the stone.
+- **Reaching the goal** shows the line for solving it.
+- **Progress:** traps sprung are counted, and kept in the browser with where they've been.
+
+### Keeping the answer secret
+
+The page has to say what's under any square a player steps on, so the link holds every square's
+count, and whether it's a trap. Each square is sealed separately, so the link never shows the floor
+plainly. But the page can open any square, so a programmer could open them all.
+
+For a table that's all in one room, the game master can run it instead: their own page plays it on
+their screen, and no link holds the floor at all.
+
 ## Stack and hosting
 
 - **Vite + React + TypeScript**, set up as Sator and Jabberwock are.
@@ -329,9 +506,10 @@ src/
 
 **Phase 1: The discs and the board.** *(done. Moves are animated by working out where each letter
 is, frame by frame, rather than by CSS transitions, so a swap can swing round its contact. Letters
-stood upright at first, and now stand on the rim, as Tim asked. Shift-click, dragging and the arrow keys turn a disc back, so it needs no ↺
-handle. The example lives on the turning discs page until Phase 2's maker takes it over, and the
-line for solving it stays once said, even if a player carries on turning.)*
+stood upright at first, and now stand on the rim, as Tim asked. Shift-click, dragging and the arrow
+keys turn a disc back, so it needs no ↺ handle. The example lives on the turning discs page until
+Phase 2's maker takes it over, and the line for solving it stays once said, even if a player
+carries on turning.)*
 - The engine with tests: layout, board, turning and swapping, answer keys, scrambles, filler and the
   solver.
 - The board in SVG with words on its spokes: turning, swapping, animation, Undo, Start over and the
@@ -367,11 +545,60 @@ cheap, and slate in the dark theme.)*
 - *Done when* the realm's puzzle can be made with pictures for some halves, and found again from the
   home page.
 
+**Phase 4: More layouts of discs.** See [More layouts](#more-layouts).
+- Layouts by name, each with its discs, its goal contacts in order, and its mark. The engine,
+  scrambles, answer keys, the glow and the solver take the layout, rather than assuming the flower.
+- Three discs, as in the Defiled Temple, and nineteen discs.
+- In the maker, a choice of layout with a small drawing of each. The names and the filler follow
+  the layout's count.
+- Designs and player links name their layout, and links that don't are the flower.
+- Tests that every layout's scrambles can be solved, and that a link made before layouts still
+  opens and checks as it did.
+- *Done when* a three-disc puzzle and a nineteen-disc puzzle can each be made, sent and solved, on
+  a phone too.
+
+**Phase 5: More kinds of puzzle.** Each is a folder and a registry entry, as
+[Kinds of puzzle](#kinds-of-puzzle) says, with its own engine and tests. Each part below is done on
+its own, in this order.
+
+- **5a. Word guess.** See [Word guess](#word-guess).
+  - The answer, tiles or any letters, the number of tries, letter-by-letter marking or only right
+    or wrong, hints, and the two lines.
+  - The players' rows of tries, with tiles or typing and an on-screen keyboard, and the tries kept
+    in the browser.
+  - The marking rules, with repeated letters counted as the familiar game counts them, and tests
+    that a link marking only right or wrong never holds the answer.
+  - The maker's warning beside letter-by-letter marking.
+  - *Done when* a password door with six tries and letter-by-letter marking can be made, sent and
+    solved, and so can a one-try riddle with tiles.
+- **5b. Maze.** See [Maze](#maze).
+  - Mazes made from a seed, with twistiness and loops, or drawn by hand, and the shortest way
+    through.
+  - The way in, the ways out with a line each, light (lit, lantern or dark), and pictures in cells.
+  - The players' token, moved by keys, taps or swipes, with progress kept.
+  - *Done when* a 14 by 14 maze lit by a lantern can be made, sent and walked on a phone, and the
+    line shows at the way out.
+- **5c. Trapped floor.** See [Trapped floor](#trapped-floor).
+  - The room, the start and the goal (a square or a side), traps placed from a seed or by hand, and
+    the kinds of trap with their pictures and lines.
+  - The solver that keeps a fair floor fair, what happens when a trap is sprung, and how the party
+    moves.
+  - The players' floor: counts, squares with no traps round them opening their neighbours, chalk
+    marks, and progress kept.
+  - Running it from the game master's own screen, for a table that's all in one room.
+  - *Done when* a fair 8 by 10 floor, crossed from one side to the other, can be made, sent and
+    crossed on a phone, and a sprung trap's line is said.
+- **The kit, along the way:**
+  - Progress and tries kept per link, shared by every kind, as the discs keep theirs now.
+  - Sealing: the line for solving a puzzle encrypted with a key made from its answer, so only
+    solving it opens it. Word guess needs it first, and the discs could take it too.
+
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
-- More layouts of discs: three, as in the Defiled Temple, or nineteen.
 - More kinds of puzzle: a cipher wheel, sliding tiles, a combination lock, lights out.
-- Discs to print and cut out for the table.
+- Round labyrinths for the maze, in rings like the one on the favicon.
+- Word guess: tries that must be real words, from Sator's word lists.
+- Discs to print and cut out for the table, and mazes and floors to print as handouts.
 - Links to Sator (an anagram as a node) and Stele.
 - Pictures from a link, with a warning when the link's file name gives the answer away
   (`karn.png`).
@@ -382,8 +609,15 @@ cheap, and slate in the dark theme.)*
   lets a player test one contact at a time, which is far quicker than guessing the whole board
   (about 1,700 pairs to try a contact, against some 10¹⁷ boards), so it's off unless the game
   master turns it on, and the maker says why.
+- **Puzzles that show what they hide:** a word guess's letter-by-letter marking, a maze in the dark
+  and a trapped floor all put in the link what the page must show, as
+  [Keeping the answer secret](#keeping-the-answer-secret) says. The maker says so where it applies,
+  and the trapped floor can be run from the game master's screen instead.
 - **Small screens:** 42 spokes of letters is a lot for a phone. The board fills the width, halves
   are kept short, and the phone can be turned sideways. Phase 1 checks it at a phone's width.
+  Nineteen discs, and the largest mazes and floors, will need zooming in, and perhaps panning.
+- **A game's rules and a game's name:** the word guess and the trapped floor follow well-known
+  games' rules, which is fine, but they're named for what they are, not after those games.
 - **Long links:** short halves and icon names keep a player link to about a thousand characters. A
   test holds it under 2,000.
 - **Sending the wrong link:** the maker's own link holds the answer. The maker labels it, and keeps
@@ -406,6 +640,10 @@ cheap, and slate in the dark theme.)*
   hosting.
 - **Each kind of puzzle is two chunks**, one per side, so the players' page loads as little as it
   can.
+- **Layouts before new kinds** (Phase 4 before 5): they build on what's there, and making the
+  engine take any layout tidies the discs' code before the next kind copies its shape.
+- **Word guess first among the new kinds:** it's closest to what Sator already does, tiles and
+  all, so it tests the kit's shells on a second kind with the fewest new parts.
 - Everything runs in the browser, and nothing is sent anywhere.
 - The deploy workflow doesn't cache dependencies, following setup-node's guidance for workflows
   that publish.
