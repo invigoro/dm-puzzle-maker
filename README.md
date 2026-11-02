@@ -49,6 +49,9 @@ the arrow points.
     THORN, WICK…), and 🎲 picks others. Names that look right but aren't make the best filler.
   - **The start:** every piece anywhere, or 20, 10 or 5 moves from solved for an easier puzzle, with
     🎲 for a new scramble. Any scramble can be solved, and none starts with a name already in place.
+    Or **set it by hand**: turn and swap a board of its own until it's as the players should find
+    it, starting from the scramble, from solved, or from a fresh scramble. The page says how many
+    names start in their places.
   - **Try it:** the board as the players will see it, to play, or solved.
 
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,

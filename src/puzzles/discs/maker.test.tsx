@@ -127,6 +127,26 @@ describe('the turning discs maker', () => {
     expect(screen.getByRole('button', { name: 'Picture for filler 4' })).toHaveAttribute('title', 'Add a picture');
   });
 
+  it('sets the start by hand, on a board of its own, and tries it from there', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('button', { name: 'Start from the example' }));
+    expect(screen.queryByRole('group', { name: 'Set the start' })).toBeNull();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Scramble' }), 'Set by hand');
+    const arrange = screen.getByRole('group', { name: 'Set the start' });
+    const trial = screen.getByRole('group', { name: 'Try it' });
+    const top = (group: HTMLElement) => within(group).getByRole('button', { name: /^Turn the top disc:/ }).getAttribute('aria-label');
+    expect(top(arrange)).toBe(top(trial));
+
+    await user.click(within(arrange).getByRole('button', { name: 'Start from solved' }));
+    expect(within(arrange).getByText(/6 names start in their places\./)).toBeInTheDocument();
+    await user.click(within(arrange).getByRole('button', { name: /^Turn the top disc:/ }));
+    expect(within(arrange).getByText(/5 names start in their places\./)).toBeInTheDocument();
+    expect(top(screen.getByRole('group', { name: 'Try it' }))).toBe(top(arrange));
+    await waitFor(() => expect(location.hash).toMatch(/^#m=/));
+    const route = await readRoute(location.hash, ['discs']);
+    expect(route.page === 'make' && readDesign(route.data)?.mix).toBe('hand');
+  });
+
   it('shows the board solved, and takes the arrow away for any start', async () => {
     const user = await openMaker();
     await user.click(screen.getByRole('button', { name: 'Start from the example' }));

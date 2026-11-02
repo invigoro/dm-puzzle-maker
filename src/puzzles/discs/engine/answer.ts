@@ -53,6 +53,12 @@ export function answerKeys(content: Content, anyStart: boolean): string[] {
   return [...new Set(starts.map((start) => JSON.stringify([...pairs.slice(start), ...pairs.slice(0, start)])))];
 }
 
+/** The goal contacts holding the pair that belongs there, counting from the mark. */
+export function pairsInPlace(layout: Layout, content: Content, board: Board): number[] {
+  const at = goalPairs(layout, piecesOf(content), board);
+  return content.pairs.flatMap(([one, other], goal) => (JSON.stringify(pairKey(one, other)) === JSON.stringify(at[goal]) ? [goal] : []));
+}
+
 /** Whether any goal contact holds one of the answer's pairs, wherever it belongs. A full scramble starts with none. */
 export function holdsAPair(layout: Layout, content: Content, board: Board): boolean {
   const pairs = new Set(content.pairs.map(([one, other]) => JSON.stringify(pairKey(one, other))));

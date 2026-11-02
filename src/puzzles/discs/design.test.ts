@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { playerHash } from '../../kit/route';
-import { contentOf, FILLER, fillerOf, newDesign, PAIRS, problemsOf, readDesign, startOf, toPuzzle, type DiscsDesign } from './design';
+import { contentOf, FILLER, fillerOf, newDesign, PAIRS, problemsOf, readDesign, solvedOf, startOf, toPuzzle, type DiscsDesign } from './design';
 import { isBlank, keyOf, piecesOf, wordsOf, type Piece } from './engine/answer';
 import { FLOWER } from './engine/layout';
 import { isRight, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
@@ -84,6 +84,18 @@ describe('readDesign', () => {
     expect(read.seed).toBe(1);
   });
 
+  it('keeps a start set by hand, and falls back to a scramble without a board for it', () => {
+    const board = solvedOf(design);
+    const hand: DiscsDesign = { ...design, mix: 'hand', start: [...board] };
+    expect(readDesign(JSON.parse(JSON.stringify(hand)))).toEqual(hand);
+    expect(startOf(hand)).toEqual(board);
+    const broken = readDesign({ ...hand, start: board.slice(1) })!;
+    expect(broken.mix).toBe('full');
+    expect(broken.start).toBeUndefined();
+    // A board left over from setting it by hand counts for nothing once the start is a scramble.
+    expect(readDesign({ ...hand, mix: 10 })).toEqual({ ...design, mix: 10 });
+  });
+
   it('turns away what isn’t a design', () => {
     for (const junk of [null, 'design', [], { ...design, v: 2 }]) expect(readDesign(junk)).toBeNull();
   });
@@ -109,6 +121,13 @@ describe('toPuzzle', () => {
     expect(puzzle.pieces).toEqual(startOf(design).map((piece) => wordsOf(pieces[piece])));
     expect(puzzle.answers).toHaveLength(1);
     expect(puzzle.mark).toBe(true);
+  });
+
+  it('starts the players where the game master set the board by hand', async () => {
+    const board = solvedOf(design);
+    const puzzle = await toPuzzle({ ...design, mix: 'hand', start: [...board] });
+    const pieces = piecesOf(contentOf(design));
+    expect(puzzle.pieces).toEqual(board.map((piece) => wordsOf(pieces[piece])));
   });
 
   it('holds each piece’s picture, in the same order, when there are any', async () => {

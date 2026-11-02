@@ -1,13 +1,13 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { iconWords } from '../../kit/icons';
 import { randomSeed } from '../../kit/rng';
 import { IconCredit } from '../../ui/IconCredit';
 import { iconMask, IconPicker } from '../../ui/IconPicker';
 import type { MakerProps } from '../types';
-import { Board } from './Board';
-import { contentOf, fillerOf, MIXES, solvedOf, startOf, type DiscsDesign } from './design';
-import { answerKey, answerKeys, keyOf, LONGEST_HALF, piecesOf, wordsOf, type Piece } from './engine/answer';
-import type { Board as Pieces } from './engine/board';
+import { Board, type Motion } from './Board';
+import { contentOf, fillerOf, scrambleOf, solvedOf, startOf, STARTS, type DiscsDesign } from './design';
+import { answerKey, answerKeys, keyOf, LONGEST_HALF, pairsInPlace, piecesOf, wordsOf, type Piece } from './engine/answer';
+import { play, type Board as Pieces, type Move } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { EXAMPLE } from './example';
 import { Game } from './Game';
@@ -48,6 +48,26 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
 
   const blank = design.pairs.every((pair) => pair.every((piece) => keyOf(piece) === ''));
   const long = pieces.some((piece) => [...wordsOf(piece)].length > ROOMY);
+
+  // Setting the start by hand begins from the board as it was, and each move on it moves the start.
+  const [arranging, setArranging] = useState<Motion | null>(null);
+  const inPlace = useMemo(() => (design.mix === 'hand' ? pairsInPlace(FLOWER, content, start) : []), [design.mix, content, start]);
+  // A quick drag can turn a disc twice before the page draws again, so each move starts from the last.
+  const latest = useRef(start);
+  latest.current = start;
+  const setStart = (board: Pieces) => {
+    setArranging(null);
+    set({ start: [...board] });
+  };
+  function arrange(move: Move) {
+    latest.current = play(FLOWER, latest.current, move);
+    setArranging({ move });
+    set({ start: [...latest.current] });
+  }
+  function chooseStart(value: string) {
+    const mix = STARTS.find((start) => String(start) === value) ?? 'full';
+    set(mix === 'hand' ? { mix, start: [...start] } : { mix, start: undefined });
+  }
 
   /** A half's box, with the button for its picture. */
   function half(spot: Spot, label: string, placeholder?: string) {
@@ -150,22 +170,40 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
         <h2>The start</h2>
         <div className="row">
           <label htmlFor={`${id}-mix`}>Scramble</label>
-          <select
-            id={`${id}-mix`}
-            value={String(design.mix)}
-            onChange={(event) => set({ mix: MIXES.find((mix) => String(mix) === event.target.value) ?? 'full' })}
-          >
-            {MIXES.map((mix) => (
+          <select id={`${id}-mix`} value={String(design.mix)} onChange={(event) => chooseStart(event.target.value)}>
+            {STARTS.map((mix) => (
               <option key={mix} value={String(mix)}>
-                {mix === 'full' ? 'Every piece anywhere' : `${mix} moves from solved`}
+                {mix === 'full' ? 'Every piece anywhere' : mix === 'hand' ? 'Set by hand' : `${mix} moves from solved`}
               </option>
             ))}
           </select>
-          <button type="button" onClick={() => set({ seed: randomSeed() })}>
-            🎲 New scramble
-          </button>
-          <span className="seed">Seed {design.seed}</span>
+          {design.mix !== 'hand' && (
+            <>
+              <button type="button" onClick={() => set({ seed: randomSeed() })}>
+                🎲 New scramble
+              </button>
+              <span className="seed">Seed {design.seed}</span>
+            </>
+          )}
         </div>
+        {design.mix === 'hand' && (
+          <div className="arrange" role="group" aria-label="Set the start">
+            <p className="hint">
+              Turn and swap this board until it’s as your players should find it.{' '}
+              {inPlace.length > 0 &&
+                (inPlace.length === 1 ? 'One name starts in its place.' : `${inPlace.length} names start in their places.`)}
+            </p>
+            <Board layout={FLOWER} pieces={pieces} board={start} motion={arranging} onMove={arrange} mark={!design.anyStart} solved={false} />
+            <div className="row">
+              <button type="button" onClick={() => setStart(solvedOf(design))}>
+                Start from solved
+              </button>
+              <button type="button" onClick={() => setStart(scrambleOf({ ...design, seed: randomSeed() }))}>
+                🎲 Start from a scramble
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="panel">
@@ -176,11 +214,13 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
           <input type="checkbox" checked={showSolved} onChange={(event) => setShowSolved(event.target.checked)} />
           <span>Show it solved</span>
         </label>
-        {showSolved ? (
-          <Board layout={FLOWER} pieces={pieces} board={solvedOf(design)} motion={null} onMove={() => {}} mark={!design.anyStart} solved />
-        ) : (
-          <Game key={trial} layout={FLOWER} pieces={pieces} start={start} isSolved={isSolved} mark={!design.anyStart} success={design.words.success} />
-        )}
+        <div role="group" aria-label="Try it">
+          {showSolved ? (
+            <Board layout={FLOWER} pieces={pieces} board={solvedOf(design)} motion={null} onMove={() => {}} mark={!design.anyStart} solved />
+          ) : (
+            <Game key={trial} layout={FLOWER} pieces={pieces} start={start} isSolved={isSolved} mark={!design.anyStart} success={design.words.success} />
+          )}
+        </div>
         <IconCredit names={pieces.flatMap((piece) => (piece.icon ? [piece.icon] : []))} />
       </section>
     </>

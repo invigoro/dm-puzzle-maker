@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../../../kit/rng';
-import { answerKey, answerKeys, holdsAPair, keyOf, piecesOf, type Content } from './answer';
+import { answerKey, answerKeys, holdsAPair, keyOf, pairsInPlace, piecesOf, type Content } from './answer';
 import { swap, turn } from './board';
 import { FLOWER } from './layout';
 import { solvedBoard } from './scramble';
@@ -60,6 +60,16 @@ describe('answer keys', () => {
     const other = board.indexOf(12);
     [board[frost], board[other]] = [board[other], board[frost]];
     expect(answerKeys(lookalike, false)).toContain(answerKey(FLOWER, piecesOf(lookalike), board));
+  });
+});
+
+describe('pairsInPlace', () => {
+  it('finds the goal contacts holding the pair that belongs there', () => {
+    expect(pairsInPlace(FLOWER, content, solved)).toEqual([0, 1, 2, 3, 4, 5]);
+    // Turning the centre moves its halves away from their partners, all six.
+    expect(pairsInPlace(FLOWER, content, turn(FLOWER, solved, 0, 1))).toEqual([]);
+    // Turning the top disc moves only the first name's outer half away.
+    expect(pairsInPlace(FLOWER, content, turn(FLOWER, solved, 1, 1))).toEqual([1, 2, 3, 4, 5]);
   });
 });
 

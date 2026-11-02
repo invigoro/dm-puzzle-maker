@@ -4,7 +4,7 @@ import { isIconName } from '../../kit/icons';
 import { mulberry32, randomSeed } from '../../kit/rng';
 import { readWords, tidyWords, type Words } from '../../kit/words';
 import { answerKeys, isBlank, LONGEST_HALF, piecesOf, wordsOf, type Content, type Piece } from './engine/answer';
-import type { Board } from './engine/board';
+import { readBoard, type Board } from './engine/board';
 import { fillBlanks } from './engine/filler';
 import { FLOWER, positionCount } from './engine/layout';
 import { scramble, solvedBoard, type Mix } from './engine/scramble';
@@ -14,8 +14,9 @@ import type { DiscsPuzzle } from './puzzle';
 export const PAIRS = FLOWER.goals.length;
 export const FILLER = positionCount(FLOWER) - 2 * PAIRS;
 
-/** The mixes on offer: every piece anywhere, or a number of moves away from solved. */
-export const MIXES: readonly Mix[] = ['full', 20, 10, 5];
+/** How the board starts: a scramble (every piece anywhere, or a number of moves from solved), or set by hand. */
+export type Start = Mix | 'hand';
+export const STARTS: readonly Start[] = ['full', 20, 10, 5, 'hand'];
 
 export interface DiscsDesign {
   v: 1;
@@ -26,7 +27,9 @@ export interface DiscsDesign {
   filler: Piece[];
   /** Whether the names count in order from any contact round the centre, not just the mark's. */
   anyStart: boolean;
-  mix: Mix;
+  mix: Start;
+  /** The board set by hand, numbering pieces as `piecesOf` does: only when `mix` is 'hand'. */
+  start?: number[];
   /** Seeds for the filler's blanks and for the scramble, so the same design always makes the same board. */
   fillSeed: number;
   seed: number;
@@ -67,6 +70,9 @@ export function readDesign(data: unknown): DiscsDesign | null {
   if (input.v !== 1) return null;
   const pairs: unknown[] = Array.isArray(input.pairs) ? input.pairs : [];
   const filler: unknown[] = Array.isArray(input.filler) ? input.filler : [];
+  // A start set by hand counts only with a board to start from.
+  const start = input.mix === 'hand' ? readBoard(FLOWER, input.start) : null;
+  const mix = STARTS.find((mix) => mix === input.mix && mix !== 'hand') ?? (start ? 'hand' : 'full');
   return {
     v: 1,
     words: readWords(input.words, NEW_WORDS),
@@ -76,7 +82,8 @@ export function readDesign(data: unknown): DiscsDesign | null {
     }),
     filler: Array.from({ length: FILLER }, (_, i) => halfIn(filler[i])),
     anyStart: input.anyStart === true,
-    mix: MIXES.find((mix) => mix === input.mix) ?? 'full',
+    mix,
+    ...(start ? { start: [...start] } : {}),
     fillSeed: seedIn(input.fillSeed),
     seed: seedIn(input.seed),
   };
@@ -88,8 +95,12 @@ export const fillerOf = (design: DiscsDesign): Piece[] => fillBlanks(design.fill
 /** The design's pieces: its pairs, and its filler with the blanks filled. */
 export const contentOf = (design: DiscsDesign): Content => ({ pairs: design.pairs, filler: fillerOf(design) });
 
+/** The design's scramble, whatever its start: what a start set by hand begins from. */
+export const scrambleOf = (design: DiscsDesign): Board =>
+  scramble(FLOWER, contentOf(design), mulberry32(design.seed), design.mix === 'hand' ? 'full' : design.mix);
+
 /** The board as the players first see it. */
-export const startOf = (design: DiscsDesign): Board => scramble(FLOWER, contentOf(design), mulberry32(design.seed), design.mix);
+export const startOf = (design: DiscsDesign): Board => (design.mix === 'hand' && design.start ? design.start : scrambleOf(design));
 
 /** The board solved, to show the game master. */
 export const solvedOf = (design: DiscsDesign): Board => solvedBoard(FLOWER, contentOf(design), mulberry32(design.seed));

@@ -13,8 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures and saved
-puzzles are done; setting the start by hand, the glow and the stone-and-bronze look are to come.
+**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures, saved
+puzzles and setting the start by hand are done; the glow and the stone-and-bronze look are to come.
 
 ## The site
 
@@ -208,7 +208,11 @@ Sator's engine.
 - **Filler:** 30 boxes. Blank ones show, faintly, the half they'll be filled with, with 🎲 for
   another fill. Each blank has a half of its own, so writing a half elsewhere changes only the blank
   that had it.
-- **Start:** every piece anywhere, or 20, 10 or 5 moves from solved, with 🎲 and the seed.
+- **Start:** every piece anywhere, or 20, 10 or 5 moves from solved, with 🎲 and the seed. Or set
+  by hand: a board of its own, starting from the scramble as it was, where each turn and swap moves
+  the start, with Start from solved and 🎲 Start from a scramble. It says how many names start in
+  their places, as a hand-set start can leave some there. The design keeps the board, numbering
+  pieces as the design does, so changing a half's words leaves it where it was.
 - **Try it:** the board as the players will first see it, to play, or solved.
 - **Links:** the player link is made a moment after the design last changed, with a new salt each
   time. Copy player link and Preview as player use it, and the page says how long it is, warning past
