@@ -17,10 +17,14 @@ kinds of puzzle followed:
 - a [maze](#maze) to find the way out of
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
+A fifth is planned: [pedestals](#pedestals), each with a riddle, and objects to choose among and
+set on them.
+
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 5 are done and live at https://daedalus.invigoro.me/. What
-comes next is Tim's to choose, from the backlog under [Milestones](#milestones) or elsewhere.
+**Current phase:** none. Phases 0 to 5 are done and live at https://daedalus.invigoro.me/. Phase 6,
+the pedestals, is planned. What comes next is Tim's to choose, from the milestones and backlog under
+[Milestones](#milestones), or elsewhere.
 
 ## The site
 
@@ -112,6 +116,10 @@ Adding a kind of puzzle takes a folder and a registry entry, and nothing else.
   or sealed, so it's never plain to read. But a programmer reading the page's code could still
   work it out, and it would take far less effort than undoing the discs' fingerprints. The maker
   says so beside each choice that does this, and the game master decides.
+- **Secret enough:** a link has to stand up to an ordinary player who might spot an obvious leak,
+  such as the answer in plain text or an answer flag on a piece. It needn't stand up to a player
+  set on reading the page's code or brute-forcing the fingerprints: nothing a static page does can
+  stop that. So no kind goes out of its way to, and the maker's warnings stay short.
 
 ## Turning discs
 
@@ -457,6 +465,61 @@ programmer could open them all.
 For a table that's all in one room, the game master can run it instead: their own page plays it on
 their screen, and no link holds the floor at all.
 
+## Pedestals
+
+*(Phase 6, planned)* A room of pedestals, each with a riddle cut into it, and objects about the
+room. The players choose the right object for each pedestal and set it there. A riddle reads "Place
+the greatest weapon", and among a sword, a war axe and an olive branch, the olive branch is right.
+It lives in `src/puzzles/pedestals/`, with the id `pedestals`.
+
+### The game master's choices
+
+- **The pedestals:** one to eight. Each has its riddle, and the one object that's right for it.
+  - A riddle can be words, a picture from the icon set, or both.
+  - So can an object.
+- **Other objects:** up to twelve more, which are right for no pedestal: the sword and the war axe
+  beside the olive branch. The best ones look as if they might be right.
+- **The objects' places:** scattered on the floor in an order from a seed, with 🎲 for another,
+  so the right ones don't come first.
+- **Checking:**
+  - **When all are right:** the pedestals unlock the moment each holds its object, with nothing
+    said before. The players can try anything, at no cost.
+  - **As each is placed:** each object is judged as it's set down. A right one settles into place
+    and stays. A wrong one says the game master's line for it ("A gout of flame from the plinth"),
+    is counted, and drops back to the floor.
+  - **When they ask:** once every pedestal holds something, they press Check. A right check
+    unlocks them. A wrong one says the game master's line, is counted, and tells them as much as
+    the game master allows:
+    - only that it's wrong
+    - how many are right ("One of the three settles")
+    - which are right: those pedestals glow
+  - As with the discs, a set of objects is checked once, so Check waits for a change.
+- **Failing:** if the game master likes, after so many wrong placements or checks the players
+  fail, with a line for that, as on the trapped floor.
+- **The lines:** for solving it, from the words; for a wrong placement or check; and for failing.
+
+### The players' page
+
+- **The room:** the pedestals in a row, wrapping on a phone, each a stone plinth with its riddle on
+  a bronze plaque and an empty top. Below them, the objects on the floor.
+- **Placing:** tap an object to pick it up, then tap a pedestal to set it there, or drag it.
+  - A pedestal's object goes back to the floor when it's tapped, or when another is set there.
+  - From the keyboard, Tab picks an object or a pedestal, and Enter picks up or sets down.
+- **Check**, when checking on asking, and the count of wrong placements or checks.
+- **Reaching the answer** unlocks the pedestals: they light up, and the line for solving it shows.
+- **Progress:** what's on each pedestal, and the count, are kept in the browser.
+
+### Keeping the answer secret
+
+- The link lists the objects in their scattered order, with nothing to say which are right, or
+  where they go.
+- When the page only says right or wrong for the whole room (when all are right, or when they ask
+  and hear only that), the link holds one slow fingerprint of the whole answer, and the line for
+  solving it sealed with it.
+- When it has to judge pedestals one at a time (as each is placed, or saying how many or which are
+  right), the link holds a quick fingerprint of each pedestal with its object. With so few to try,
+  a programmer could find them all, but a player reading the link sees nothing.
+
 ## Stack and hosting
 
 - **Vite + React + TypeScript**, set up as Sator and Jabberwock are.
@@ -680,6 +743,20 @@ its own, in this order.
   and the Discord link uses it once there is one.
 - The discs: checking on asking, so each wrong guess can cost the players, with the game master's
   line for a wrong check and a count of them.
+
+**Phase 6: Pedestals.** See [Pedestals](#pedestals). *(planned)*
+- The engine with tests: the answer, judging a set of objects whole or a pedestal at a time, how
+  many and which are right, and the objects' scatter from a seed.
+- The maker: the pedestals with their riddles and objects, the other objects, words or pictures for
+  each, the scatter with 🎲, checking, what a wrong one tells them, failing, the lines, and an
+  example of made-up riddles.
+- The players' room: pedestals and the floor, placing by taps, drags or keys, Check, the count, and
+  progress kept.
+- Player links holding one slow fingerprint and a sealed line, or a quick fingerprint for each
+  pedestal, as checking needs, with tests that neither gives away which object goes where.
+- *Done when* three pedestals with three other objects can be made, sent and solved on a phone:
+  once unlocking when all are right, once judging each as it's placed with a trap's line, and once
+  checking on asking, telling how many are right.
 
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
