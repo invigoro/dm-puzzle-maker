@@ -3,6 +3,7 @@ import type { Exit, Light } from './design';
 import { canStep, DIRECTIONS, stepFrom, type Direction, type Maze } from './engine/grid';
 import { lit } from './engine/paths';
 import { MazeBoard } from './MazeBoard';
+import type { OnHazard, Picture } from './pictures';
 import type { MazeProgress } from './puzzle';
 
 interface MazeGameProps {
@@ -12,6 +13,10 @@ interface MazeGameProps {
   light: Light;
   /** How far the players see by lantern or in the dark, in steps along the passages. */
   reach: number;
+  /** How many cells across their window onto the maze is; 0 for the whole maze. */
+  view: number;
+  pictures: readonly Picture[];
+  onHazard: OnHazard;
   initial?: MazeProgress | null;
   onProgress?(progress: MazeProgress): void;
   /** Whether it takes the keyboard when it opens: on the players' page, not in the maker. */
@@ -32,12 +37,14 @@ const KEYS: Partial<Record<string, Direction>> = {
 const SWIPE = 24;
 
 /** A maze to find the way out of: a token moved by keys, taps or swipes, in as much light as the game master allows. */
-export function MazeGame({ maze, start, exits, light, reach, initial, onProgress, autoFocus }: MazeGameProps) {
+export function MazeGame({ maze, start, exits, light, reach, view, pictures, onHazard, initial, onProgress, autoFocus }: MazeGameProps) {
   const box = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState(initial?.at ?? start);
   const [steps, setSteps] = useState(initial?.steps ?? 0);
   const [visited, setVisited] = useState<readonly number[]>(initial?.visited ?? [start]);
   const [out, setOut] = useState<number | null>(initial?.out ?? null);
+  /** What the last step came to: a landmark's line, or a hazard's. */
+  const [said, setSaid] = useState('');
   const swipe = useRef<{ x: number; y: number } | null>(null);
   // A swipe ends in a click on a cell, which shouldn't move the token again.
   const swiped = useRef(false);
@@ -55,13 +62,18 @@ export function MazeGame({ maze, start, exits, light, reach, initial, onProgress
   const seen = useMemo(() => (light === 'lantern' ? new Set(visited.flatMap((cell) => lit(maze, cell, reach))) : null), [light, maze, visited, reach]);
   const near = light === 'lit' ? undefined : new Set(lit(maze, at, reach));
   const shown = light === 'lit' ? 'all' : (seen ?? near!);
+  const stoodOn = useMemo(() => new Set(visited), [visited]);
 
   function move(direction: Direction) {
     if (out !== null || !canStep(maze, at, direction)) return;
     const next = stepFrom(maze, at, direction);
-    setAt(next);
+    const picture = pictures.find((each) => each.cell === next);
+    const hazard = picture !== undefined && picture.kind !== 'landmark';
+    const back = hazard && onHazard === 'back';
+    setAt(back ? start : next);
     setSteps(steps + 1);
     if (!visited.includes(next)) setVisited([...visited, next]);
+    setSaid([picture?.line || (hazard ? 'A hazard!' : ''), back ? 'Back to the way in.' : ''].filter(Boolean).join(' '));
     const exit = exits.findIndex((way) => way.cell === next);
     if (exit >= 0) setOut(exit);
   }
@@ -102,6 +114,7 @@ export function MazeGame({ maze, start, exits, light, reach, initial, onProgress
     setSteps(0);
     setVisited([start]);
     setOut(null);
+    setSaid('');
   }
 
   return (
@@ -113,6 +126,9 @@ export function MazeGame({ maze, start, exits, light, reach, initial, onProgress
         at={at}
         shown={shown}
         near={near}
+        pictures={pictures}
+        stoodOn={stoodOn}
+        view={view}
         onCell={tap}
         onPointerDown={pointerDown}
         onPointerUp={pointerUp}
@@ -126,7 +142,7 @@ export function MazeGame({ maze, start, exits, light, reach, initial, onProgress
         <span className="moves">{steps === 1 ? '1 step' : `${steps} steps`}</span>
       </div>
       <p className="success" role="status">
-        {out !== null ? exits[out].line || 'You’ve found a way out.' : ''}
+        {out !== null ? exits[out].line || 'You’ve found a way out.' : said}
       </p>
     </div>
   );

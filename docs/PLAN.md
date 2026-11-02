@@ -371,20 +371,32 @@ riddle. It lives in `src/puzzles/word-guess/`, with the id `word-guess`.
     through a wall, so 2 in a straight passage is 2 cells ahead and 2 behind. With none at all, they
     see only the walls beside them. Mazes made before this could be chosen see 2 by lantern and none
     in the dark, as they did.
-- **Pictures** in cells, from the icon set: the way out, a statue, a fountain to steer by.
+  - **Their view:** the whole maze, or a window 3 to 11 cells across with the party in its middle,
+    the maze sliding under it as they move. Past the maze's edges looks like any cell not yet seen,
+    so by lantern or in the dark only counting steps, and landmarks, tell them where they are. Lit,
+    the edges show where the window runs past them.
+- **Pictures** in cells, up to 20, from the icon set, each with a line said on reaching it, and
+  never on the way in or a way out:
+  - **Landmarks** to steer by (a statue, a fountain), shown when their cell is in sight.
+  - **Hazards** to run into (a pit, the minotaur), shown when their cell is in sight, or hidden until
+    the party runs into one.
+  - When the party runs into a hazard, its line is said and they carry on, with the game master
+    settling it at the table, or they go back to the way in.
 
 ### The players' page
 
 - A token, moved with the arrow keys, by tapping a neighbouring cell, or by swiping. Steps are
   counted.
-- Reaching a way out shows its line.
-- Where they are and where they've been are kept in the browser.
+- Reaching a way out shows its line, and so does reaching a picture.
+- Where they are and where they've been are kept in the browser, and so are the hidden hazards
+  they've run into, as places they've stood.
 
 ### Keeping the answer secret
 
 The maze is the puzzle, so the link holds its walls; in a lit maze the way through is in plain
 sight anyway. With a lantern or in the dark, a programmer could still draw the whole maze from the
-link, and players won't. The walls pack small, two bits a cell: a 20 by 20 maze is 100 bytes.
+link, and players won't. The walls pack small, two bits a cell: a 20 by 20 maze is 100 bytes. The
+link holds every picture too, so a programmer could find the hidden hazards.
 
 ## Trapped floor
 
@@ -604,8 +616,8 @@ its own, in this order.
   after. Drawing by hand keeps the walls flipped from the seed's maze, so a new seed starts afresh.
   The lantern lights two steps along the passages, not through walls. A new size starts the ways
   in and out again at the corners, as walls are numbered by size. Each maze link has a salt of its
-  own, just to keep its players' progress apart. Pictures in cells are left for later. A 14 by 14
-  link comes to about 520 characters.)*
+  own, just to keep its players' progress apart. Pictures in cells came after Phase 5, below. A 14
+  by 14 link comes to about 520 characters.)*
   - Mazes made from a seed, with twistiness and loops, or drawn by hand, and the shortest way
     through.
   - The way in, the ways out with a line each, light (lit, lantern or dark), and pictures in cells.
@@ -639,11 +651,19 @@ its own, in this order.
   - A quick fingerprint (`quickFingerprint`, one salted SHA-256) beside the slow one, for what's
     quick to guess anyway.
 
+**After Phase 5.** Smaller changes Tim asked for once it was live. *(done)*
+- The maze: how far the players see, by lantern or in the dark, from none to 10 steps.
+- The discs: where the names are read, shown by a gold-edged channel down each spoke that meets
+  there, and a gold ring round its stud.
+- The maze: pictures in cells, as landmarks, hazards and hidden hazards, and a window round the
+  party that never shows the maze's edges. A hidden hazard shows itself once stood on, so it needs
+  nothing kept beyond where the party has been. The 14 by 14 example, with three pictures, makes a
+  link of about 760 characters.
+
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
 - More kinds of puzzle: a cipher wheel, sliding tiles, a combination lock, lights out.
 - Round labyrinths for the maze, in rings like the one on the favicon.
-- Pictures in maze cells, from the icon set: a statue, a fountain to steer by.
 - Word guess: tries that must be real words, from Sator's word lists.
 - Discs to print and cut out for the table, and mazes and floors to print as handouts.
 - Links to Sator (an anagram as a node) and Stele.

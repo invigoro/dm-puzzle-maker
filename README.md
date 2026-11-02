@@ -88,7 +88,8 @@ A maze to find the way out of, seen from above.
   Passages long and winding, or many short dead ends, with no loops (one way through), a few or
   many. 🎲 makes a new one.
 - **Drawing it:** click a wall to put it up or take it down, or set the way in, or add up to four
-  ways out, each with its own line: one leads on, another to the minotaur. The maker shows the
+  ways out, each with its own line: one leads on, another to the minotaur. Or put a picture in a
+  cell. The maker shows the
   shortest way through to each, and says if one can't be reached.
 - **Light:** lit, so the whole maze shows; by lantern, so the players see the cells near them and
   the passages they've walked stay drawn, like a map; or dark, so they see only the cells near them,
@@ -96,6 +97,13 @@ A maze to find the way out of, seen from above.
   passages, never through a wall (2 in a straight passage is 2 cells ahead and 2 behind), or none,
   so they see only the walls beside them. Whatever the light, the link holds the whole maze, so a
   programmer could draw it.
+- **Their view:** the whole maze, or a window 3 to 11 cells across round the party, which slides as
+  they move. Past the edges looks like the dark, so by lantern or in the dark only counting steps,
+  and landmarks, tell them where they are.
+- **Pictures:** up to 20 in cells, from the icon set, each with a line said on reaching it:
+  landmarks to steer by, hazards to run into, and hidden hazards that show only once someone runs
+  into them. A hazard's line is said and the party carries on, or goes back to the way in. The link
+  holds every picture, so a programmer could find the hidden ones.
 - **Playing:** move with the arrow keys (or WASD), by tapping the next cell, or by swiping. Steps
   are counted, and where the party is and has been is kept in the browser.
 

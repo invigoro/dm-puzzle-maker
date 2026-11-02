@@ -1,5 +1,7 @@
-import type { PointerEvent } from 'react';
+import type { CSSProperties, PointerEvent } from 'react';
+import { useIcons } from '../../kit/icons';
 import { cellCount, cellsOf, wallCount, xyOf, type Maze } from './engine/grid';
+import { pictureName, type Picture } from './pictures';
 
 /** A cell's size, in board units. */
 const U = 20;
@@ -16,6 +18,12 @@ interface MazeBoardProps {
   near?: ReadonlySet<number>;
   /** A path to draw through the maze, for the game master: cells in order. */
   path?: readonly number[];
+  /** Landmarks and hazards, each showing where its cell does. */
+  pictures?: readonly Picture[];
+  /** The cells the party has stood on, where a hidden hazard has shown itself. Without them, the game master's, every picture shows. */
+  stoodOn?: ReadonlySet<number>;
+  /** How many cells across a window round the token is, rather than the whole maze: 0 for the whole maze. */
+  view?: number;
   onCell?(cell: number): void;
   /** For drawing the maze by hand: a wall to put up or take down. */
   onWall?(wall: number): void;
@@ -37,9 +45,20 @@ function wallLine(maze: Maze, wall: number): [number, number, number, number] {
 }
 
 /** A maze drawn from above: the cells the players can see, their walls, the ways in and out, and the token. */
-export function MazeBoard({ maze, start, exits, at, shown, near, path, onCell, onWall, onPointerDown, onPointerUp, label }: MazeBoardProps) {
+export function MazeBoard({ maze, start, exits, at, shown, near, path, pictures = [], stoodOn, view = 0, onCell, onWall, onPointerDown, onPointerUp, label }: MazeBoardProps) {
   const cells = cellCount(maze);
   const sees = (cell: number) => shown === 'all' || shown.has(cell);
+  const icons = useIcons(pictures.map((picture) => picture.icon));
+  const showing = pictures.filter((picture) => sees(picture.cell) && !(stoodOn && picture.kind === 'hidden' && !stoodOn.has(picture.cell)));
+
+  // A window keeps the token in its middle, and the maze slides under it.
+  const framed = view > 0 && at !== null && at !== undefined ? view : 0;
+  let slide: CSSProperties | undefined;
+  if (framed) {
+    const [x, y] = xyOf(maze, at!);
+    const middle = (framed - 1) / 2;
+    slide = { transform: `translate(${(middle - x) * U}px, ${(middle - y) * U}px)` };
+  }
 
   // Walls beside a seen cell are drawn, and the outside walls of seen cells at the edge.
   const lines: string[] = [];
@@ -59,54 +78,75 @@ export function MazeBoard({ maze, start, exits, at, shown, near, path, onCell, o
 
   return (
     <svg
-      className={onWall ? 'maze drawing' : 'maze'}
-      viewBox={`-3 -3 ${maze.width * U + 6} ${maze.height * U + 6}`}
+      className={['maze', onWall && 'drawing', framed && 'windowed'].filter(Boolean).join(' ')}
+      viewBox={framed ? `0 0 ${framed * U} ${framed * U}` : `-3 -3 ${maze.width * U + 6} ${maze.height * U + 6}`}
       role="group"
       aria-label={label}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      {Array.from({ length: cells }, (_, cell) => {
-        const [x, y] = xyOf(maze, cell);
-        const kind = !sees(cell) ? 'cell fog' : near?.has(cell) ? 'cell near' : 'cell seen';
-        return <rect key={cell} className={kind} x={x * U} y={y * U} width={U} height={U} onClick={onCell && (() => onCell(cell))} />;
-      })}
-      {path && path.length > 1 && <polyline className="path" points={path.map((cell) => centre(maze, cell).join(',')).join(' ')} />}
-      {sees(start) && <circle className="way-in" cx={centre(maze, start)[0]} cy={centre(maze, start)[1]} r={U * 0.22} />}
-      {exits.map((exit, i) =>
-        sees(exit) ? (
-          <g key={exit} className="way-out" transform={`translate(${centre(maze, exit).join(' ')})`}>
-            <path d={`M${-U * 0.26} ${U * 0.34}V${-U * 0.1}A${U * 0.26} ${U * 0.26} 0 0 1 ${U * 0.26} ${-U * 0.1}V${U * 0.34}Z`} />
-            {exits.length > 1 && (
-              <text y={U * 0.16} fontSize={U * 0.38}>
-                {i + 1}
-              </text>
-            )}
-          </g>
-        ) : null,
-      )}
-      <path className="walls" d={lines.join('')} />
-      {onWall &&
-        maze.walls.map((standing, wall) => {
-          const [x1, y1, x2, y2] = wallLine(maze, wall);
-          const [one, other] = cellsOf(maze, wall).map((cell) => xyOf(maze, cell));
+      {/* Beyond the maze looks like any cell not yet seen, so a window never shows where the edges are. */}
+      {framed > 0 && <rect className="beyond" width={framed * U} height={framed * U} />}
+      <g className="sliding" style={slide}>
+        {Array.from({ length: cells }, (_, cell) => {
+          const [x, y] = xyOf(maze, cell);
+          const kind = !sees(cell) ? 'cell fog' : near?.has(cell) ? 'cell near' : 'cell seen';
+          return <rect key={cell} className={kind} x={x * U} y={y * U} width={U} height={U} onClick={onCell && (() => onCell(cell))} />;
+        })}
+        {path && path.length > 1 && <polyline className="path" points={path.map((cell) => centre(maze, cell).join(',')).join(' ')} />}
+        {sees(start) && <circle className="way-in" cx={centre(maze, start)[0]} cy={centre(maze, start)[1]} r={U * 0.22} />}
+        {exits.map((exit, i) =>
+          sees(exit) ? (
+            <g key={exit} className="way-out" transform={`translate(${centre(maze, exit).join(' ')})`}>
+              <path d={`M${-U * 0.26} ${U * 0.34}V${-U * 0.1}A${U * 0.26} ${U * 0.26} 0 0 1 ${U * 0.26} ${-U * 0.1}V${U * 0.34}Z`} />
+              {exits.length > 1 && (
+                <text y={U * 0.16} fontSize={U * 0.38}>
+                  {i + 1}
+                </text>
+              )}
+            </g>
+          ) : null,
+        )}
+        {showing.map((picture) => {
+          const [x, y] = xyOf(maze, picture.cell);
+          const icon = icons.get(picture.icon);
+          // The game master sees hidden hazards too, fainter.
+          const secret = !stoodOn && picture.kind === 'hidden';
           return (
-            <g key={wall}>
-              {!standing && <line className="gap" x1={x1} y1={y1} x2={x2} y2={y2} />}
-              <line
-                className="wall-hit"
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                role="button"
-                aria-label={`${standing ? 'Take down' : 'Put up'} the wall between row ${one[1] + 1} column ${one[0] + 1} and row ${other[1] + 1} column ${other[0] + 1}`}
-                onClick={() => onWall(wall)}
-              />
+            <g
+              key={picture.cell}
+              className={['picture', picture.kind, secret && 'secret'].filter(Boolean).join(' ')}
+              role="img"
+              aria-label={pictureName(picture)}
+              transform={`translate(${x * U + 2.5} ${y * U + 2.5}) scale(${(U - 5) / 512})`}
+            >
+              {icon && <g dangerouslySetInnerHTML={{ __html: icon.body }} />}
             </g>
           );
         })}
-      {at !== null && at !== undefined && <circle className="token" cx={centre(maze, at)[0]} cy={centre(maze, at)[1]} r={U * 0.3} />}
+        <path className="walls" d={lines.join('')} />
+        {onWall &&
+          maze.walls.map((standing, wall) => {
+            const [x1, y1, x2, y2] = wallLine(maze, wall);
+            const [one, other] = cellsOf(maze, wall).map((cell) => xyOf(maze, cell));
+            return (
+              <g key={wall}>
+                {!standing && <line className="gap" x1={x1} y1={y1} x2={x2} y2={y2} />}
+                <line
+                  className="wall-hit"
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  role="button"
+                  aria-label={`${standing ? 'Take down' : 'Put up'} the wall between row ${one[1] + 1} column ${one[0] + 1} and row ${other[1] + 1} column ${other[0] + 1}`}
+                  onClick={() => onWall(wall)}
+                />
+              </g>
+            );
+          })}
+        {at !== null && at !== undefined && <circle className="token" cx={centre(maze, at)[0]} cy={centre(maze, at)[1]} r={U * 0.3} />}
+      </g>
     </svg>
   );
 }

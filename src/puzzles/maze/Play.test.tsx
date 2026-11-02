@@ -1,14 +1,22 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { forgetIcons } from '../../kit/icons';
+import { fakeIconFetch } from '../../test/icons';
 import { pageFor } from '../../ui/pages';
 import { mazeOf, newDesign, toPuzzle, type MazeDesign } from './design';
 import { DIRECTIONS, stepFrom, canStep, type Direction } from './engine/grid';
 import { lit, wayBetween } from './engine/paths';
 
+beforeEach(() => {
+  vi.stubGlobal('fetch', fakeIconFetch);
+});
+
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
+  forgetIcons();
   localStorage.clear();
 });
 
@@ -47,6 +55,66 @@ async function open(change: Partial<MazeDesign> = {}) {
 }
 
 const fog = () => document.querySelectorAll('.maze .cell.fog').length;
+/** The first steps of the way to the first way out. */
+const firstSteps = (count: number) => keysFor(design, 35).split('}').slice(0, count).join('}') + '}';
+/** A cell's column and row, on this maze of six by six. */
+const placeOf = (cell: number) => [cell % 6, Math.floor(cell / 6)] as const;
+/** Where the token is drawn: a cell's centre. */
+const token = () => ['cx', 'cy'].map((side) => Number(document.querySelector('.maze .token')!.getAttribute(side)));
+
+describe('pictures in the maze', () => {
+  it('shows a landmark when its cell is in sight, and says its line on reaching it', async () => {
+    const cell = toFirst[3];
+    const { user } = await open({ light: 'lit', pictures: [{ cell, icon: 'stone-tower', kind: 'landmark', line: 'A cairn of stones.' }] });
+    expect(screen.getByRole('img', { name: 'stone tower, a landmark' })).toBeInTheDocument();
+    await user.keyboard(firstSteps(3));
+    expect(screen.getByRole('status')).toHaveTextContent('A cairn of stones.');
+    await user.keyboard(firstSteps(4).slice(firstSteps(3).length));
+    expect(screen.getByRole('status')).toHaveTextContent(/^$/);
+  });
+
+  it('shows a landmark only when the light reaches it', async () => {
+    await open({ light: 'dark', reach: 0, pictures: [{ cell: toFirst[3], icon: 'stone-tower', kind: 'landmark', line: '' }] });
+    expect(screen.queryByRole('img')).toBeNull();
+  });
+
+  it('says a hazard’s line, and the party carries on from it', async () => {
+    const { user } = await open({ light: 'lit', pictures: [{ cell: toFirst[2], icon: 'stone-tower', kind: 'hazard', line: '' }] });
+    expect(screen.getByRole('img', { name: 'stone tower, a hazard' })).toBeInTheDocument();
+    await user.keyboard(firstSteps(2));
+    expect(screen.getByRole('status')).toHaveTextContent('A hazard!');
+    expect(token()).toEqual([...placeOf(toFirst[2])].map((at) => (at + 0.5) * 20));
+  });
+
+  it('hides a hidden hazard until the party runs into it, then sends them back, when that’s what hazards do', async () => {
+    const { user } = await open({ light: 'lit', onHazard: 'back', pictures: [{ cell: toFirst[4], icon: 'stone-tower', kind: 'hidden', line: 'Rats!' }] });
+    expect(screen.queryByRole('img')).toBeNull();
+    await user.keyboard(firstSteps(4));
+    expect(screen.getByRole('status')).toHaveTextContent('Rats! Back to the way in.');
+    expect(screen.getByRole('img', { name: 'stone tower, a hidden hazard' })).toBeInTheDocument();
+    expect(token()).toEqual([10, 10]);
+    expect(screen.getByText('4 steps')).toBeInTheDocument();
+  });
+
+  it('names who made the pictures', async () => {
+    await open({ pictures: [{ cell: toFirst[4], icon: 'stone-tower', kind: 'hidden', line: '' }] });
+    expect(await screen.findByText(/Lorc/)).toBeInTheDocument();
+  });
+});
+
+describe('a window onto the maze', () => {
+  it('shows only the cells round the party, the maze sliding under it as they go', async () => {
+    const { user } = await open({ light: 'lit', view: 3 });
+    const board = screen.getByRole('group', { name: 'The maze' });
+    expect(board).toHaveAttribute('viewBox', '0 0 60 60');
+    const slide = () => board.querySelector('.sliding')!.getAttribute('style');
+    // At the top left, the window's middle cell is the maze's first.
+    expect(slide()).toContain('translate(20px, 20px)');
+    await user.keyboard(firstSteps(1));
+    const [x, y] = placeOf(toFirst[1]);
+    expect(slide()).toContain(`translate(${(1 - x) * 20}px, ${(1 - y) * 20}px)`);
+  });
+});
 
 describe('the maze', () => {
   it('walks the way out with the arrow keys, and says its line', async () => {

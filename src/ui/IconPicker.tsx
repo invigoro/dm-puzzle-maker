@@ -13,10 +13,12 @@ interface IconPickerProps {
   value: string | undefined;
   onPick(icon: string | undefined): void;
   onClose(): void;
+  /** Whether it offers No picture: not where there must be one. */
+  optional?: boolean;
 }
 
 /** Choosing a picture from the icon set, by searching its names. */
-export function IconPicker({ label, value, onPick, onClose }: IconPickerProps) {
+export function IconPicker({ label, value, onPick, onClose, optional = true }: IconPickerProps) {
   // Undefined while it loads, null if it couldn't.
   const [index, setIndex] = useState<IconIndex | null | undefined>(undefined);
   const [search, setSearch] = useState(value ? iconWords(value) : '');
@@ -42,7 +44,7 @@ export function IconPicker({ label, value, onPick, onClose }: IconPickerProps) {
           onChange={(event) => setSearch(event.target.value)}
           onKeyDown={(event) => event.key === 'Escape' && onClose()}
         />
-        {value && (
+        {value && optional && (
           <button type="button" onClick={() => onPick(undefined)}>
             No picture
           </button>

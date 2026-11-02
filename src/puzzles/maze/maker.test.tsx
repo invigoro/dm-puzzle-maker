@@ -1,16 +1,24 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { forgetIcons } from '../../kit/icons';
 import { readRoute } from '../../kit/route';
+import { fakeIconFetch } from '../../test/icons';
 import { pageFor } from '../../ui/pages';
 import { readDesign } from './design';
 import { readPuzzle } from './puzzle';
+
+beforeEach(() => {
+  vi.stubGlobal('fetch', fakeIconFetch);
+});
 
 afterEach(() => {
   cleanup();
   history.replaceState(null, '', '/');
   localStorage.clear();
+  vi.unstubAllGlobals();
+  forgetIcons();
 });
 
 async function openMaker() {
@@ -76,6 +84,38 @@ describe('the maze maker', () => {
     const puzzle = readPuzzle(route.page === 'play' ? route.data : null);
     expect(puzzle?.exits).toHaveLength(2);
     expect(puzzle?.light).toBe('lantern');
+    expect(puzzle?.pictures.map((picture) => picture.kind)).toEqual(['landmark', 'hazard', 'hidden']);
+  });
+
+  it('puts pictures in cells, landmarks or hazards, and takes them away', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('radio', { name: 'Adds or takes away a picture' }));
+    await user.click(cells()[44]);
+    expect(within(drawing()).getByRole('img', { name: 'fountain, a landmark' })).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'What picture 1 is' }), 'A hidden hazard');
+    await user.type(screen.getByRole('textbox', { name: 'What reaching picture 1 says' }), 'Rats!');
+    await user.click(screen.getByRole('button', { name: 'Picture 1' }));
+    const search = screen.getByRole('searchbox', { name: 'Search the pictures' });
+    await user.clear(search);
+    await user.type(search, 'tower');
+    await user.click(await screen.findByRole('button', { name: 'stone tower' }));
+    // The game master sees a hidden hazard; the players won't, until they run into it.
+    expect(within(drawing()).getByRole('img', { name: 'stone tower, a hidden hazard' })).toBeInTheDocument();
+    expect((await designNow())?.pictures).toEqual([{ cell: 44, icon: 'stone-tower', kind: 'hidden', line: 'Rats!' }]);
+    // The way in can't go on a picture.
+    await user.click(screen.getByRole('radio', { name: 'Sets the way in' }));
+    await user.click(cells()[44]);
+    expect((await designNow())?.start).toBe(0);
+    await user.click(screen.getByRole('radio', { name: 'Adds or takes away a picture' }));
+    await user.click(cells()[44]);
+    expect(screen.queryByRole('combobox', { name: 'What picture 1 is' })).toBeNull();
+  });
+
+  it('shows the players a window round them, if the game master likes', async () => {
+    const user = await openMaker();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Their view' }), '5 by 5 cells round them');
+    expect((await designNow())?.view).toBe(5);
+    expect(screen.getByRole('group', { name: 'The maze' })).toHaveAttribute('viewBox', '0 0 100 100');
   });
 
   it('lets the light reach as far as the game master says, except when it’s lit', async () => {

@@ -5,6 +5,7 @@ import { readWords, tidyWords, type Words } from '../../kit/words';
 import { generate, withEdits, type Loops, type Twist } from './engine/generate';
 import { packWalls, wallCount, type Maze } from './engine/grid';
 import { distances, LANTERN, reachIn } from './engine/paths';
+import { onHazardIn, readPictures, viewIn, type OnHazard, type Picture } from './pictures';
 import type { MazePuzzle } from './puzzle';
 
 /** How much of the maze the players see: all of it, the cells their lantern lights with a map of where it's lit, or only the cells near them. */
@@ -40,6 +41,11 @@ export interface MazeDesign {
   light: Light;
   /** How far the players see by lantern or in the dark, in steps along the passages. */
   reach: number;
+  /** How many cells across the players' window onto the maze is, round where they stand; 0 for the whole maze. */
+  view: number;
+  /** Landmarks and hazards, one to a cell, never on the way in or a way out. */
+  pictures: Picture[];
+  onHazard: OnHazard;
 }
 
 export const NEW_WORDS: Words = { title: '', intro: '', success: 'Daylight, and the way out.' };
@@ -48,7 +54,22 @@ export const NEW_WORDS: Words = { title: '', intro: '', success: 'Daylight, and 
 const corners = (width: number, height: number) => ({ start: 0, exits: [{ cell: width * height - 1, line: '' }] });
 
 export function newDesign(): MazeDesign {
-  return { v: 1, words: NEW_WORDS, width: 10, height: 10, twist: 'winding', loops: 'none', seed: randomSeed(), edits: [], ...corners(10, 10), light: 'lantern', reach: LANTERN };
+  return {
+    v: 1,
+    words: NEW_WORDS,
+    width: 10,
+    height: 10,
+    twist: 'winding',
+    loops: 'none',
+    seed: randomSeed(),
+    edits: [],
+    ...corners(10, 10),
+    light: 'lantern',
+    reach: LANTERN,
+    view: 0,
+    pictures: [],
+    onHazard: 'carry-on',
+  };
 }
 
 const sizeIn = (value: unknown, fallback: number) => (Number.isInteger(value) && (value as number) >= SMALLEST && (value as number) <= LARGEST ? (value as number) : fallback);
@@ -72,6 +93,7 @@ export function readDesign(data: unknown): MazeDesign | null {
     .filter((exit, i, all) => all.findIndex((other) => other.cell === exit.cell) === i)
     .slice(0, MOST_EXITS);
   const light = input.light === 'lit' || input.light === 'dark' ? input.light : 'lantern';
+  const ways = exits.length > 0 ? { start, exits } : corners(width, height);
   return {
     v: 1,
     words: readWords(input.words, NEW_WORDS),
@@ -81,9 +103,12 @@ export function readDesign(data: unknown): MazeDesign | null {
     loops: input.loops === 'few' || input.loops === 'many' ? input.loops : 'none',
     seed: Number.isInteger(input.seed) && (input.seed as number) >= 0 && (input.seed as number) < 2 ** 32 ? (input.seed as number) : 1,
     edits: [...new Set(edits)],
-    ...(exits.length > 0 ? { start, exits } : corners(width, height)),
+    ...ways,
     light,
     reach: reachIn(input.reach, light === 'dark'),
+    view: viewIn(input.view),
+    pictures: readPictures(input.pictures, cells, [ways.start, ...ways.exits.map((exit) => exit.cell)]),
+    onHazard: onHazardIn(input.onHazard),
   };
 }
 
@@ -103,16 +128,17 @@ export function problemsOf(design: MazeDesign): string[] {
   return ways.some((steps) => steps < 0) ? ['A way out can’t be reached from the way in.'] : [];
 }
 
-/** A maze moved to a new size starts again from the corners, as walls are numbered by the size. */
+/** A maze moved to a new size starts again from the corners, with no pictures, as walls and cells are numbered by the size. */
 export const resized = (design: MazeDesign, width: number, height: number): MazeDesign => ({
   ...design,
   width,
   height,
   edits: [],
   ...corners(width, height),
+  pictures: [],
 });
 
-/** What a player link holds: the maze's walls, the way in, the ways out and their lines, and the light and how far it reaches. */
+/** What a player link holds: the maze's walls, the way in, the ways out and their lines, the light and how far it reaches, the view, and the pictures. */
 export async function toPuzzle(design: MazeDesign): Promise<MazePuzzle> {
   const words = tidyWords(design.words);
   return {
@@ -125,6 +151,9 @@ export async function toPuzzle(design: MazeDesign): Promise<MazePuzzle> {
     exits: design.exits.map((exit, i) => ({ cell: exit.cell, line: i === 0 ? words.success : exit.line.trim() })),
     light: design.light,
     reach: design.reach,
+    view: design.view,
+    pictures: design.pictures.map((picture) => ({ ...picture, line: picture.line.trim() })),
+    onHazard: design.onHazard,
     salt: newSalt(),
   };
 }

@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { playerHash } from '../../kit/route';
 import { mazeOf, newDesign, problemsOf, readDesign, resized, toPuzzle, waysThrough, type MazeDesign } from './design';
 import { wallCount } from './engine/grid';
+import { MOST_PICTURES, type Picture } from './pictures';
 import { mazeIn, readProgress, readPuzzle } from './puzzle';
 
 const design: MazeDesign = { ...newDesign(), seed: 11, words: { title: 'The cellars', intro: 'Find the door.', success: 'The smugglers’ door.' } };
+const landmark: Picture = { cell: 44, icon: 'fountain', kind: 'landmark', line: 'A fountain, still running.' };
 
 describe('a design', () => {
   it('starts with its way in at the top left and its way out at the bottom right, and a way between', () => {
@@ -50,8 +52,31 @@ describe('a design', () => {
   });
 
   it('starts again from the corners at a new size, as the walls are numbered by size', () => {
-    const moved = resized({ ...design, edits: [1, 2], start: 5 }, 8, 6);
-    expect(moved).toMatchObject({ width: 8, height: 6, edits: [], start: 0, exits: [{ cell: 47, line: '' }] });
+    const moved = resized({ ...design, edits: [1, 2], start: 5, pictures: [landmark] }, 8, 6);
+    expect(moved).toMatchObject({ width: 8, height: 6, edits: [], start: 0, exits: [{ cell: 47, line: '' }], pictures: [] });
+  });
+
+  it('keeps pictures one to a cell, off the way in and the ways out, each from the icon set', () => {
+    const pictures = [
+      landmark,
+      { ...landmark, line: 'Again.' },
+      { cell: 0, icon: 'well', kind: 'hazard', line: '' },
+      { cell: 99, icon: 'well', kind: 'hazard', line: '' },
+      { cell: 100, icon: 'well', kind: 'hazard', line: '' },
+      { cell: 50, icon: 'Not An Icon', kind: 'hazard', line: '' },
+      { cell: 51, icon: 'well', kind: 'monster', line: '' },
+      { cell: 52, icon: 'rat', kind: 'hidden', line: 'x'.repeat(300) },
+    ];
+    expect(readDesign({ ...design, pictures })?.pictures).toEqual([landmark, { cell: 52, icon: 'rat', kind: 'hidden', line: 'x'.repeat(200) }]);
+    const many = Array.from({ length: 30 }, (_, i) => ({ ...landmark, cell: i + 1 }));
+    expect(readDesign({ ...design, pictures: many })?.pictures).toHaveLength(MOST_PICTURES);
+  });
+
+  it('has no pictures, and the whole maze to see, when made before either could be chosen', () => {
+    const { view: _, pictures: __, onHazard: ___, ...before } = design;
+    expect(readDesign(before)).toMatchObject({ view: 0, pictures: [], onHazard: 'carry-on' });
+    expect(readDesign({ ...design, view: 4, onHazard: 'explode' })).toMatchObject({ view: 0, onHazard: 'carry-on' });
+    expect(readDesign({ ...design, view: 7, onHazard: 'back' })).toMatchObject({ view: 7, onHazard: 'back' });
   });
 });
 
@@ -68,6 +93,17 @@ describe('a player link', () => {
     expect(readPuzzle(JSON.parse(JSON.stringify(await toPuzzle({ ...design, light: 'dark', reach: 3 }))))?.reach).toBe(3);
   });
 
+  it('holds the view, the pictures and what a hazard does', async () => {
+    const hazard: Picture = { cell: 9, icon: 'rat', kind: 'hidden', line: '  Rats!  ' };
+    const puzzle = readPuzzle(JSON.parse(JSON.stringify(await toPuzzle({ ...design, view: 5, pictures: [landmark, hazard], onHazard: 'back' }))))!;
+    expect(puzzle).toMatchObject({ view: 5, pictures: [landmark, { ...hazard, line: 'Rats!' }], onHazard: 'back' });
+  });
+
+  it('opens a link made before views and pictures, with neither', async () => {
+    const { view: _, pictures: __, onHazard: ___, ...before } = JSON.parse(JSON.stringify(await toPuzzle(design)));
+    expect(readPuzzle(before)).toMatchObject({ view: 0, pictures: [], onHazard: 'carry-on' });
+  });
+
   it('opens a link made before how far they see could be chosen, seeing as far as it did', async () => {
     const { reach: _, ...before } = JSON.parse(JSON.stringify(await toPuzzle(design)));
     expect(readPuzzle(before)?.reach).toBe(2);
@@ -81,7 +117,7 @@ describe('a player link', () => {
 
   it('turns away what’s been tampered with', async () => {
     const puzzle = JSON.parse(JSON.stringify(await toPuzzle(design)));
-    for (const junk of [{ ...puzzle, width: 3 }, { ...puzzle, walls: 'AAAA' }, { ...puzzle, exits: [] }, { ...puzzle, start: 100 }, { ...puzzle, light: 'dim' }, { ...puzzle, reach: 11 }, { ...puzzle, reach: 'far' }, { ...puzzle, salt: '' }]) {
+    for (const junk of [{ ...puzzle, width: 3 }, { ...puzzle, walls: 'AAAA' }, { ...puzzle, exits: [] }, { ...puzzle, start: 100 }, { ...puzzle, light: 'dim' }, { ...puzzle, reach: 11 }, { ...puzzle, reach: 'far' }, { ...puzzle, view: 4 }, { ...puzzle, onHazard: 'explode' }, { ...puzzle, pictures: 'all' }, { ...puzzle, pictures: [{ ...landmark, cell: 0 }] }, { ...puzzle, pictures: [{ ...landmark, icon: '../x' }] }, { ...puzzle, salt: '' }]) {
       expect(readPuzzle(junk)).toBeNull();
     }
     expect(wallCount(puzzle)).toBe(180);

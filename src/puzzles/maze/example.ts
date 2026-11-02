@@ -18,4 +18,11 @@ export const EXAMPLE: Omit<MazeDesign, 'v' | 'seed' | 'edits'> = {
   ],
   light: 'lantern',
   reach: 2,
+  view: 0,
+  pictures: [
+    { cell: 14 * 6 + 6, icon: 'barrel', kind: 'landmark', line: 'Barrels of the landlord’s best, stacked to the ceiling.' },
+    { cell: 14 * 4 + 10, icon: 'spider-web', kind: 'hazard', line: 'Webs across the passage, and something moving in them.' },
+    { cell: 14 * 10 + 3, icon: 'rat', kind: 'hidden', line: 'Rats! A swarm pours over your boots: 1d4 piercing.' },
+  ],
+  onHazard: 'carry-on',
 };

@@ -893,6 +893,37 @@ legend.label-text {
   stroke-width: 1.5;
 }
 
+/* Pictures in cells: landmarks in the walls' ink, hazards in red. Taps go through them to the cell. */
+.maze .picture {
+  color: var(--engraved);
+  pointer-events: none;
+}
+
+.maze .picture.hazard,
+.maze .picture.hidden {
+  color: var(--danger);
+}
+
+/* A hidden hazard, as only the game master sees it. */
+.maze .picture.secret {
+  opacity: 0.5;
+}
+
+/* A window round the party: smaller than the whole maze, with the maze sliding under it. */
+.maze.windowed {
+  max-width: 26rem;
+}
+
+.maze .beyond {
+  fill: var(--fog);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .maze .sliding {
+    transition: transform 0.15s ease-out;
+  }
+}
+
 /* Drawing the maze: open walls show faintly, and every wall can be clicked. */
 .maze.drawing .gap {
   stroke: var(--engraved);
@@ -1063,7 +1094,8 @@ legend.label-text {
   background: var(--danger);
 }
 
-.kinds-of-trap {
+.kinds-of-trap,
+.maze-pictures {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -1071,20 +1103,28 @@ legend.label-text {
   padding-left: 1.4rem;
 }
 
-.kinds-of-trap li {
+.kinds-of-trap li,
+.maze-pictures li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
 }
 
-.kinds-of-trap .picture-button {
+.kinds-of-trap .picture-button,
+.maze-pictures .picture-button {
   border-radius: 6px;
   margin: 0;
 }
 
-.kinds-of-trap input {
+.kinds-of-trap input,
+.maze-pictures input {
   flex: 1;
-  min-width: 0;
+  min-width: 10rem;
+}
+
+.maze-pictures .place {
+  white-space: nowrap;
 }
 
 /* Played full size on the game master's own screen, for a table all in one room. */
