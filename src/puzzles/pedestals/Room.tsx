@@ -48,8 +48,9 @@ const dragged = (event: DragEvent) => event.dataTransfer.getData('text/plain').m
  */
 export function Room({ riddles, objects, check, tell, wrongLine, failAfter, failLine, judge, initial, onProgress }: RoomProps) {
   const [placed, setPlaced] = useState<Placed>(initial?.placed ?? nothingPlaced(riddles.length));
-  /** The object picked up from the floor, to set down. */
+  /** The object picked up from the floor, to set down, and the pedestal whose object is being dragged away. */
   const [holding, setHolding] = useState<number | null>(null);
+  const [lifting, setLifting] = useState<number | null>(null);
   const [wrong, setWrong] = useState(initial?.wrong ?? 0);
   const [solved, setSolved] = useState(initial?.solved ?? false);
   const [failed, setFailed] = useState(initial?.failed ?? false);
@@ -158,6 +159,20 @@ export function Room({ riddles, objects, check, tell, wrongLine, failAfter, fail
     missed([wrongLine || 'That’s not it.', told].filter(Boolean).join(' '));
   }
 
+  /** A pedestal's object picked up to drag: it's the object that's seen moving, not the pedestal, and it fades where it stood. */
+  function dragFrom(event: DragEvent<HTMLElement>, pedestal: number) {
+    event.dataTransfer.setData('text/plain', `pedestal:${pedestal}`);
+    const offering = event.currentTarget.querySelector<HTMLElement>('.offering');
+    if (offering) {
+      // Held where the pointer took it, by its nearest edge when the pointer took the plinth, or by its middle when there's no knowing.
+      const box = offering.getBoundingClientRect();
+      const within = (at: number, from: number, size: number) => (Number.isFinite(at) ? Math.min(Math.max(at - from, 0), size) : size / 2);
+      event.dataTransfer.setDragImage(offering, within(event.clientX, box.left, box.width), within(event.clientY, box.top, box.height));
+    }
+    // A frame later, once the browser has its picture of the object as it was.
+    requestAnimationFrame(() => setLifting(pedestal));
+  }
+
   function drop(event: DragEvent, pedestal: number) {
     event.preventDefault();
     const [, from, at] = dragged(event) ?? [];
@@ -184,10 +199,11 @@ export function Room({ riddles, objects, check, tell, wrongLine, failAfter, fail
             <button
               key={pedestal}
               type="button"
-              className={['pedestal', glowing.has(pedestal) && 'glow', solved && 'lit'].filter(Boolean).join(' ')}
+              className={['pedestal', glowing.has(pedestal) && 'glow', solved && 'lit', lifting === pedestal && 'lifting'].filter(Boolean).join(' ')}
               aria-label={`Pedestal ${pedestal + 1}, “${describe(riddle)}”: ${on === null ? 'empty' : `holding ${describe(objects[on])}`}${glowing.has(pedestal) ? ', right' : ''}`}
               draggable={on !== null && !done && check !== 'placed'}
-              onDragStart={(event) => event.dataTransfer.setData('text/plain', `pedestal:${pedestal}`)}
+              onDragStart={(event) => dragFrom(event, pedestal)}
+              onDragEnd={() => setLifting(null)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => drop(event, pedestal)}
               onClick={() => onPedestal(pedestal)}

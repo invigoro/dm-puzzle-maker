@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetIcons } from '../../kit/icons';
@@ -153,6 +153,47 @@ describe('pedestals checked when the players ask', () => {
     await setOn(user, 'Sickle', 3);
     await user.click(check());
     expect(await screen.findByText('That’s not it.', {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+});
+
+describe('dragging', () => {
+  /** What a drag carries, as a browser's would. */
+  function carrying() {
+    const data = new Map<string, string>();
+    return {
+      setData: (type: string, value: string) => data.set(type, value),
+      getData: (type: string) => data.get(type) ?? '',
+      setDragImage: vi.fn(),
+    };
+  }
+
+  it('drags an object off its pedestal, not the pedestal, to another pedestal or back to the floor', async () => {
+    const { user } = await open({ check: 'all' });
+    await setOn(user, 'Hammer', 1);
+    const offering = pedestal(1).querySelector('.offering');
+    const dataTransfer = carrying();
+    fireEvent.dragStart(pedestal(1), { dataTransfer });
+    expect(dataTransfer.setDragImage).toHaveBeenCalledWith(offering, 0, 0);
+    // It fades where it stood while it's dragged.
+    await waitFor(() => expect(pedestal(1)).toHaveClass('lifting'));
+    fireEvent.drop(pedestal(2), { dataTransfer });
+    fireEvent.dragEnd(pedestal(1), { dataTransfer });
+    expect(pedestal(1)).toHaveAccessibleName(/: empty$/);
+    expect(pedestal(1)).not.toHaveClass('lifting');
+    expect(pedestal(2)).toHaveAccessibleName(/holding Hammer$/);
+    const back = carrying();
+    fireEvent.dragStart(pedestal(2), { dataTransfer: back });
+    fireEvent.drop(screen.getByRole('group', { name: 'The floor' }), { dataTransfer: back });
+    expect(pedestal(2)).toHaveAccessibleName(/: empty$/);
+    expect(object('Hammer')).toBeInTheDocument();
+  });
+
+  it('drags an object from the floor onto a pedestal', async () => {
+    await open({ check: 'all' });
+    const dataTransfer = carrying();
+    fireEvent.dragStart(object('Rope'), { dataTransfer });
+    fireEvent.drop(pedestal(3), { dataTransfer });
+    expect(pedestal(3)).toHaveAccessibleName(/holding Rope$/);
   });
 });
 

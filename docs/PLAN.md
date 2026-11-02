@@ -753,7 +753,8 @@ send an other object that's the same as a pedestal's, as it would be right too. 
 with nothing in hand gives its object back, and Take them all back clears them, except when each is
 judged as it's placed: a right one then stays. A check that says which are right lights them until
 their objects move. An object taken from the floor leaves its place empty, so the rest stay put.
-Dragging works with a mouse; on a phone it's taps. Failing can come at the first wrong one, or
+Dragging works with a mouse, and an object dragged off a pedestal moves alone, fading where it
+stood; on a phone it's taps. Failing can come at the first wrong one, or
 after 2, 3 or 5. The example makes a link of about 870 characters, and eight pedestals with twelve
 other objects still fit in a Discord message.)*
 - The engine with tests: the answer, judging a set of objects whole or a pedestal at a time, how
