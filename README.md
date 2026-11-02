@@ -16,6 +16,13 @@ same way:
 - **Send it:** Copy player link, or Preview as player. The player link holds the puzzle as it starts,
   and fingerprints to check the answer against, never the answer itself. The page says how long the
   link is, and warns when it's too long for one Discord message.
+  - **Copy as a Discord link** copies it as `[title](link)`, which Discord shows as the puzzle's
+    title alone.
+  - **Shorten with is.gd** makes a short link, such as `https://is.gd/Ab3x9`, and copies it. It
+    sends the player link to [is.gd](https://is.gd/), a free link shortener, which keeps it for good.
+    That's the only time the site sends anything anywhere, and only when you ask. A short link opens
+    the puzzle as it was when shortened, so make another after a change. Once there is one, the
+    Discord link uses it.
 - **The page's own address** holds the puzzle, answer and all, so a bookmark brings it back. It's
   compressed, so it never spells the answer out, but don't send it to your players.
 - **Your puzzles:** every puzzle you make is saved in your browser as you make it, and listed on the

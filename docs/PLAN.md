@@ -78,8 +78,11 @@ Each kind lives in its own folder under `src/puzzles/`, with an entry in
   - the puzzle's words (its title, its introduction and the line for solving it), and storage in
     the browser
   - the page shells: the maker page keeps the design in its address, and adds the words and
-    **Send it** (Copy player link, Preview as player, the link's length, and a word about the
-    page's own link); the players' page shows the title and introduction above the kind's puzzle
+    **Send it** (Copy player link, Preview as player, Copy as a Discord link, Shorten with is.gd,
+    the link's length, and a word about the page's own link); the players' page shows the title and
+    introduction above the kind's puzzle
+  - sharing (`share.ts`): a player link as Discord shows a link, `[title](link)`, and shortened by
+    is.gd, which needs no key and answers pages from anywhere, and keeps the fragment
 
 Adding a kind of puzzle takes a folder and a registry entry, and nothing else.
 
@@ -462,7 +465,9 @@ their screen, and no link holds the floor at all.
   - set Settings → Pages → Source to GitHub Actions
   - set `daedalus.invigoro.me` as the custom domain, with a CNAME record for it pointing at
     `invigoro.github.io`
-- **Fully static.** Nothing is sent anywhere.
+- **Fully static.** Nothing is sent anywhere, except a player link to is.gd when the game master
+  asks for a short one. Only player links go, as is.gd keeps them for good, and they never hold
+  the answer.
 
 ## Project layout
 
@@ -486,6 +491,7 @@ src/
     icons.ts                     # pictures: loading, searching, crediting
     saved.ts                     # the game master's puzzles in this browser, and as a file
     kept.ts · seal.ts            # a player's progress per link; lines sealed with the answer
+    share.ts                     # a player link for Discord, or shortened by is.gd
   puzzles/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
@@ -659,6 +665,9 @@ its own, in this order.
   party that never shows the maze's edges. A hidden hazard shows itself once stood on, so it needs
   nothing kept beyond where the party has been. The 14 by 14 example, with three pictures, makes a
   link of about 760 characters.
+- Sending: Copy as a Discord link, which Discord shows by the puzzle's title, and Shorten with
+  is.gd. A short link is for the player link it was made from, so it goes when the design changes,
+  and the Discord link uses it once there is one.
 
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
