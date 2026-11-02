@@ -18,6 +18,13 @@ export const KINDS: readonly PuzzleKind[] = [
     maker: () => import('./word-guess/maker'),
     player: () => import('./word-guess/player'),
   },
+  {
+    id: 'maze',
+    name: 'Maze',
+    blurb: 'A maze to find the way out of, lit, by lantern light, or in the dark. Made at random or drawn by hand, with a line for each way out.',
+    maker: () => import('./maze/maker'),
+    player: () => import('./maze/player'),
+  },
 ];
 
 /** The kind of puzzle with this id, if there is one. */

@@ -78,6 +78,22 @@ answer. Only its letters count, in capitals, with accents taken off.
 - **The line for solving it** is sealed with the answer, so the link holds it but only the right
   answer opens it.
 
+### Maze
+
+A maze to find the way out of, seen from above.
+
+- **Making one:** small (8 by 8), medium (14) or large (20), or a size of your own from 4 to 30.
+  Passages long and winding, or many short dead ends, with no loops (one way through), a few or
+  many. 🎲 makes a new one.
+- **Drawing it:** click a wall to put it up or take it down, or set the way in, or add up to four
+  ways out, each with its own line: one leads on, another to the minotaur. The maker shows the
+  shortest way through to each, and says if one can't be reached.
+- **Light:** lit, so the whole maze shows; by lantern, so the players see the cells near them and
+  the passages they've walked stay drawn, like a map; or dark, so they see only the walls beside
+  them. Whatever the light, the link holds the whole maze, so a programmer could draw it.
+- **Playing:** move with the arrow keys (or WASD), by tapping the next cell, or by swiping. Steps
+  are counted, and where the party is and has been is kept in the browser.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

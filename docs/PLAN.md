@@ -20,8 +20,8 @@ Defiled Temple. Three new kinds of puzzle will follow:
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
 **Current phase:** Phase 5 (more kinds of puzzle). Phases 0 to 4 are done and live at
-https://daedalus.invigoro.me/, and so is the word guess (5a); the maze and the trapped floor are to
-come. See [Milestones](#milestones).
+https://daedalus.invigoro.me/, and so are the word guess (5a) and the maze (5b); the trapped floor
+is to come. See [Milestones](#milestones).
 
 ## The site
 
@@ -488,6 +488,10 @@ src/
       engine/                    # letters, hints' order, and marking (from the answer, or from fingerprints)
       GuessGame.tsx              # rows of tries, the keyboard or tiles, hints, and the lines
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
+    maze/
+      engine/                    # the grid and its numbered walls, making mazes, the way through, the lantern
+      MazeBoard.tsx · MazeGame.tsx   # the maze drawn from above; walking it
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
     MakerPage.tsx · WordsFields.tsx · Send.tsx   # the maker's shell: the address, the words, sending
@@ -584,7 +588,13 @@ its own, in this order.
   - The maker's warning beside letter-by-letter marking.
   - *Done when* a password door with six tries and letter-by-letter marking can be made, sent and
     solved, and so can a one-try riddle with tiles.
-- **5b. Maze.** See [Maze](#maze).
+- **5b. Maze.** See [Maze](#maze). *(done. Winding mazes come from a walk that backs up when it's
+  cornered, and branching ones grow outwards a wall at a time; loops are a few walls taken down
+  after. Drawing by hand keeps the walls flipped from the seed's maze, so a new seed starts afresh.
+  The lantern lights two steps along the passages, not through walls. A new size starts the ways
+  in and out again at the corners, as walls are numbered by size. Each maze link has a salt of its
+  own, just to keep its players' progress apart. Pictures in cells are left for later. A 14 by 14
+  link comes to about 520 characters.)*
   - Mazes made from a seed, with twistiness and loops, or drawn by hand, and the shortest way
     through.
   - The way in, the ways out with a line each, light (lit, lantern or dark), and pictures in cells.
@@ -614,6 +624,7 @@ its own, in this order.
 - Checking by the game master, for the first kind of puzzle that needs it.
 - More kinds of puzzle: a cipher wheel, sliding tiles, a combination lock, lights out.
 - Round labyrinths for the maze, in rings like the one on the favicon.
+- Pictures in maze cells, from the icon set: a statue, a fountain to steer by.
 - Word guess: tries that must be real words, from Sator's word lists.
 - Discs to print and cut out for the table, and mazes and floors to print as handouts.
 - Links to Sator (an anagram as a node) and Stele.

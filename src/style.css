@@ -20,6 +20,7 @@
   --engraved: #362b21;
   --engrave-light: rgba(255, 252, 242, 0.75);
   --stud-ink: #2c2116;
+  --fog: #2b2620;
   --gold: #a86f0c;
   --danger: #a3261b;
   --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
@@ -50,6 +51,7 @@
     --engraved: #eee6d6;
     --engrave-light: rgba(0, 0, 0, 0.6);
     --stud-ink: #1d150b;
+    --fog: #0b0e10;
     --gold: #f0bd55;
     --danger: #f08a7e;
   }
@@ -805,6 +807,120 @@ legend.label-text {
 
 .success.out {
   color: var(--muted);
+}
+
+/* A maze from above: stone floor, dark walls, fog where the party can't see. A cell is 20 units. */
+
+.maze {
+  display: block;
+  width: 100%;
+  max-width: 38rem;
+  max-height: 80vh;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Swipes move the token, so they mustn't scroll the page. */
+  touch-action: pinch-zoom;
+}
+
+/* Crisp edges, so no seams show between cells of fog. */
+.maze .cell {
+  fill: var(--stone-light);
+  shape-rendering: crispEdges;
+}
+
+.maze-game {
+  border-radius: 8px;
+  outline: none;
+}
+
+.maze-game:focus-visible {
+  box-shadow: 0 0 0 2px var(--line);
+}
+
+.maze .cell.near {
+  fill: var(--hub-light);
+}
+
+.maze .cell.fog {
+  fill: var(--fog);
+}
+
+.maze-game .maze .cell {
+  cursor: pointer;
+}
+
+.maze .walls {
+  fill: none;
+  stroke: var(--engraved);
+  stroke-width: 2.4;
+  stroke-linecap: square;
+}
+
+.maze .path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.45;
+}
+
+.maze .way-in {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.maze .way-out path {
+  fill: var(--bronze-dark);
+  stroke: var(--bronze-edge);
+  stroke-width: 1;
+}
+
+.maze .way-out text {
+  fill: var(--accent-ink);
+  font-family: var(--serif);
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.maze .token {
+  fill: var(--gold);
+  stroke: var(--bronze-edge);
+  stroke-width: 1.5;
+}
+
+/* Drawing the maze: open walls show faintly, and every wall can be clicked. */
+.maze.drawing .gap {
+  stroke: var(--engraved);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.3;
+}
+
+.maze .wall-hit {
+  stroke: transparent;
+  stroke-width: 7;
+  cursor: pointer;
+}
+
+.maze .wall-hit:hover {
+  stroke: var(--accent);
+  stroke-opacity: 0.4;
+}
+
+.exits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.exits li > input {
+  width: min(28rem, 70%);
+  margin-right: 0.5rem;
 }
 
 /* The discs. Board units are a disc's radius of 100. */
