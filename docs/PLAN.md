@@ -195,6 +195,9 @@ Sator's engine.
 
 - **The board:** drawn in SVG and filling the screen's width, with the game master's title and
   introduction above it.
+- **Where the names are read:** each spoke that meets at a goal contact has a channel sunk along
+  it, edged in gold, and the contact's stud has a gold ring, so the players can see where the
+  answer goes. It gives nothing away, as the goal contacts are the layout's, not the puzzle's.
 - **Moves:**
   - Tap a disc to turn it clockwise, Shift-click it to turn it back, or drag it round either way.
   - Tap a contact's ⇄ to swap.

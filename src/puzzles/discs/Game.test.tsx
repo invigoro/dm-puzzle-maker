@@ -64,6 +64,14 @@ describe('the game', () => {
     expect(new Set(turnOf(1))).toEqual(new Set([240]));
   });
 
+  it('marks where the names are read: a channel down each spoke that meets there, and a ring round its stud', () => {
+    play(solved);
+    expect(disc('centre').querySelectorAll('.lane')).toHaveLength(6);
+    expect(disc('top').querySelectorAll('.lane')).toHaveLength(1);
+    const ringed = contacts().flatMap((contact, c) => (contact.querySelector('.ring') ? [c] : []));
+    expect(ringed).toEqual([...FLOWER.goals].sort((x, y) => x - y));
+  });
+
   it('swaps the halves where two discs meet', async () => {
     const user = play(solved);
     const [first] = contacts();

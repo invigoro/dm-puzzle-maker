@@ -20,6 +20,7 @@
   --engraved: #362b21;
   --engrave-light: rgba(255, 252, 242, 0.75);
   --stud-ink: #2c2116;
+  --lane: #b39a6c;
   --fog: #2b2620;
   --gold: #a86f0c;
   --danger: #a3261b;
@@ -51,6 +52,7 @@
     --engraved: #eee6d6;
     --engrave-light: rgba(0, 0, 0, 0.6);
     --stud-ink: #1d150b;
+    --lane: #161b20;
     --fog: #0b0e10;
     --gold: #f0bd55;
     --danger: #f08a7e;
@@ -1183,6 +1185,29 @@ legend.label-text {
   opacity: 0.16;
 }
 
+/*
+ * The channels where the names are read, sunk into the stone and edged in gold. Each part is
+ * drawn solid and the whole made faint, so where channels meet they run together.
+ */
+.board .lanes {
+  opacity: 0.42;
+}
+
+.board .lane-edge,
+.board .lane {
+  stroke-linecap: round;
+}
+
+.board .lane-edge {
+  stroke: var(--gold);
+  stroke-width: 25;
+}
+
+.board .lane {
+  stroke: var(--lane);
+  stroke-width: 21;
+}
+
 .board .shadows,
 .board .grain,
 .board .pieces,
@@ -1236,6 +1261,13 @@ legend.label-text {
 .board .contact .dot {
   stroke: var(--bronze-edge);
   stroke-width: 1.2;
+}
+
+/* A gold ring round each stud where a name is read. */
+.board .contact .ring {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
 }
 
 .board .contact .arrows {

@@ -10,6 +10,9 @@ const DURATION = 280;
 /** Room kept clear at a disc's rim for the swap buttons, and round its hub, on a disc of radius 100. */
 const RIM = 15;
 const HUB = 16;
+/** Where the channel for a name runs along a spoke where names are read: under its letters, from the hub's room to the rim's. */
+const LANE_IN = HUB;
+const LANE_OUT = 100 - RIM;
 /** The most room a letter takes along its spoke; longer halves get less, so they fit. */
 const MOST_ADVANCE = 14;
 /** A letter's size for the room it takes along its spoke: a capital's height, and a little space. */
@@ -198,6 +201,11 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
       {layout.discs.map((disc, d) => {
         const spokes = Array.from({ length: layout.spokes }, (_, spoke) => positionOf(layout, d, spoke));
         const turned = turning?.disc === d ? -turning.by * step * (1 - t) : 0;
+        const lanes = spokes.filter((position) => goals.has(position)).map((position) => {
+          const along = direction(angleOf(layout, position));
+          const [from, to] = [LANE_IN, LANE_OUT].map((reach) => (reach * disc.r) / 100);
+          return { position, x1: disc.x + from * along.x, y1: disc.y + from * along.y, x2: disc.x + to * along.x, y2: disc.y + to * along.y };
+        });
         return (
           <g
             key={d}
@@ -215,6 +223,12 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
             <circle className="face" cx={disc.x} cy={disc.y} r={disc.r - 2} fill={url(d === layout.hub ? 'hub' : 'stone')} stroke={url('bronze')} />
             <circle className="grain" cx={disc.x} cy={disc.y} r={disc.r - 5} fill={url('grain')} />
             <circle className="bevel" cx={disc.x} cy={disc.y} r={disc.r - 5.5} />
+            {/* Where the names are read: a channel down each such spoke, edged in gold, the edges drawn first so channels that meet run together. */}
+            {lanes.length > 0 && (
+              <g className="lanes">
+                {['lane-edge', 'lane'].flatMap((part) => lanes.map(({ position, ...ends }) => <line key={`${part}-${position}`} className={part} {...ends} />))}
+              </g>
+            )}
             <g transform={`rotate(${turned} ${disc.x} ${disc.y})`}>
               {spokes.map((position) => {
                 const along = direction(angleOf(layout, position));
@@ -266,6 +280,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
         >
           {/* Wide enough for a finger, and still clear of the next contact, 100 units round the rim. */}
           <circle className="hit" cx={contact.x} cy={contact.y} r={20} />
+          {goals.has(contact.a) && <circle className="ring" cx={contact.x} cy={contact.y} r={10.5} />}
           <circle className="dot" cx={contact.x} cy={contact.y} r={7.5} fill={url('bronze')} />
           <path
             className="arrows"

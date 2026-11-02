@@ -34,6 +34,8 @@ names are spelled out in order, from where the arrow points:
 - **Three discs**, as in Baldur's Gate 3's Defiled Temple: three names, where the three discs meet.
   A quick puzzle.
 
+- **Where the names are read:** the two spokes that meet there have a channel sunk along them,
+  edged in gold, and their stud has a gold ring.
 - **Lettering:** each half reads down its spoke from its own disc's hub, every letter standing on
   the rim. So the two halves at a contact stand foot to foot, and a name counts either way round.
 - **Moves:** tap a disc to turn it clockwise, Shift-click it to turn it back, or drag it round either
