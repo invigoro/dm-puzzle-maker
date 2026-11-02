@@ -8,6 +8,7 @@ import { swap, turn, type Board } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { solvedBoard } from './engine/scramble';
 import { Game } from './Game';
+import type { Progress } from './puzzle';
 
 afterEach(cleanup);
 
@@ -128,7 +129,7 @@ describe('the game', () => {
         pieces={pieces}
         start={solved}
         initial={{ board: start, moves: [{ kind: 'turn', disc: 2, by: 1 }] }}
-        onProgress={(_, moves) => kept.push(moves.length)}
+        onProgress={(progress) => kept.push(progress.moves.length)}
         isSolved={isSolved}
         mark
         success={SUCCESS}
@@ -144,5 +145,65 @@ describe('the game', () => {
   it('says it’s solved, when the game master gave no line for it', async () => {
     render(<Game layout={FLOWER} pieces={pieces} start={solved} isSolved={isSolved} mark success="" />);
     expect(await screen.findByText('Solved.')).toBeInTheDocument();
+  });
+});
+
+describe('checking the answer when asked', () => {
+  const WRONG = 'Darts fly from the walls.';
+  const board = () => document.querySelector('svg.board')!;
+
+  function playAsked(start: Board, props: Partial<Parameters<typeof Game>[0]> = {}) {
+    const user = userEvent.setup();
+    render(<Game layout={FLOWER} pieces={pieces} start={start} isSolved={isSolved} mark success={SUCCESS} checking="asked" wrongLine={WRONG} {...props} />);
+    return user;
+  }
+  const check = () => screen.getByRole('button', { name: 'Check the answer' });
+
+  it('doesn’t solve itself, even when the names are right, until the players check', async () => {
+    const user = playAsked(solved);
+    // Long enough for a check after every move to have come back.
+    await new Promise((done) => setTimeout(done, 50));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(board()).not.toHaveClass('solved');
+    await user.click(check());
+    expect(await screen.findByText(SUCCESS)).toBeInTheDocument();
+    expect(board()).toHaveClass('solved');
+    expect(check()).toBeDisabled();
+  });
+
+  it('says the game master’s line for a wrong check, and counts it, once for each board', async () => {
+    const user = playAsked(turn(FLOWER, solved, 2, 1));
+    expect(screen.getByText('0 moves, 0 wrong checks')).toBeInTheDocument();
+    await user.click(check());
+    expect(await screen.findByText(WRONG)).toBeInTheDocument();
+    expect(screen.getByText('0 moves, 1 wrong check')).toBeInTheDocument();
+    // The same board would say the same again.
+    expect(check()).toBeDisabled();
+    await user.keyboard('{Shift>}');
+    await user.click(disc('upper right'));
+    await user.keyboard('{/Shift}');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    await user.click(check());
+    expect(await screen.findByText(SUCCESS)).toBeInTheDocument();
+    expect(screen.getByText('1 move, 1 wrong check')).toBeInTheDocument();
+  });
+
+  it('says “That’s not it” for a wrong check, when the game master gave no line for it', async () => {
+    const user = playAsked(turn(FLOWER, solved, 2, 1), { wrongLine: '' });
+    await user.click(check());
+    expect(await screen.findByText('That’s not it.')).toBeInTheDocument();
+  });
+
+  it('keeps the count of wrong checks, and a right one, with the board', async () => {
+    const kept: Progress[] = [];
+    const user = playAsked(turn(FLOWER, solved, 2, 1), { initial: { board: turn(FLOWER, solved, 2, 1), moves: [], wrong: 2 }, onProgress: (progress) => kept.push(progress) });
+    expect(screen.getByText('0 moves, 2 wrong checks')).toBeInTheDocument();
+    await user.click(check());
+    await screen.findByText(WRONG);
+    expect(kept.at(-1)).toMatchObject({ wrong: 3, solved: false });
+    cleanup();
+    playAsked(solved, { initial: { board: solved, moves: [], wrong: 3, solved: true } });
+    expect(screen.getByText(SUCCESS)).toBeInTheDocument();
+    expect(board()).toHaveClass('solved');
   });
 });

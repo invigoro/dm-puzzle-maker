@@ -84,6 +84,15 @@ describe('readDesign', () => {
     expect(read.mix).toBe('full');
     expect(read.anyStart).toBe(false);
     expect(read.seed).toBe(1);
+    // Made before checking on asking, it checks after every move.
+    expect(read.check).toBe('auto');
+    expect(read.wrongLine).toBe('');
+  });
+
+  it('keeps checking on asking, and what a wrong check says, up to its length', () => {
+    const asked: DiscsDesign = { ...design, check: 'asked', wrongLine: 'Darts fly from the walls.' };
+    expect(readDesign(JSON.parse(JSON.stringify(asked)))).toEqual(asked);
+    expect(readDesign({ ...asked, check: 'sometimes', wrongLine: 'x'.repeat(300) })).toMatchObject({ check: 'auto', wrongLine: 'x'.repeat(200) });
   });
 
   it('keeps a start set by hand, and falls back to a scramble without a board for it', () => {

@@ -26,7 +26,13 @@ export interface DiscsPuzzle {
   answers: string[];
   /** Fingerprints of each name where it glows, when the game master lets names glow as they come right. */
   glows?: string[];
+  /** Only there when the board is checked when the players ask, not after every move: then what a wrong check says. */
+  check?: 'asked';
+  wrong?: string;
 }
+
+/** The longest line a wrong check says. */
+export const LONGEST_WRONG = 200;
 
 const NO_WORDS: Words = { title: '', intro: '', success: '' };
 
@@ -46,6 +52,10 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   const { icons, glows } = input;
   if (icons !== undefined && (!Array.isArray(icons) || icons.length !== pieces.length || !icons.every((icon) => icon === '' || isIconName(icon)))) return null;
   if (glows !== undefined && (!Array.isArray(glows) || glows.length > most || !glows.every((glow) => textIn(glow, 64)))) return null;
+  // Links made before checking by asking check after every move.
+  const { check, wrong } = input;
+  if (check !== undefined && check !== 'asked') return null;
+  if (wrong !== undefined && !textIn(wrong, LONGEST_WRONG)) return null;
   return {
     v: 1,
     words: readWords(input.words, NO_WORDS),
@@ -56,6 +66,7 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
     salt,
     answers,
     ...(glows ? { glows } : {}),
+    ...(check === 'asked' ? { check, wrong: typeof wrong === 'string' ? wrong : '' } : {}),
   };
 }
 
@@ -92,6 +103,9 @@ export async function glowing(puzzle: DiscsPuzzle, board: Board, seen = new Map<
 export interface Progress {
   board: Board;
   moves: Move[];
+  /** When the board is checked on asking: how many checks were wrong, and whether one has been right. */
+  wrong?: number;
+  solved?: boolean;
 }
 
 /** Progress from untrusted data, on a layout, or null if it isn't any. */
@@ -99,7 +113,14 @@ export function readProgress(layout: Layout, data: unknown): Progress | null {
   const input = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
   const board = readBoard(layout, input.board);
   const moves = readMoves(layout, input.moves);
-  return board && moves ? { board, moves } : null;
+  if (!board || !moves) return null;
+  const { wrong } = input;
+  return {
+    board,
+    moves,
+    ...(Number.isInteger(wrong) && (wrong as number) >= 0 ? { wrong: wrong as number } : {}),
+    ...(input.solved === true ? { solved: true } : {}),
+  };
 }
 
 /** Where a player's progress on a puzzle is kept: each link has its own salt, so its own place. */

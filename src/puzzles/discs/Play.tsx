@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { load, store } from '../../kit/storage';
 import { IconCredit } from '../../ui/IconCredit';
-import type { Board, Move } from './engine/board';
+import type { Board } from './engine/board';
 import { Game } from './Game';
-import { glowing, isRight, layoutIn, piecesIn, progressKey, readProgress, type DiscsPuzzle } from './puzzle';
+import { glowing, isRight, layoutIn, piecesIn, progressKey, readProgress, type DiscsPuzzle, type Progress } from './puzzle';
 
 /** The players' side: the board as the link starts it, checked against its fingerprints, and kept in this browser as they go. */
 export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
@@ -13,11 +13,12 @@ export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
   const start = useMemo(() => pieces.map((_, piece) => piece), [pieces]);
   const isSolved = useCallback((board: Board) => isRight(puzzle, board), [puzzle]);
   const [initial] = useState(() => readProgress(layout, load(progressKey(puzzle))));
-  const keep = useCallback((board: Board, moves: readonly Move[]) => store(progressKey(puzzle), { board, moves }), [puzzle]);
+  const keep = useCallback((progress: Progress) => store(progressKey(puzzle), progress), [puzzle]);
   // Each contact's fingerprint is made once, however often the board comes back to it.
+  // Names never glow when the players check by asking, whatever a link says.
   const glow = useMemo(() => {
     const seen = new Map<string, Promise<string>>();
-    return puzzle.glows ? (board: Board) => glowing(puzzle, board, seen) : undefined;
+    return puzzle.glows && !puzzle.check ? (board: Board) => glowing(puzzle, board, seen) : undefined;
   }, [puzzle]);
   return (
     <>
@@ -31,6 +32,8 @@ export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
         isSolved={isSolved}
         mark={puzzle.mark}
         success={puzzle.words.success}
+        checking={puzzle.check ?? 'auto'}
+        wrongLine={puzzle.wrong}
       />
       <IconCredit names={puzzle.icons?.filter(Boolean) ?? []} />
     </>

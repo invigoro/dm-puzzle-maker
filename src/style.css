@@ -811,6 +811,11 @@ legend.label-text {
   color: var(--muted);
 }
 
+/* What a wrong check of the discs says: the trap it sets off, say. */
+.success.wrong {
+  color: var(--danger);
+}
+
 /* A maze from above: stone floor, dark walls, fog where the party can't see. A cell is 20 units. */
 
 .maze {

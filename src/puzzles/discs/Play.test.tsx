@@ -115,6 +115,26 @@ describe('the players’ page', () => {
     expect(document.querySelector('.board.solved')).toBeNull();
   });
 
+  it('checks the board only when the players ask, and keeps the count of wrong checks', async () => {
+    const asked: DiscsDesign = { ...design, glow: true, check: 'asked', wrongLine: 'The sluice gate slams: 1d6 bludgeoning.' };
+    const link = readPuzzle(JSON.parse(JSON.stringify(await toPuzzle(asked))))!;
+    const { user } = await openPlayer(link);
+    const check = () => screen.getByRole('button', { name: 'Check the answer' });
+    await user.click(check());
+    expect(await screen.findByText(asked.wrongLine, {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByText('0 moves, 1 wrong check')).toBeInTheDocument();
+    // No names glow, though the game master asked for it, as they'd give the answer away.
+    expect(document.querySelectorAll('.board .piece.lit')).toHaveLength(0);
+    await solve(user, asked, link);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    await user.click(check());
+    expect(await screen.findByText(design.words.success, {}, { timeout: 3000 })).toBeInTheDocument();
+    cleanup();
+    await openPlayer(link);
+    expect(screen.getByText('1 move, 1 wrong check')).toBeInTheDocument();
+    expect(screen.getByText(design.words.success)).toBeInTheDocument();
+  });
+
   it('keeps a player’s board in the browser, for when they come back', async () => {
     const { user } = await openPlayer();
     await user.click(screen.getByRole('button', { name: /^Turn the bottom disc:/ }));

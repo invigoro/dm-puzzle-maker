@@ -210,6 +210,13 @@ Sator's engine.
 - **Controls:** Undo, Start over, and a count of moves.
 - **Solving:** when the board is solved, the six names light up and the game master's line shows
   ("The great door rumbles open.").
+- **Checking on asking,** if the game master chooses it: the board isn't checked after every move,
+  but when the players press Check the answer. A right check solves it as above. A wrong one says
+  the game master's line for it ("The discs grind back, and darts fly from the walls"), or "That's
+  not it", and is counted beside the moves. Each board is checked once, so the button waits for a
+  move. The count, and a right check, are kept with the board. The link holds the same fingerprints
+  as ever, so a programmer could check without asking; the button only keeps honest players
+  honest.
 - **Saving:** progress is kept in the browser, so a reload, or a week between sessions, doesn't lose
   the board.
 - **No shared board:** with no server, each player has their own copy. One player can drive and
@@ -224,7 +231,10 @@ Sator's engine.
 - **Glow:** off by default. It lights each name gold as it comes right. The player link then holds a
   fingerprint for each name, sorted: of the pair and its contact, or with any start, the pair
   alone. The players' page checks each centre contact after every move, making each contact's
-  fingerprint once.
+  fingerprint once. Never with checking on asking, as it would tell the players a name at a time:
+  the box is turned off, and the link holds no glows.
+- **Checking:** after every move (the default), or when the players ask, with a line for a wrong
+  check. Links made before there was a choice check after every move.
 - **Start from the example:** while the names are blank, a button fills in the example's six
   made-up towns and its words, to see how it works.
 - **Filler:** 30 boxes. Blank ones show, faintly, the half they'll be filled with, with 🎲 for
@@ -668,6 +678,8 @@ its own, in this order.
 - Sending: Copy as a Discord link, which Discord shows by the puzzle's title, and Shorten with
   is.gd. A short link is for the player link it was made from, so it goes when the design changes,
   and the Discord link uses it once there is one.
+- The discs: checking on asking, so each wrong guess can cost the players, with the game master's
+  line for a wrong check and a count of them.
 
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.

@@ -189,4 +189,24 @@ describe('the turning discs maker', () => {
     await user.click(screen.getByRole('checkbox', { name: /Any start/ }));
     expect(document.querySelector('.board .mark')).toBeNull();
   });
+
+  it('checks the answer only when the players ask, with a line for a wrong check, and no glow', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('button', { name: 'Start from the example' }));
+    await user.click(screen.getByRole('checkbox', { name: /^Glow:/ }));
+    expect(within(screen.getByRole('group', { name: 'Try it' })).queryByRole('button', { name: 'Check the answer' })).toBeNull();
+    await user.click(screen.getByRole('radio', { name: /^When they ask:/ }));
+    expect(screen.getByRole('checkbox', { name: /^Glow:/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /^Glow:/ })).not.toBeChecked();
+    await user.type(screen.getByRole('textbox', { name: 'A wrong check says' }), 'Darts fly.');
+    const trial = screen.getByRole('group', { name: 'Try it' });
+    await user.click(within(trial).getByRole('button', { name: 'Check the answer' }));
+    expect(await within(trial).findByText('Darts fly.')).toBeInTheDocument();
+    await linkReady();
+    await user.click(copyButton());
+    const route = await readRoute(new URL(await navigator.clipboard.readText()).hash, ['discs']);
+    const puzzle = readPuzzle(route.page === 'play' ? route.data : null);
+    expect(puzzle).toMatchObject({ check: 'asked', wrong: 'Darts fly.' });
+    expect(puzzle?.glows).toBeUndefined();
+  });
 });

@@ -8,7 +8,7 @@ import { readBoard, type Board } from './engine/board';
 import { fillBlanks } from './engine/filler';
 import { FLOWER, layoutById, LAYOUTS, positionCount, type Layout, type LayoutId } from './engine/layout';
 import { scramble, solvedBoard, type Mix } from './engine/scramble';
-import type { DiscsPuzzle } from './puzzle';
+import { LONGEST_WRONG, type DiscsPuzzle } from './puzzle';
 
 /** How many names a layout's answer has, and how many of its spokes are filler. */
 export const pairCount = (layout: Layout) => layout.goals.length;
@@ -39,8 +39,12 @@ export interface DiscsDesign {
   filler: Piece[];
   /** Whether the names count in order from any of their contacts, not just the mark's. */
   anyStart: boolean;
-  /** Whether each name lights up as it comes right: easier, and quicker to guess at. */
+  /** Whether each name lights up as it comes right: easier, and quicker to guess at. Never when checking on asking. */
   glow: boolean;
+  /** Whether the board is checked after every move, so it solves itself, or only when the players ask. */
+  check: Checking;
+  /** What a wrong check says, when the players check by asking: the trap it sets off, say. */
+  wrongLine: string;
   mix: Start;
   /** The board set by hand, numbering pieces as `piecesOf` does: only when `mix` is 'hand'. */
   start?: number[];
@@ -48,6 +52,9 @@ export interface DiscsDesign {
   fillSeed: number;
   seed: number;
 }
+
+/** When the board is checked: after every move, or when the players ask, so a wrong check can cost them. */
+export type Checking = 'auto' | 'asked';
 
 export const NEW_WORDS: Words = { title: '', intro: '', success: 'The discs lock into place.' };
 
@@ -62,6 +69,8 @@ export function newDesign(): DiscsDesign {
     filler: Array.from({ length: MOST_FILLER }, blank),
     anyStart: false,
     glow: false,
+    check: 'auto',
+    wrongLine: '',
     mix: 'full',
     fillSeed: randomSeed(),
     seed: randomSeed(),
@@ -104,6 +113,8 @@ export function readDesign(data: unknown): DiscsDesign | null {
     filler: Array.from({ length: MOST_FILLER }, (_, i) => halfIn(filler[i])),
     anyStart: input.anyStart === true,
     glow: input.glow === true,
+    check: input.check === 'asked' ? 'asked' : 'auto',
+    wrongLine: typeof input.wrongLine === 'string' ? input.wrongLine.slice(0, LONGEST_WRONG) : '',
     mix,
     ...(start ? { start: [...start] } : {}),
     fillSeed: seedIn(input.fillSeed),
@@ -136,6 +147,9 @@ export function problemsOf(design: DiscsDesign): string[] {
   return pairs.some((pair) => pair.some(isBlank)) ? [`Give both halves of all ${inWords(pairs.length)} names words or a picture.`] : [];
 }
 
+/** Whether names glow as they come right: when the game master says so, and the board is checked after every move. */
+export const glowsIn = (design: DiscsDesign) => design.glow && design.check === 'auto';
+
 /** What a player link holds: the pieces as they start, and fingerprints of the answers that count. */
 export async function toPuzzle(design: DiscsDesign): Promise<DiscsPuzzle> {
   const content = contentOf(design);
@@ -153,7 +167,8 @@ export async function toPuzzle(design: DiscsDesign): Promise<DiscsPuzzle> {
     mark: !design.anyStart,
     salt,
     answers: await Promise.all(answerKeys(content, design.anyStart).map((key) => fingerprint(key, salt))),
-    // Sorted, so their order says nothing.
-    ...(design.glow ? { glows: (await Promise.all(glowKeys(content, design.anyStart).map((key) => fingerprint(key, salt)))).sort() } : {}),
+    // Sorted, so their order says nothing. Names never glow when the players check by asking, as that would tell them a name at a time.
+    ...(glowsIn(design) ? { glows: (await Promise.all(glowKeys(content, design.anyStart).map((key) => fingerprint(key, salt)))).sort() } : {}),
+    ...(design.check === 'asked' ? { check: 'asked' as const, wrong: design.wrongLine.trim() } : {}),
   };
 }

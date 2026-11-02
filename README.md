@@ -48,7 +48,11 @@ names are spelled out in order, from where the arrow points:
 - **Moves:** tap a disc to turn it clockwise, Shift-click it to turn it back, or drag it round either
   way. Tap the ⇄ where two discs meet to swap the halves there. From the keyboard, Tab picks a disc
   or a contact, the arrow keys turn and Enter swaps. **Undo** and **Start over** are below the board.
-- **Solving:** a solved board lights up the names, and shows the line for solving it.
+- **Solving:** a solved board lights up the names, and shows the line for solving it. Or, if you
+  choose, the board is checked only when the players press **Check the answer**, so they can't just
+  turn until it's right. A wrong check says a line of yours (the trap it sets off, say), and the
+  page counts wrong checks, kept in their browser. A board can't be checked twice without a move
+  between.
 - **Making one:**
   - **The discs:** three or seven, each drawn small. The names and filler follow the choice, and
     any beyond its count are kept aside in case you change back.
@@ -68,6 +72,9 @@ names are spelled out in order, from where the arrow points:
     Or **set it by hand**: turn and swap a board of its own until it's as the players should find
     it, starting from the scramble, from solved, or from a fresh scramble. The page says how many
     names start in their places.
+  - **Checking:** after every move, so the board solves itself, or only when the players ask, with
+    a line for a wrong check. Names never glow when they check by asking, as that would tell them
+    the answer a name at a time.
   - **Try it:** the board as the players will see it, to play, or solved.
 
 ### Word guess

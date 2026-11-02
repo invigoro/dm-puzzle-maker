@@ -9,6 +9,7 @@ import {
   contentOf,
   fillerCount,
   fillerOf,
+  glowsIn,
   inWords,
   layoutOfDesign,
   MOST_FILLER,
@@ -26,6 +27,7 @@ import { play, type Board as Pieces, type Move } from './engine/board';
 import { LAYOUTS, type Layout, type LayoutId } from './engine/layout';
 import { EXAMPLES } from './example';
 import { Game } from './Game';
+import { LONGEST_WRONG } from './puzzle';
 
 /** Past this many letters, a half's letters are set smaller to fit its spoke. */
 const ROOMY = 7;
@@ -71,12 +73,13 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
   const start = useMemo(() => startOf(design), [design]);
   const keys = useMemo(() => answerKeys(content, design.anyStart), [content, design.anyStart]);
   const isSolved = useCallback(async (board: Pieces) => keys.includes(answerKey(layout, pieces, board)), [keys, layout, pieces]);
+  const glows = glowsIn(design);
   const glowing = useMemo(
-    () => (design.glow ? async (board: Pieces) => lit(layout, content, board, design.anyStart) : undefined),
-    [design.glow, design.anyStart, layout, content],
+    () => (glows ? async (board: Pieces) => lit(layout, content, board, design.anyStart) : undefined),
+    [glows, design.anyStart, layout, content],
   );
-  // The board to try starts again whenever what's on it changes.
-  const trial = JSON.stringify([layout.id, start, pieces.map(keyOf), design.anyStart]);
+  // The board to try starts again whenever what's on it changes, or how it's checked.
+  const trial = JSON.stringify([layout.id, start, pieces.map(keyOf), design.anyStart, design.check]);
 
   const blank = pairs.every((pair) => pair.every(isBlank));
   const long = pieces.some((piece) => [...wordsOf(piece)].length > ROOMY);
@@ -211,10 +214,11 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
           </span>
         </label>
         <label className="check">
-          <input type="checkbox" checked={design.glow} onChange={(event) => set({ glow: event.target.checked })} />
+          <input type="checkbox" checked={glows} disabled={design.check === 'asked'} onChange={(event) => set({ glow: event.target.checked })} />
           <span>
             <strong>Glow:</strong> light each name as it comes right. It makes the puzzle easier, and a determined player
             could test names one contact at a time.
+            {design.check === 'asked' && ' Not when they check the answer by asking, as it would tell them a name at a time.'}
           </span>
         </label>
         {blank && (
@@ -293,6 +297,45 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
       </section>
 
       <section className="panel">
+        <h2>Checking</h2>
+        <div role="radiogroup" aria-label="Checking the answer">
+          <label className="check">
+            <input type="radio" name={`${id}-check`} checked={design.check === 'auto'} onChange={() => set({ check: 'auto' })} />
+            <span>
+              <strong>After every move:</strong> the board solves itself as soon as the names are right, so the players can
+              turn it until they are.
+            </span>
+          </label>
+          <label className="check">
+            <input type="radio" name={`${id}-check`} checked={design.check === 'asked'} onChange={() => set({ check: 'asked' })} />
+            <span>
+              <strong>When they ask:</strong> they press Check the answer, and hear right or wrong. Each wrong check can cost
+              them, so they’ll think before they guess.
+            </span>
+          </label>
+        </div>
+        {design.check === 'asked' && (
+          <>
+            <div className="field">
+              <label htmlFor={`${id}-wrong`}>A wrong check says</label>
+              <input
+                id={`${id}-wrong`}
+                value={design.wrongLine}
+                maxLength={LONGEST_WRONG}
+                placeholder="The discs grind back, and darts fly from the walls."
+                onChange={(event) => set({ wrongLine: event.target.value })}
+              />
+            </div>
+            <p className="hint">
+              Left blank, it says “That’s not it.” The page counts the wrong checks, and keeps the count in the players’
+              browser. A board can’t be checked twice without a move between. A programmer could still check the board
+              from the player link without asking.
+            </p>
+          </>
+        )}
+      </section>
+
+      <section className="panel">
         <h2>Try it</h2>
         <p className="hint">The board as your players will first see it. Turning it here changes nothing in the puzzle.</p>
         {long && <p className="hint">Halves longer than {ROOMY} letters make every half’s letters smaller, to fit.</p>}
@@ -313,6 +356,8 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
               glowing={glowing}
               mark={!design.anyStart}
               success={design.words.success}
+              checking={design.check}
+              wrongLine={design.wrongLine}
             />
           )}
         </div>

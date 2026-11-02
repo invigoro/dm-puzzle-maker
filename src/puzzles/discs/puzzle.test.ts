@@ -38,6 +38,8 @@ describe('readPuzzle', () => {
       { ...puzzle, icons: ['stone-tower'] },
       { ...puzzle, icons: puzzle.pieces.map(() => '../../index') },
       { ...puzzle, icons: 'stone-tower' },
+      { ...puzzle, check: 'sometimes' },
+      { ...puzzle, check: 'asked', wrong: 'X'.repeat(201) },
       null,
       [],
       'puzzle',
@@ -51,6 +53,17 @@ describe('readPuzzle', () => {
     expect(readPuzzle({ ...puzzle, icons })?.icons).toEqual(icons);
   });
 
+  it('checks on asking, with no glow, when the game master says so', async () => {
+    const asked = readPuzzle(JSON.parse(JSON.stringify(await toPuzzle({ ...design, glow: true, check: 'asked', wrongLine: ' Darts fly. ' }))))!;
+    expect(asked).toMatchObject({ check: 'asked', wrong: 'Darts fly.' });
+    // Glowing names would tell the players a name at a time.
+    expect(asked.glows).toBeUndefined();
+    // A link made before checking on asking checks after every move.
+    const before = await sent();
+    expect(before.check).toBeUndefined();
+    expect(readPuzzle({ ...before, check: 'asked' })).toMatchObject({ check: 'asked', wrong: '' });
+  });
+
   it('leaves out words that aren’t text', async () => {
     expect(readPuzzle({ ...(await sent()), words: { title: 7 } })!.words).toEqual({ title: '', intro: '', success: '' });
   });
@@ -62,6 +75,12 @@ describe('progress', () => {
   it('reads back a board and its moves', () => {
     const progress = { board, moves: [{ kind: 'turn', disc: 1, by: 1 }] };
     expect(readProgress(FLOWER, JSON.parse(JSON.stringify(progress)))).toEqual(progress);
+  });
+
+  it('reads back how many checks were wrong, and whether one was right', () => {
+    const progress = { board, moves: [], wrong: 2, solved: true };
+    expect(readProgress(FLOWER, JSON.parse(JSON.stringify(progress)))).toEqual(progress);
+    expect(readProgress(FLOWER, { ...progress, wrong: -1, solved: 'yes' })).toEqual({ board, moves: [] });
   });
 
   it('turns away anything else', () => {
