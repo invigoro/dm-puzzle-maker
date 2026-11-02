@@ -33,6 +33,14 @@ export const KINDS: readonly PuzzleKind[] = [
     maker: () => import('./trapped-floor/maker'),
     player: () => import('./trapped-floor/player'),
   },
+  {
+    id: 'pedestals',
+    name: 'Pedestals',
+    blurb:
+      'Pedestals, each with a riddle, and objects about the room to choose among: the players set the right one on each. A wrong one can cost them.',
+    maker: () => import('./pedestals/maker'),
+    player: () => import('./pedestals/player'),
+  },
 ];
 
 /** The kind of puzzle with this id, if there is one. */

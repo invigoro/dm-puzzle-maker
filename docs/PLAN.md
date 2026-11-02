@@ -17,14 +17,13 @@ kinds of puzzle followed:
 - a [maze](#maze) to find the way out of
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
-A fifth is planned: [pedestals](#pedestals), each with a riddle, and objects to choose among and
-set on them.
+A fifth followed: [pedestals](#pedestals), each with a riddle, and objects to choose among and set
+on them.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 5 are done and live at https://daedalus.invigoro.me/. Phase 6,
-the pedestals, is planned. What comes next is Tim's to choose, from the milestones and backlog under
-[Milestones](#milestones), or elsewhere.
+**Current phase:** none. Phases 0 to 6 are done and live at https://daedalus.invigoro.me/. What
+comes next is Tim's to choose, from the backlog under [Milestones](#milestones), or elsewhere.
 
 ## The site
 
@@ -467,7 +466,7 @@ their screen, and no link holds the floor at all.
 
 ## Pedestals
 
-*(Phase 6, planned)* A room of pedestals, each with a riddle cut into it, and objects about the
+*(Phase 6)* A room of pedestals, each with a riddle cut into it, and objects about the
 room. The players choose the right object for each pedestal and set it there. A riddle reads "Place
 the greatest weapon", and among a sword, a war axe and an olive branch, the olive branch is right.
 It lives in `src/puzzles/pedestals/`, with the id `pedestals`.
@@ -593,6 +592,10 @@ src/
     trapped-floor/
       engine/                    # the room and its counts, placing traps, the fair-floor solver, masking
       FloorGame.tsx              # the floor of squares: stepping, chalk marks, sprung traps
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
+    pedestals/
+      engine/                    # riddles and objects, the answer's keys, placing, the floor's scatter
+      Room.tsx                   # the pedestals and the floor: placing, checking, the count
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
@@ -744,7 +747,15 @@ its own, in this order.
 - The discs: checking on asking, so each wrong guess can cost the players, with the game master's
   line for a wrong check and a count of them.
 
-**Phase 6: Pedestals.** See [Pedestals](#pedestals). *(planned)*
+**Phase 6: Pedestals.** See [Pedestals](#pedestals). *(done. Two objects with the same words,
+whatever their case, and the same picture are the same object, so either counts; the maker won't
+send an other object that's the same as a pedestal's, as it would be right too. A pedestal tapped
+with nothing in hand gives its object back, and Take them all back clears them, except when each is
+judged as it's placed: a right one then stays. A check that says which are right lights them until
+their objects move. An object taken from the floor leaves its place empty, so the rest stay put.
+Dragging works with a mouse; on a phone it's taps. Failing can come at the first wrong one, or
+after 2, 3 or 5. The example makes a link of about 870 characters, and eight pedestals with twelve
+other objects still fit in a Discord message.)*
 - The engine with tests: the answer, judging a set of objects whole or a pedestal at a time, how
   many and which are right, and the objects' scatter from a seed.
 - The maker: the pedestals with their riddles and objects, the other objects, words or pictures for
@@ -767,6 +778,13 @@ its own, in this order.
 - Links to Sator (an anagram as a node) and Stele.
 - Pictures from a link, with a warning when the link's file name gives the answer away
   (`karn.png`).
+- More pictures: game-icons.net is sparse in places, so add a more general set, such as Font
+  Awesome's free icons (CC BY 4.0, credited as game-icons are), and later others, such as Google's
+  Material Symbols (Apache 2.0). The picker searches every set, so a puzzle can mix them. A name in
+  a link then says its set (`fa:key`), and a name without one is still game-icons, so older links
+  keep working. Iconify publishes each set as a package, as it does game-icons.
+- Pedestals: a pedestal that takes any of several objects ("something that burns": a torch or a
+  candle).
 
 ## Risks
 

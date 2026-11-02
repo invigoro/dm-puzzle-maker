@@ -142,6 +142,33 @@ stood on, shows how many of the eight round it are trapped, diagonals and all, a
   any square stepped on, so a programmer could open them all. For a table all in one room, **Play
   it full size** runs it on your own screen, and no link holds the floor at all.
 
+### Pedestals
+
+Pedestals, each with a riddle, and objects about the room to choose among: the players set the right
+one on each. "Place the greatest weapon", and among a sword, a war axe and an olive branch, the
+olive branch is right.
+
+- **The pedestals:** up to 8, each with its riddle and the one object that's right for it. Riddles
+  and objects can be words, a picture, or both.
+- **Other objects:** up to 12 more, right for no pedestal, that only look as if they might be. All
+  the objects lie scattered on the floor (🎲 for another scatter), so the right ones don't come
+  first.
+- **Checking:**
+  - **When all are right:** the pedestals open the moment each holds its object, with nothing said
+    before, so trying costs nothing.
+  - **As each is placed:** a right object stays; a wrong one says your line (the trap it sets off)
+    and drops back to the floor.
+  - **When they ask:** once every pedestal holds something, the players press Check the answer. A
+    wrong check says your line, and as much as you allow: only that it's wrong, how many are right,
+    or which (those pedestals glow). The same objects can't be checked twice.
+  - Wrong placings or checks are counted, and if you like, after so many the players fail, with a
+    line for that.
+- **Playing:** tap an object, then a pedestal, or drag it there. Tap a pedestal to take its object
+  back. What's on each pedestal, and the count, are kept in the browser.
+- **Secrecy:** the link lists the objects with nothing to say which are right or where they go.
+  Judging pedestals one at a time puts a quick fingerprint of each in the link, so a programmer
+  could find them.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

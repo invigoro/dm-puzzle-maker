@@ -1333,10 +1333,197 @@ legend.label-text {
   stroke: var(--accent-ink);
 }
 
+/* Pedestals, in the maker: each row a riddle and its object, or an other object. */
+.pedestal-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.pedestal-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pedestal-rows .riddle {
+  flex: 3 1 14rem;
+}
+
+.pedestal-rows .object,
+.pedestal-rows .other {
+  flex: 2 1 10rem;
+}
+
+/* The room: stone plinths in a row, a bronze plaque on each with its riddle, and the objects on the floor below. */
+.pedestals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 0.75rem;
+}
+
+.pedestal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 9.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+}
+
+.pedestal:hover {
+  background: none;
+}
+
+.pedestal:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Where an object stands on top, clear of the slab, or the space waiting for one. */
+.pedestal .top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 5.2rem;
+  width: 100%;
+  padding-bottom: 0.65rem;
+}
+
+.pedestal .empty {
+  width: 3.4rem;
+  height: 2.6rem;
+  border: 2px dashed var(--line);
+  border-radius: 6px;
+}
+
+.pedestals.holding .pedestal .empty {
+  border-color: var(--accent);
+}
+
+.pedestal .plinth {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 7rem;
+  padding: 1.1rem 0.6rem 1rem;
+  background: linear-gradient(90deg, var(--stone-dark), var(--stone-light) 45%, var(--stone-dark));
+  border: 1px solid var(--bronze-edge);
+  border-radius: 2px;
+  box-shadow: 0 3px 6px rgb(0 0 0 / 0.2);
+}
+
+/* The slab on top, a little wider than the plinth. */
+.pedestal .plinth::before {
+  content: '';
+  position: absolute;
+  top: -0.55rem;
+  left: -0.4rem;
+  right: -0.4rem;
+  height: 0.55rem;
+  background: linear-gradient(var(--stone-light), var(--stone-dark));
+  border: 1px solid var(--bronze-edge);
+  border-radius: 2px;
+}
+
+.pedestal .plaque {
+  align-self: flex-start;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--stud-ink);
+  background: linear-gradient(var(--bronze-light), var(--bronze-dark));
+  border: 1px solid var(--bronze-edge);
+  border-radius: 3px;
+}
+
+.pedestal.lit .plinth {
+  box-shadow: 0 0 18px var(--gold);
+}
+
+.pedestal.glow .offering {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 12px var(--gold);
+}
+
+/* A riddle or an object: its picture above its words. */
+.thing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.thing .icon-thumb {
+  width: 2rem;
+  height: 2rem;
+}
+
+.thing.plaque .icon-thumb {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.offering {
+  min-width: 4rem;
+  max-width: 8rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--engraved);
+  background: var(--hub-light);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 3px rgb(0 0 0 / 0.15);
+}
+
+/* The floor, and the objects lying on it. */
+.room-floor {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  background: var(--stone-dark);
+  border-radius: 8px;
+}
+
+.room-floor .offering {
+  cursor: grab;
+}
+
+.room-floor .offering[aria-pressed='true'] {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.room-floor .offering.gone {
+  min-height: 3.4rem;
+  background: none;
+  border: 1px dashed var(--line);
+  box-shadow: none;
+  opacity: 0.6;
+}
+
 @media (max-width: 30rem) {
   .site,
   .player {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+  }
+
+  .pedestal {
+    width: 8.5rem;
   }
 }
