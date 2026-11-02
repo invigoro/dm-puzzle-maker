@@ -18,6 +18,9 @@ same way:
   link is, and warns when it's too long for one Discord message.
 - **The page's own address** holds the puzzle, answer and all, so a bookmark brings it back. It's
   compressed, so it never spells the answer out, but don't send it to your players.
+- **Your puzzles:** every puzzle you make is saved in your browser as you make it, and listed on the
+  home page, newest first, to open again or remove. **Export to a file** keeps a copy, and **Import
+  from a file** brings puzzles into another browser, keeping the newer of any you have in both.
 
 On the players' page, progress is kept in their browser, so a reload or a week between sessions
 doesn't lose the board.

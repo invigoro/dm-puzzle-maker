@@ -13,15 +13,17 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures are done;
-saved puzzles, setting the start by hand, the glow and the stone-and-bronze look are to come.
+**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures and saved
+puzzles are done; setting the start by hand, the glow and the stone-and-bronze look are to come.
 
 ## The site
 
 ### Pages
 
-- **Home** (`#`): the kinds of puzzle, each with a line on what it is. From Phase 3 it also lists
-  the game master's saved puzzles.
+- **Home** (`#`): the kinds of puzzle, each with a line on what it is, and the game master's
+  puzzles: every puzzle made in this browser, saved as it's made, newest first. Each opens again, or
+  can be removed (asked twice). **Export to a file** and **Import from a file** move them between
+  browsers, keeping the newer of a puzzle in both.
 - **Maker** (`#discs` for a new puzzle, `#m=…` for one in progress): the game master's page, which
   holds the answer.
 - **Player** (`#p=…`): the players' page. It loads only its kind's player code, with no maker and no
@@ -35,7 +37,8 @@ and Stele's links are: JSON, deflate-raw compressed and base64url encoded. Each 
 
 - `#m=` holds the game master's design, answer and all. The maker keeps it current in the address
   bar, so a bookmark or a reload brings the puzzle back. Being compressed, the address bar never
-  spells out the answer during a screen share.
+  spells out the answer during a screen share. Once saved, it holds the puzzle's id among the saved
+  puzzles too, so a bookmark and the saved puzzle stay one puzzle.
 - `#p=` holds only what the players see, plus a salt and fingerprints to check their board against.
 - A link that doesn't hold a puzzle this site knows opens a page that says so.
 - A player link should fit in a Discord message (2,000 characters). So it holds no uploaded images:
@@ -278,6 +281,7 @@ src/
     words.ts                     # the title, introduction and line for solving it, read and checked
     storage.ts                   # things kept in the browser, when it allows
     icons.ts                     # pictures: loading, searching, crediting
+    saved.ts                     # the game master's puzzles in this browser, and as a file
   puzzles/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
@@ -299,6 +303,7 @@ src/
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
     MakerPage.tsx · WordsFields.tsx · Send.tsx   # the maker's shell: the address, the words, sending
     IconPicker.tsx · IconCredit.tsx  # choosing a picture; naming who made the ones on show
+    YourPuzzles.tsx              # the saved puzzles on the home page
     PlayerPage.tsx               # the players' shell: the title and introduction
     pages.tsx                    # which page a route opens, loading only its side's code
 ```

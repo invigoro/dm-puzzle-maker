@@ -69,7 +69,77 @@ button:disabled {
   cursor: default;
 }
 
-a.button {
+/* A file input, hidden inside a label that looks like a button. */
+label.button {
+  position: relative;
+  cursor: pointer;
+}
+
+label.button:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hidden-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* The puzzles made in this browser, on the home page */
+
+.your-puzzles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.your-puzzles p {
+  margin: 0;
+}
+
+.saved {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.saved li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  padding: 0.7rem 1rem;
+}
+
+.saved li + li {
+  border-top: 1px solid var(--line);
+}
+
+.saved-title {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.saved-title:hover {
+  text-decoration: underline;
+}
+
+.saved li > :last-child {
+  margin-left: auto;
+}
+
+a.button,
+label.button {
   padding: 0.45rem 0.95rem;
   color: var(--ink);
   text-decoration: none;
@@ -78,7 +148,8 @@ a.button {
   border-radius: 6px;
 }
 
-a.button:hover {
+a.button:hover,
+label.button:hover {
   background: var(--hover);
 }
 

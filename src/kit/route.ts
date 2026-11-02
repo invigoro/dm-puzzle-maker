@@ -18,14 +18,20 @@ const VERSION = 1;
 
 export type Route =
   | { page: 'home' }
-  /** A puzzle in the maker. `data` is the kind's own, still unchecked, or null for a new puzzle. */
-  | { page: 'make'; kind: string; data: unknown }
+  /**
+   * A puzzle in the maker. `data` is the kind's own, still unchecked, or null for a new puzzle.
+   * `id` is the puzzle's in this browser's saved puzzles, once it's been saved.
+   */
+  | { page: 'make'; kind: string; data: unknown; id?: string }
   /** A puzzle on the players' page. `data` is the kind's own, still unchecked. */
   | { page: 'play'; kind: string; data: unknown }
   /** A link that doesn't hold a puzzle this site knows. */
   | { page: 'lost' };
 
 const LOST: Route = { page: 'lost' };
+
+/** Whether something could be a saved puzzle's id. */
+export const isPuzzleId = (value: unknown): value is string => typeof value === 'string' && /^[\w-]{1,64}$/.test(value);
 
 /** The page a URL fragment opens, given the ids of the kinds of puzzle there are. */
 export async function readRoute(hash: string, kinds: readonly string[]): Promise<Route> {
@@ -37,17 +43,18 @@ export async function readRoute(hash: string, kinds: readonly string[]): Promise
   }
   const packed = await unpack(hash.slice(prefix.length));
   if (!packed || typeof packed !== 'object' || Array.isArray(packed)) return LOST;
-  const { v, kind, data } = packed as Record<string, unknown>;
+  const { v, kind, data, id } = packed as Record<string, unknown>;
   if (v !== VERSION || typeof kind !== 'string' || !kinds.includes(kind) || data === undefined || data === null) return LOST;
-  return { page: prefix === MAKER_PREFIX ? 'make' : 'play', kind, data };
+  if (prefix === PLAYER_PREFIX) return { page: 'play', kind, data };
+  return isPuzzleId(id) ? { page: 'make', kind, data, id } : { page: 'make', kind, data };
 }
 
 /** The fragment that opens a new puzzle of a kind in the maker. */
 export const newPuzzleHash = (kind: string) => `#${kind}`;
 
 /** The fragment that opens a puzzle in the maker, answer and all: for the game master only. */
-export async function makerHash(kind: string, design: unknown): Promise<string> {
-  return MAKER_PREFIX + (await pack({ v: VERSION, kind, data: design }));
+export async function makerHash(kind: string, design: unknown, id?: string): Promise<string> {
+  return MAKER_PREFIX + (await pack({ v: VERSION, kind, data: design, ...(id ? { id } : {}) }));
 }
 
 /** The fragment that opens a puzzle on the players' page. `puzzle` must hold only what they may see. */

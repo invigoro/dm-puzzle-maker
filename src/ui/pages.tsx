@@ -25,7 +25,9 @@ export async function pageFor(route: Route): Promise<Page> {
   if (route.page === 'make') {
     const side = await kind.maker();
     const design = route.data === null ? side.newDesign() : side.readDesign(route.data);
-    return design === null ? LOST : { title: `${kind.name} · Daedalus`, content: <MakerPage kind={kind} side={side} design={design} /> };
+    return design === null
+      ? LOST
+      : { title: `${kind.name} · Daedalus`, content: <MakerPage kind={kind} side={side} design={design} id={route.id} /> };
   }
   const side = await kind.player();
   const puzzle = side.readPuzzle(route.data);

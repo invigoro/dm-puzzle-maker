@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { makerHash, playerHash } from '../kit/route';
+import { playerHash } from '../kit/route';
 import type { Words } from '../kit/words';
 import type { MakerSide, PuzzleKind } from '../puzzles/types';
 
@@ -59,7 +59,8 @@ export function Send<Design extends { words: Words }>({ kind, side, design }: Se
   }
 
   async function copyOwnLink() {
-    const own = linkTo(await makerHash(kind.id, design));
+    // The address the maker keeps, which holds the puzzle's place among those saved here too.
+    const own = window.location.href;
     setSaid((await copy(own)) ? 'Copied this page’s link. Keep it to yourself.' : 'Couldn’t copy it: copy the address from the address bar.');
   }
 

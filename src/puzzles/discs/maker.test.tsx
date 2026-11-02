@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetIcons } from '../../kit/icons';
 import { unpack } from '../../kit/packing';
 import { readRoute } from '../../kit/route';
+import { savedPuzzles } from '../../kit/saved';
 import { fakeIconFetch } from '../../test/icons';
 import { pageFor } from '../../ui/pages';
 import { readDesign } from './design';
@@ -17,6 +18,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   history.replaceState(null, '', '/');
+  localStorage.clear();
   vi.unstubAllGlobals();
   forgetIcons();
 });
@@ -70,6 +72,19 @@ describe('the turning discs maker', () => {
     await waitFor(() => expect(location.hash).toMatch(/^#m=/));
     const route = await readRoute(location.hash, ['discs']);
     expect(route.page === 'make' && readDesign(route.data)?.pairs[2]).toEqual([{ text: '' }, { text: 'mere' }]);
+  });
+
+  it('saves the puzzle in this browser as it’s made, under the id its address holds', async () => {
+    const user = await openMaker();
+    expect(savedPuzzles()).toEqual([]);
+    await user.click(screen.getByRole('button', { name: 'Start from the example' }));
+    await user.type(screen.getByRole('textbox', { name: 'Title' }), ', again');
+    await waitFor(() => expect(location.hash).toMatch(/^#m=/));
+    const saved = savedPuzzles();
+    expect(saved).toHaveLength(1);
+    expect(saved[0].title).toBe('The road-stone of the Vale, again');
+    const route = await readRoute(location.hash, ['discs']);
+    expect(route.page === 'make' && route.id).toBe(saved[0].id);
   });
 
   it('fills blank filler, and fills it differently on asking', async () => {

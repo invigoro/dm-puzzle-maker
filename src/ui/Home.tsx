@@ -1,8 +1,9 @@
 import { newPuzzleHash } from '../kit/route';
 import { KINDS } from '../puzzles/registry';
 import { Site } from './Site';
+import { YourPuzzles } from './YourPuzzles';
 
-/** The home page: what Daedalus does, and the kinds of puzzle to make. */
+/** The home page: what Daedalus does, the kinds of puzzle to make, and the puzzles made in this browser. */
 export function Home() {
   return (
     <Site>
@@ -23,6 +24,7 @@ export function Home() {
           ))}
         </ul>
       </section>
+      <YourPuzzles />
     </Site>
   );
 }
