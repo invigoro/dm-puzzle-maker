@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../../../kit/rng';
 import { generate, isInside, withEdits } from './generate';
 import { canStep, cellAt, cellCount, cellsOf, openFrom, packWalls, stepFrom, unpackWalls, wallBetween, wallCount, walledIn } from './grid';
-import { distances, lit } from './paths';
+import { distances, LANTERN, lit, MOST_REACH, reachIn } from './paths';
 
 describe('the grid', () => {
   const maze = walledIn(4, 3);
@@ -95,5 +95,21 @@ describe('the lantern', () => {
     const corridor = withEdits(walledIn(5, 2), [0, 1, 2, 3]);
     expect(lit(corridor, 0).sort((x, y) => x - y)).toEqual([0, 1, 2]);
     expect(lit(corridor, 2).sort((x, y) => x - y)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('reaches as far as the game master says, from no light at all', () => {
+    const corridor = withEdits(walledIn(5, 2), [0, 1, 2, 3]);
+    expect(lit(corridor, 2, 0)).toEqual([2]);
+    // One step ahead and one behind.
+    expect(lit(corridor, 2, 1).sort((x, y) => x - y)).toEqual([1, 2, 3]);
+    expect(lit(corridor, 0, MOST_REACH).sort((x, y) => x - y)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('reads how far it reaches, as mazes made before it could be chosen saw', () => {
+    expect(reachIn(5, true)).toBe(5);
+    expect(reachIn(0, false)).toBe(0);
+    expect(reachIn(undefined, false)).toBe(LANTERN);
+    expect(reachIn(undefined, true)).toBe(0);
+    for (const junk of [-1, 1.5, MOST_REACH + 1, '2', null]) expect(reachIn(junk, false)).toBe(LANTERN);
   });
 });

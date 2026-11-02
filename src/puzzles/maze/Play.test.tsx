@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { pageFor } from '../../ui/pages';
 import { mazeOf, newDesign, toPuzzle, type MazeDesign } from './design';
 import { DIRECTIONS, stepFrom, canStep, type Direction } from './engine/grid';
-import { wayBetween } from './engine/paths';
+import { lit, wayBetween } from './engine/paths';
 
 afterEach(() => {
   cleanup();
@@ -78,8 +78,21 @@ describe('the maze', () => {
     await open({ light: 'lantern' });
     expect(fog()).toBeGreaterThan(20);
     cleanup();
-    await open({ light: 'dark' });
+    await open({ light: 'dark', reach: 0 });
     expect(fog()).toBe(35);
+  });
+
+  it('shows as far as the light reaches, along the passages', async () => {
+    await open({ light: 'dark', reach: 3 });
+    expect(fog()).toBe(36 - lit(mazeOf(design), 0, 3).length);
+    expect(document.querySelectorAll('.maze .cell.near')).toHaveLength(lit(mazeOf(design), 0, 3).length);
+  });
+
+  it('keeps nothing drawn in the dark, as the party walks', async () => {
+    const { user } = await open({ light: 'dark', reach: 1 });
+    await user.keyboard(keysFor(design, 35).split('}').slice(0, 4).join('}') + '}');
+    const at = wayBetween(mazeOf(design), 0, 35)![4];
+    expect(fog()).toBe(36 - lit(mazeOf(design), at, 1).length);
   });
 
   it('keeps the lantern’s map as the party walks', async () => {

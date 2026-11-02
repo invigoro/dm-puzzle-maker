@@ -3,7 +3,7 @@ import { randomSeed } from '../../kit/rng';
 import type { MakerProps } from '../types';
 import { LARGEST, mazeOf, MOST_EXITS, resized, SIZES, SMALLEST, waysThrough, type Light, type MazeDesign } from './design';
 import type { Loops, Twist } from './engine/generate';
-import { wayBetween } from './engine/paths';
+import { MOST_REACH, wayBetween } from './engine/paths';
 import { EXAMPLE } from './example';
 import { MazeBoard } from './MazeBoard';
 import { MazeGame } from './MazeGame';
@@ -14,7 +14,7 @@ type Tool = 'walls' | 'start' | 'exits';
 const LIGHTS: readonly { light: Light; name: string; says: string }[] = [
   { light: 'lit', name: 'Lit', says: 'the whole maze shows.' },
   { light: 'lantern', name: 'Lantern', says: 'they see the cells near them, and the passages they’ve walked stay drawn, like a map.' },
-  { light: 'dark', name: 'Dark', says: 'they see only the walls beside them, and nothing stays drawn.' },
+  { light: 'dark', name: 'Dark', says: 'they see only the cells near them, and nothing stays drawn.' },
 ];
 
 /** The game master's part of the maker: the maze, drawn by hand if they like, its ways in and out, its light, and a try of it. */
@@ -31,7 +31,7 @@ export function Designer({ design, onChange }: MakerProps<MazeDesign>) {
   const way = useMemo(() => (showWay ? wayBetween(maze, design.start, design.exits[0].cell) : null), [showWay, maze, design.start, design.exits]);
   const named = SIZES.find((choice) => choice.size === design.width && choice.size === design.height)?.size ?? 0;
   const size = ownSize ? 0 : named;
-  const trial = JSON.stringify([maze.walls, design.width, design.start, design.exits.map((exit) => exit.cell), design.light]);
+  const trial = JSON.stringify([maze.walls, design.width, design.start, design.exits.map((exit) => exit.cell), design.light, design.reach]);
 
   function onWall(wall: number) {
     set({ edits: design.edits.includes(wall) ? design.edits.filter((each) => each !== wall) : [...design.edits, wall] });
@@ -207,6 +207,19 @@ export function Designer({ design, onChange }: MakerProps<MazeDesign>) {
             </span>
           </label>
         ))}
+        {design.light !== 'lit' && (
+          <div className="row">
+            <label htmlFor={`${id}-reach`}>How far they see</label>
+            <select id={`${id}-reach`} value={design.reach} onChange={(event) => set({ reach: Number(event.target.value) })}>
+              {Array.from({ length: MOST_REACH + 1 }, (_, steps) => (
+                <option key={steps} value={steps}>
+                  {steps === 0 ? 'Only the walls beside them' : steps === 1 ? '1 cell' : `${steps} cells`}
+                </option>
+              ))}
+            </select>
+            <span className="hint">Counted along the passages, never through a wall: in a straight passage, that many ahead and behind.</span>
+          </div>
+        )}
         <p className="hint">The player link holds the whole maze, whatever the light, so a programmer could draw it.</p>
       </section>
 
@@ -214,7 +227,7 @@ export function Designer({ design, onChange }: MakerProps<MazeDesign>) {
         <h2>Try it</h2>
         <p className="hint">As your players will see it. Walking it here changes nothing in the puzzle.</p>
         {ways[0] >= 0 ? (
-          <MazeGame key={trial} maze={maze} start={design.start} exits={design.exits.map((exit, i) => (i === 0 ? { ...exit, line: design.words.success } : exit))} light={design.light} />
+          <MazeGame key={trial} maze={maze} start={design.start} exits={design.exits.map((exit, i) => (i === 0 ? { ...exit, line: design.words.success } : exit))} light={design.light} reach={design.reach} />
         ) : (
           <p className="hint">Open a way through to try it.</p>
         )}

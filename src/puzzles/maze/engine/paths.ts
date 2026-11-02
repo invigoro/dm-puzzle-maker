@@ -26,8 +26,14 @@ export function wayBetween(maze: Maze, from: number, to: number): number[] | nul
   return way;
 }
 
-/** How far a lantern's light reaches, in steps along the passages: it doesn't shine through walls. */
+/** How far a lantern's light reaches, in steps along the passages, unless the game master says otherwise: it doesn't shine through walls. */
 export const LANTERN = 2;
+/** The farthest the game master can let the players see. */
+export const MOST_REACH = 10;
+
+/** How far the players see, from untrusted data. Mazes made before it could be chosen saw two steps by lantern, and none in the dark. */
+export const reachIn = (value: unknown, dark: boolean): number =>
+  Number.isInteger(value) && (value as number) >= 0 && (value as number) <= MOST_REACH ? (value as number) : dark ? 0 : LANTERN;
 
 /** The cells a lantern lights from where it stands: a search that stops where the light does. */
 export function lit(maze: Maze, from: number, reach = LANTERN): number[] {

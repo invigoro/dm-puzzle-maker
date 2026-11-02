@@ -2,6 +2,7 @@
 import { readWords, type Words } from '../../kit/words';
 import type { Exit, Light } from './design';
 import { unpackWalls, wallCount, type Maze } from './engine/grid';
+import { reachIn } from './engine/paths';
 
 export interface MazePuzzle {
   v: 1;
@@ -14,6 +15,8 @@ export interface MazePuzzle {
   /** The ways out, each with what reaching it says. */
   exits: Exit[];
   light: Light;
+  /** How far the players see by lantern or in the dark, in steps along the passages. */
+  reach: number;
   /** The link's own, so a player's progress on it is kept apart from any other's. */
   salt: string;
 }
@@ -24,7 +27,7 @@ const NO_WORDS: Words = { title: '', intro: '', success: '' };
 export function readPuzzle(data: unknown): MazePuzzle | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
   const input = data as Record<string, unknown>;
-  const { width, height, walls, start, exits, light, salt } = input;
+  const { width, height, walls, start, exits, light, reach, salt } = input;
   if (input.v !== 1 || typeof salt !== 'string' || !/^[\w-]{1,64}$/.test(salt)) return null;
   const size = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 4 && (value as number) <= 30;
   if (!size(width) || !size(height) || !unpackWalls(walls, wallCount({ width, height }))) return null;
@@ -33,6 +36,8 @@ export function readPuzzle(data: unknown): MazePuzzle | null {
   const ways = exits.map((exit) => (exit && typeof exit === 'object' ? (exit as Record<string, unknown>) : {}));
   if (!ways.every((exit) => inGrid(exit.cell) && typeof exit.line === 'string' && exit.line.length <= 200)) return null;
   if (light !== 'lit' && light !== 'lantern' && light !== 'dark') return null;
+  // A link made before the reach could be chosen has none, and sees as far as such links did.
+  if (reach !== undefined && reachIn(reach, false) !== reach) return null;
   return {
     v: 1,
     words: readWords(input.words, NO_WORDS),
@@ -42,6 +47,7 @@ export function readPuzzle(data: unknown): MazePuzzle | null {
     start,
     exits: ways.map((exit) => ({ cell: exit.cell as number, line: exit.line as string })),
     light,
+    reach: reachIn(reach, light === 'dark'),
     salt,
   };
 }

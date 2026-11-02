@@ -4,10 +4,10 @@ import { mulberry32, randomSeed } from '../../kit/rng';
 import { readWords, tidyWords, type Words } from '../../kit/words';
 import { generate, withEdits, type Loops, type Twist } from './engine/generate';
 import { packWalls, wallCount, type Maze } from './engine/grid';
-import { distances } from './engine/paths';
+import { distances, LANTERN, reachIn } from './engine/paths';
 import type { MazePuzzle } from './puzzle';
 
-/** How much of the maze the players see: all of it, the cells their lantern lights, or only the walls beside them. */
+/** How much of the maze the players see: all of it, the cells their lantern lights with a map of where it's lit, or only the cells near them. */
 export type Light = 'lit' | 'lantern' | 'dark';
 
 export const SMALLEST = 4;
@@ -38,6 +38,8 @@ export interface MazeDesign {
   start: number;
   exits: Exit[];
   light: Light;
+  /** How far the players see by lantern or in the dark, in steps along the passages. */
+  reach: number;
 }
 
 export const NEW_WORDS: Words = { title: '', intro: '', success: 'Daylight, and the way out.' };
@@ -46,7 +48,7 @@ export const NEW_WORDS: Words = { title: '', intro: '', success: 'Daylight, and 
 const corners = (width: number, height: number) => ({ start: 0, exits: [{ cell: width * height - 1, line: '' }] });
 
 export function newDesign(): MazeDesign {
-  return { v: 1, words: NEW_WORDS, width: 10, height: 10, twist: 'winding', loops: 'none', seed: randomSeed(), edits: [], ...corners(10, 10), light: 'lantern' };
+  return { v: 1, words: NEW_WORDS, width: 10, height: 10, twist: 'winding', loops: 'none', seed: randomSeed(), edits: [], ...corners(10, 10), light: 'lantern', reach: LANTERN };
 }
 
 const sizeIn = (value: unknown, fallback: number) => (Number.isInteger(value) && (value as number) >= SMALLEST && (value as number) <= LARGEST ? (value as number) : fallback);
@@ -69,6 +71,7 @@ export function readDesign(data: unknown): MazeDesign | null {
     .map((exit) => ({ cell: exit.cell as number, line: typeof exit.line === 'string' ? exit.line.slice(0, 200) : '' }))
     .filter((exit, i, all) => all.findIndex((other) => other.cell === exit.cell) === i)
     .slice(0, MOST_EXITS);
+  const light = input.light === 'lit' || input.light === 'dark' ? input.light : 'lantern';
   return {
     v: 1,
     words: readWords(input.words, NEW_WORDS),
@@ -79,7 +82,8 @@ export function readDesign(data: unknown): MazeDesign | null {
     seed: Number.isInteger(input.seed) && (input.seed as number) >= 0 && (input.seed as number) < 2 ** 32 ? (input.seed as number) : 1,
     edits: [...new Set(edits)],
     ...(exits.length > 0 ? { start, exits } : corners(width, height)),
-    light: input.light === 'lit' || input.light === 'dark' ? input.light : 'lantern',
+    light,
+    reach: reachIn(input.reach, light === 'dark'),
   };
 }
 
@@ -108,7 +112,7 @@ export const resized = (design: MazeDesign, width: number, height: number): Maze
   ...corners(width, height),
 });
 
-/** What a player link holds: the maze's walls, the way in, the ways out and their lines, and the light. */
+/** What a player link holds: the maze's walls, the way in, the ways out and their lines, and the light and how far it reaches. */
 export async function toPuzzle(design: MazeDesign): Promise<MazePuzzle> {
   const words = tidyWords(design.words);
   return {
@@ -120,6 +124,7 @@ export async function toPuzzle(design: MazeDesign): Promise<MazePuzzle> {
     start: design.start,
     exits: design.exits.map((exit, i) => ({ cell: exit.cell, line: i === 0 ? words.success : exit.line.trim() })),
     light: design.light,
+    reach: design.reach,
     salt: newSalt(),
   };
 }

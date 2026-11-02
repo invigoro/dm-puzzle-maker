@@ -7,5 +7,5 @@ import { mazeIn, readProgress, type MazePuzzle } from './puzzle';
 export function Play({ puzzle }: { puzzle: MazePuzzle }) {
   const maze = useMemo(() => mazeIn(puzzle), [puzzle]);
   const [initial, keep] = useKept('maze', puzzle.salt, (data) => readProgress(puzzle, data));
-  return <MazeGame maze={maze} start={puzzle.start} exits={puzzle.exits} light={puzzle.light} initial={initial} onProgress={keep} autoFocus />;
+  return <MazeGame maze={maze} start={puzzle.start} exits={puzzle.exits} light={puzzle.light} reach={puzzle.reach} initial={initial} onProgress={keep} autoFocus />;
 }

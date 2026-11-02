@@ -75,4 +75,14 @@ describe('the maze maker', () => {
     expect(puzzle?.exits).toHaveLength(2);
     expect(puzzle?.light).toBe('lantern');
   });
+
+  it('lets the light reach as far as the game master says, except when it’s lit', async () => {
+    const user = await openMaker();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'How far they see' }), '4 cells');
+    expect((await designNow())?.reach).toBe(4);
+    await user.click(screen.getByRole('radio', { name: /^Dark:/ }));
+    expect(screen.getByRole('combobox', { name: 'How far they see' })).toHaveValue('4');
+    await user.click(screen.getByRole('radio', { name: /^Lit:/ }));
+    expect(screen.queryByRole('combobox', { name: 'How far they see' })).toBeNull();
+  });
 });

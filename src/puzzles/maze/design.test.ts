@@ -42,6 +42,13 @@ describe('a design', () => {
     for (const junk of [null, 'maze', [], { ...design, v: 2 }]) expect(readDesign(junk)).toBeNull();
   });
 
+  it('sees as far as it did, when made before how far could be chosen', () => {
+    const { reach: _, ...before } = design;
+    expect(readDesign(before)?.reach).toBe(2);
+    expect(readDesign({ ...before, light: 'dark' })?.reach).toBe(0);
+    expect(readDesign({ ...design, light: 'dark', reach: 4 })?.reach).toBe(4);
+  });
+
   it('starts again from the corners at a new size, as the walls are numbered by size', () => {
     const moved = resized({ ...design, edits: [1, 2], start: 5 }, 8, 6);
     expect(moved).toMatchObject({ width: 8, height: 6, edits: [], start: 0, exits: [{ cell: 47, line: '' }] });
@@ -57,6 +64,14 @@ describe('a player link', () => {
       { cell: 9, line: 'The kitchen.' },
     ]);
     expect(puzzle.light).toBe('lantern');
+    expect(puzzle.reach).toBe(2);
+    expect(readPuzzle(JSON.parse(JSON.stringify(await toPuzzle({ ...design, light: 'dark', reach: 3 }))))?.reach).toBe(3);
+  });
+
+  it('opens a link made before how far they see could be chosen, seeing as far as it did', async () => {
+    const { reach: _, ...before } = JSON.parse(JSON.stringify(await toPuzzle(design)));
+    expect(readPuzzle(before)?.reach).toBe(2);
+    expect(readPuzzle({ ...before, light: 'dark' })?.reach).toBe(0);
   });
 
   it('fits in a Discord message, even the largest', async () => {
@@ -66,7 +81,7 @@ describe('a player link', () => {
 
   it('turns away what’s been tampered with', async () => {
     const puzzle = JSON.parse(JSON.stringify(await toPuzzle(design)));
-    for (const junk of [{ ...puzzle, width: 3 }, { ...puzzle, walls: 'AAAA' }, { ...puzzle, exits: [] }, { ...puzzle, start: 100 }, { ...puzzle, light: 'dim' }, { ...puzzle, salt: '' }]) {
+    for (const junk of [{ ...puzzle, width: 3 }, { ...puzzle, walls: 'AAAA' }, { ...puzzle, exits: [] }, { ...puzzle, start: 100 }, { ...puzzle, light: 'dim' }, { ...puzzle, reach: 11 }, { ...puzzle, reach: 'far' }, { ...puzzle, salt: '' }]) {
       expect(readPuzzle(junk)).toBeNull();
     }
     expect(wallCount(puzzle)).toBe(180);

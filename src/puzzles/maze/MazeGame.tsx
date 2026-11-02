@@ -10,6 +10,8 @@ interface MazeGameProps {
   start: number;
   exits: readonly Exit[];
   light: Light;
+  /** How far the players see by lantern or in the dark, in steps along the passages. */
+  reach: number;
   initial?: MazeProgress | null;
   onProgress?(progress: MazeProgress): void;
   /** Whether it takes the keyboard when it opens: on the players' page, not in the maker. */
@@ -30,7 +32,7 @@ const KEYS: Partial<Record<string, Direction>> = {
 const SWIPE = 24;
 
 /** A maze to find the way out of: a token moved by keys, taps or swipes, in as much light as the game master allows. */
-export function MazeGame({ maze, start, exits, light, initial, onProgress, autoFocus }: MazeGameProps) {
+export function MazeGame({ maze, start, exits, light, reach, initial, onProgress, autoFocus }: MazeGameProps) {
   const box = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState(initial?.at ?? start);
   const [steps, setSteps] = useState(initial?.steps ?? 0);
@@ -49,9 +51,10 @@ export function MazeGame({ maze, start, exits, light, initial, onProgress, autoF
   }, [at, steps, visited, out, onProgress]);
 
   // A lantern's light stays on the walls it's shown, as a map the party makes as they go.
-  const seen = useMemo(() => (light === 'lantern' ? new Set(visited.flatMap((cell) => lit(maze, cell))) : null), [light, maze, visited]);
-  const shown = light === 'lit' ? 'all' : light === 'lantern' ? seen! : new Set([at]);
-  const near = light === 'lantern' ? new Set(lit(maze, at)) : undefined;
+  // In the dark, only what's lit now shows.
+  const seen = useMemo(() => (light === 'lantern' ? new Set(visited.flatMap((cell) => lit(maze, cell, reach))) : null), [light, maze, visited, reach]);
+  const near = light === 'lit' ? undefined : new Set(lit(maze, at, reach));
+  const shown = light === 'lit' ? 'all' : (seen ?? near!);
 
   function move(direction: Direction) {
     if (out !== null || !canStep(maze, at, direction)) return;

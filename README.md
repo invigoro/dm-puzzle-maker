@@ -89,8 +89,11 @@ A maze to find the way out of, seen from above.
   ways out, each with its own line: one leads on, another to the minotaur. The maker shows the
   shortest way through to each, and says if one can't be reached.
 - **Light:** lit, so the whole maze shows; by lantern, so the players see the cells near them and
-  the passages they've walked stay drawn, like a map; or dark, so they see only the walls beside
-  them. Whatever the light, the link holds the whole maze, so a programmer could draw it.
+  the passages they've walked stay drawn, like a map; or dark, so they see only the cells near them,
+  and nothing stays drawn. By lantern or in the dark, you choose how near: up to 10 steps along the
+  passages, never through a wall (2 in a straight passage is 2 cells ahead and 2 behind), or none,
+  so they see only the walls beside them. Whatever the light, the link holds the whole maze, so a
+  programmer could draw it.
 - **Playing:** move with the arrow keys (or WASD), by tapping the next cell, or by swiping. Steps
   are counted, and where the party is and has been is kept in the browser.
 

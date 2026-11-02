@@ -17,4 +17,5 @@ export const EXAMPLE: Omit<MazeDesign, 'v' | 'seed' | 'edits'> = {
     { cell: 13, line: 'Steps up into the inn’s kitchen, where the cook is not pleased to see you.' },
   ],
   light: 'lantern',
+  reach: 2,
 };

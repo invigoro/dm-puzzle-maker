@@ -363,7 +363,11 @@ riddle. It lives in `src/puzzles/word-guess/`, with the id `word-guess`.
   - **Lit:** the whole maze shows.
   - **Lantern:** the players see only the cells near them. The passages they've walked stay drawn,
     like a map they make as they go.
-  - **Dark:** they see only the walls beside them, and nothing stays drawn.
+  - **Dark:** they see only the cells near them, and nothing stays drawn.
+  - **How far they see,** by lantern or in the dark: up to 10 steps along the passages, never
+    through a wall, so 2 in a straight passage is 2 cells ahead and 2 behind. With none at all, they
+    see only the walls beside them. Mazes made before this could be chosen see 2 by lantern and none
+    in the dark, as they did.
 - **Pictures** in cells, from the icon set: the way out, a statue, a fountain to steer by.
 
 ### The players' page
