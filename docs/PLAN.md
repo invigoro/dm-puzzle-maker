@@ -11,16 +11,16 @@ each with six word-halves or pictures on its spokes. The players turn the discs,
 where two discs touch, until the six pairs around the centre spell six names in order. The first
 puzzle spells the six great towns of the game master's realm.
 
-More are planned. The discs will get [more layouts](#more-layouts): three discs, as in the Defiled
-Temple, and nineteen. Three new kinds of puzzle will follow:
+More are planned. The discs will get [a second layout](#more-layouts): three discs, as in the
+Defiled Temple. Three new kinds of puzzle will follow:
 - a [word guess](#word-guess), tried a letter at a time
 - a [maze](#maze) to find the way out of
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 3 are done and live at https://daedalus.invigoro.me/. Phase 4
-(more layouts of discs) is next, then Phase 5 (more kinds of puzzle). See
+**Current phase:** Phase 4 (three discs or seven). Phases 0 to 3 are done and live at
+https://daedalus.invigoro.me/, and Phase 5 (more kinds of puzzle) comes next. See
 [Milestones](#milestones).
 
 ## The site
@@ -264,38 +264,37 @@ details.
 
 ### More layouts
 
-*(Phase 4)* The flower is one layout. Others are data of the same kind: discs, their spokes, and
-the contacts the answer is read at. Two rules keep every scramble solvable:
+*(Phase 4)* The game master chooses three discs or seven. Seven discs (the flower) is the board
+so far, and three discs, as in the Defiled Temple, is the second layout. Layouts are data: discs,
+their spokes, and the contacts the answer is read at. Two rules keep every scramble solvable:
 - every disc joins the rest through contacts
 - every contact sits at a spoke of both discs
 
-`layoutOf` already checks the second, and will check the first. A test runs the solver on every
-layout.
+`layoutOf` checks both. A test runs the solver on every layout.
 
-- **Three discs**, as in the Defiled Temple: three discs touching in a triangle.
+- **Three discs:** three discs touching in a triangle, two above and one below.
   - Six spokes each, so 18 nodes.
   - The three contacts hold three names, read clockwise from the top one, with 12 filler.
   - A quick puzzle, for a door the party meets in the middle of a fight.
-- **Nineteen discs:** the flower with a second ring of twelve, each touching its neighbours and the
-  ring inside it.
-  - Six spokes each, so 114 nodes.
-  - The names are read round the centre (six, with much more filler), or at the twelve contacts
-    between the two rings (twelve names). Which one gets decided when it's built, perhaps both.
-  - It's a lot for a phone: the board will need zooming in, and perhaps panning.
-- **Others** are data too, such as a row of discs read left to right, so a layout of the game
-  master's own could come later.
+  - The triangle's contacts fall between an upright disc's spokes, so its spokes are turned half a
+    step (30°). A layout says where its first spoke points.
+- **Not nineteen:** a flower with a second ring of twelve was considered and dropped. A board that
+  big would be too hard to solve, or too tedious to turn, to use in a game.
 
 What changes:
 - **Layouts by name:** a list of layouts, each with:
-  - its id, written into links (`flower`, `trefoil`, `nineteen`)
-  - its name, its discs, and what each disc is called for screen readers ("the left disc")
-  - its goal contacts, in order. These are written out for each layout, rather than always "round
-    the hub", as three discs have no hub.
-- **The mark:** each layout says where its arrow stands and which contact it points at: the
-  centre's hub for the flower, the middle of the triangle for three discs.
-- **The maker:** a choice of layout above the names, each with a small drawing.
+  - its id, written into links (`flower`, `trefoil`), and its name
+  - its discs, and what each is called for screen readers ("the upper left disc")
+  - where its first spoke points
+  - its goal contacts, ordered clockwise round its mark from the top. The flower's are those round
+    its centre disc, and three discs' are all three, as three discs have no hub.
+- **The mark:** each layout says where its arrow stands: on the centre's hub for the flower, and in
+  the gap between the three discs for three. It points at the first goal contact.
+- **The maker:** a choice of three discs or seven, each with a small drawing, above the names.
   - The number of names and of filler follows the layout.
-  - Names beyond the new layout's count are kept, greyed out, in case the game master changes back.
+  - Names and filler beyond the layout's count are kept aside, in case the game master changes
+    back, and the maker says so.
+  - Switching layouts keeps a scramble, and a start set by hand begins again from a scramble.
 - **Links:** designs and player links name their layout. A link without one is the flower, as
   every link made so far is.
 - **The board:** it already fits its view to whatever discs there are, and sizes letters to the
@@ -545,17 +544,18 @@ cheap, and slate in the dark theme.)*
 - *Done when* the realm's puzzle can be made with pictures for some halves, and found again from the
   home page.
 
-**Phase 4: More layouts of discs.** See [More layouts](#more-layouts).
-- Layouts by name, each with its discs, its goal contacts in order, and its mark. The engine,
-  scrambles, answer keys, the glow and the solver take the layout, rather than assuming the flower.
-- Three discs, as in the Defiled Temple, and nineteen discs.
-- In the maker, a choice of layout with a small drawing of each. The names and the filler follow
-  the layout's count.
+**Phase 4: Three discs or seven.** See [More layouts](#more-layouts).
+- Layouts by name, each with its discs, where its spokes point, its goal contacts in order, and its
+  mark. The design, the player link, the board and the maker take the layout, rather than assuming
+  the flower.
+- Three discs, as in the Defiled Temple, alongside the seven.
+- In the maker, a choice of three discs or seven, with a small drawing of each. The names and the
+  filler follow the layout's count, and an example for each layout.
 - Designs and player links name their layout, and links that don't are the flower.
 - Tests that every layout's scrambles can be solved, and that a link made before layouts still
   opens and checks as it did.
-- *Done when* a three-disc puzzle and a nineteen-disc puzzle can each be made, sent and solved, on
-  a phone too.
+- *Done when* a three-disc puzzle can be made, sent and solved, on a phone too, and a seven-disc one
+  still can.
 
 **Phase 5: More kinds of puzzle.** Each is a folder and a registry entry, as
 [Kinds of puzzle](#kinds-of-puzzle) says, with its own engine and tests. Each part below is done on
@@ -615,7 +615,7 @@ its own, in this order.
   and the trapped floor can be run from the game master's screen instead.
 - **Small screens:** 42 spokes of letters is a lot for a phone. The board fills the width, halves
   are kept short, and the phone can be turned sideways. Phase 1 checks it at a phone's width.
-  Nineteen discs, and the largest mazes and floors, will need zooming in, and perhaps panning.
+  The largest mazes and floors will need zooming in, and perhaps panning.
 - **A game's rules and a game's name:** the word guess and the trapped floor follow well-known
   games' rules, which is fine, but they're named for what they are, not after those games.
 - **Long links:** short halves and icon names keep a player link to about a thousand characters. A
@@ -640,6 +640,8 @@ its own, in this order.
   hosting.
 - **Each kind of puzzle is two chunks**, one per side, so the players' page loads as little as it
   can.
+- **Three discs or seven, and no bigger:** nineteen discs was dropped, as a board that big would be
+  too hard to solve, or too tedious to turn, to use at the table.
 - **Layouts before new kinds** (Phase 4 before 5): they build on what's there, and making the
   engine take any layout tidies the discs' code before the next kind copies its shape.
 - **Word guess first among the new kinds:** it's closest to what Sator already does, tiles and
