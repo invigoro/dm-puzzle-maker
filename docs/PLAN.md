@@ -13,8 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 0 is built and tested. It's done once the repository is public and a push
-to `main` deploys the site. Phase 1 is next.
+**Current phase:** Phases 0 and 1 are built and tested. Phase 0 is done once the repository is
+public and a push to `main` deploys the site. Phase 2 is next.
 
 ## The site
 
@@ -108,7 +108,8 @@ two neighbours.
   picture, or both. The centre's six spokes point at its six contacts. Each outer disc has three
   spokes at its contacts and three pointing out. That makes 42 nodes.
 - **Turning:** turning a disc moves its nodes one spoke round (60°). Tapping a disc turns it
-  clockwise, and Shift-click or its ↺ handle turns it back.
+  clockwise, and Shift-click turns it back. Dragging it round turns it either way, a spoke each time
+  the pointer passes halfway to the next.
 - **Swapping:** where two discs touch, two nodes meet, one from each disc. Tapping the contact swaps
   them. It's the only way a node moves from one disc to another.
 - **Lettering:** a half's letters stand one above the other along its spoke, with the first letter
@@ -119,6 +120,8 @@ two neighbours.
     and swapping a right pair leaves it right.
   - Each letter stays upright as its disc turns.
   - Letters are all capitals, so case can't give away which half comes first in the name.
+  - Letters are sized so the board's longest half fits its spoke: up to about seven letters read
+    comfortably.
 
 ### The goal
 
@@ -171,10 +174,11 @@ Sator's engine.
 - **The board:** drawn in SVG and filling the screen's width, with the game master's title and
   introduction above it.
 - **Moves:**
-  - Tap a disc to turn it clockwise, or Shift-click it or use its ↺ to turn it back.
+  - Tap a disc to turn it clockwise, Shift-click it to turn it back, or drag it round either way.
   - Tap a contact's ⇄ to swap.
   - From the keyboard, Tab picks a disc or a contact, arrow keys turn and Enter swaps.
-  - Turns and swaps animate.
+  - Turns and swaps animate. A swap swings the two halves half a turn round their contact, each
+    onto the other disc, so it reads as the flip it is.
 - **Controls:** Undo, Start over, and a count of moves.
 - **Solving:** when the board is solved, the six names light up and the game master's line shows
   ("The great door rumbles open.").
@@ -247,8 +251,16 @@ src/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
     discs/
-      engine/                    # no React, no DOM: layout, board, answer, scramble, filler
-      Board.tsx                  # the board in SVG, for both pages
+      engine/                    # no React, no DOM
+        layout.ts                # discs, spokes and contacts; the flower of seven
+        board.ts                 # which piece is on each spoke; turns and swaps
+        answer.ts                # pieces, pairs, and answer keys that count either way round
+        scramble.ts              # solved boards, full and light scrambles
+        filler.ts                # place-name halves for blank filler
+        solver.ts                # puts any board right, for tests
+      Board.tsx                  # the board in SVG: drawing, animating, tapping, dragging, keys
+      Game.tsx                   # the board with Undo, Start over, moves, and the line for solving it
+      Example.tsx · examplePuzzle.ts  # the example to try, with made-up towns
       maker.tsx · player.tsx     # the game master's side; the players' side
   ui/                            # the site's own pages: home, the page shells, a link that holds nothing
 ```
@@ -264,7 +276,11 @@ src/
 - *Done when* a push to `main` updates the site. That waits on the repository going public (see
   [Stack and hosting](#stack-and-hosting)).
 
-**Phase 1: The discs and the board.**
+**Phase 1: The discs and the board.** *(done. Moves are animated by working out where each letter
+is, frame by frame, rather than by CSS transitions, so letters stay upright and a swap can swing
+round its contact. Shift-click, dragging and the arrow keys turn a disc back, so it needs no ↺
+handle. The example lives on the turning discs page until Phase 2's maker takes it over, and the
+line for solving it stays once said, even if a player carries on turning.)*
 - The engine with tests: layout, board, turning and swapping, answer keys, scrambles, filler and the
   solver.
 - The board in SVG with words on its spokes: turning, swapping, animation, Undo, Start over and the

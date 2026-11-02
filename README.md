@@ -12,9 +12,17 @@ who built the Labyrinth.
 The home page lists the kinds of puzzle. Each opens a page for making one, and gives a link to send
 the players.
 
-- **Turning discs** *(being built)*: seven touching discs of word-halves or pictures. The players
-  turn the discs and swap halves where they meet, until the names around the centre are spelled out
-  in order.
+- **Turning discs:** seven touching discs, each with six word-halves on its spokes. The players turn
+  the discs and swap halves where they meet, until the six names around the centre are spelled out
+  in order, from where the arrow points. Each half reads outward from its own disc's hub, so a pair
+  counts either way round.
+  - **Turn a disc** by tapping it (clockwise), Shift-clicking it (back), or dragging it round either
+    way. **Swap** the two halves where discs meet by tapping the ⇄ there. From the keyboard, Tab
+    picks a disc or a contact, the arrow keys turn and Enter swaps.
+  - **Undo** a move, or **Start over**. A solved board lights up the names and shows the line for
+    solving it.
+  - For now the page has an example to try, with 🎲 for a new scramble. Making your own puzzle and
+    sending it to your players comes next.
 
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
