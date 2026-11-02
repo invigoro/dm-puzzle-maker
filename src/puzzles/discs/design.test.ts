@@ -3,7 +3,8 @@ import { playerHash } from '../../kit/route';
 import { contentOf, FILLER, fillerOf, newDesign, PAIRS, problemsOf, readDesign, solvedOf, startOf, toPuzzle, type DiscsDesign } from './design';
 import { isBlank, keyOf, piecesOf, wordsOf, type Piece } from './engine/answer';
 import { FLOWER } from './engine/layout';
-import { isRight, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
+import { turn } from './engine/board';
+import { glowing, isRight, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
 
 // Made-up towns, never a game master's own.
 const NAMES: [string, string][] = [
@@ -173,6 +174,31 @@ describe('toPuzzle', () => {
     const puzzle = await toPuzzle(long);
     expect(puzzle.answers).toHaveLength(PAIRS);
     expect(`https://daedalus.invigoro.me/${await playerHash('discs', puzzle)}`.length).toBeLessThan(2000);
+  });
+});
+
+describe('the glow', () => {
+  it('is in a link only when the game master lets names glow, a fingerprint for each, in no order', async () => {
+    expect((await toPuzzle(design)).glows).toBeUndefined();
+    const puzzle = await toPuzzle({ ...design, glow: true });
+    expect(puzzle.glows).toHaveLength(PAIRS);
+    expect(puzzle.glows).toEqual([...puzzle.glows!].sort());
+    expect(readPuzzle(JSON.parse(JSON.stringify(puzzle)))).toEqual(puzzle);
+    expect(readDesign(JSON.parse(JSON.stringify({ ...design, glow: true })))?.glow).toBe(true);
+  });
+
+  it('lights each name in its place, checked against the fingerprints', async () => {
+    const puzzle = await toPuzzle({ ...design, glow: true });
+    const solved = solvedIn(puzzle);
+    expect(await glowing(puzzle, solved)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(await glowing(puzzle, turn(FLOWER, solved, 1, 1))).toEqual([1, 2, 3, 4, 5]);
+    expect(await glowing(puzzle, solvedIn(puzzle, design.pairs, 2))).toEqual([]);
+    expect(await glowing(await toPuzzle(design), solved)).toEqual([]);
+  });
+
+  it('lights a name at any contact, with any start', async () => {
+    const puzzle = await toPuzzle({ ...design, glow: true, anyStart: true });
+    expect(await glowing(puzzle, solvedIn(puzzle, design.pairs, 2))).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
 

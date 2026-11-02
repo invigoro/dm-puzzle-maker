@@ -6,7 +6,7 @@ import { iconMask, IconPicker } from '../../ui/IconPicker';
 import type { MakerProps } from '../types';
 import { Board, type Motion } from './Board';
 import { contentOf, fillerOf, scrambleOf, solvedOf, startOf, STARTS, type DiscsDesign } from './design';
-import { answerKey, answerKeys, keyOf, LONGEST_HALF, pairsInPlace, piecesOf, wordsOf, type Piece } from './engine/answer';
+import { answerKey, answerKeys, keyOf, lit, LONGEST_HALF, pairsInPlace, piecesOf, wordsOf, type Piece } from './engine/answer';
 import { play, type Board as Pieces, type Move } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { EXAMPLE } from './example';
@@ -43,6 +43,10 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
   const start = useMemo(() => startOf(design), [design]);
   const keys = useMemo(() => answerKeys(content, design.anyStart), [content, design.anyStart]);
   const isSolved = useCallback(async (board: Pieces) => keys.includes(answerKey(FLOWER, pieces, board)), [keys, pieces]);
+  const glowing = useMemo(
+    () => (design.glow ? async (board: Pieces) => lit(FLOWER, content, board, design.anyStart) : undefined),
+    [design.glow, design.anyStart, content],
+  );
   // The board to try starts again whenever what's on it changes.
   const trial = JSON.stringify([start, pieces.map(keyOf), design.anyStart]);
 
@@ -140,6 +144,13 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
             arrow’s. The board then has no arrow.
           </span>
         </label>
+        <label className="check">
+          <input type="checkbox" checked={design.glow} onChange={(event) => set({ glow: event.target.checked })} />
+          <span>
+            <strong>Glow:</strong> light each name as it comes right. It makes the puzzle easier, and a determined player
+            could test names one contact at a time.
+          </span>
+        </label>
         {blank && (
           <p>
             <button type="button" onClick={() => onChange({ ...design, words: EXAMPLE.words, pairs: EXAMPLE.pairs.map(([first, second]) => [{ text: first }, { text: second }]) })}>
@@ -218,7 +229,16 @@ export function Designer({ design, onChange }: MakerProps<DiscsDesign>) {
           {showSolved ? (
             <Board layout={FLOWER} pieces={pieces} board={solvedOf(design)} motion={null} onMove={() => {}} mark={!design.anyStart} solved />
           ) : (
-            <Game key={trial} layout={FLOWER} pieces={pieces} start={start} isSolved={isSolved} mark={!design.anyStart} success={design.words.success} />
+            <Game
+              key={trial}
+              layout={FLOWER}
+              pieces={pieces}
+              start={start}
+              isSolved={isSolved}
+              glowing={glowing}
+              mark={!design.anyStart}
+              success={design.words.success}
+            />
           )}
         </div>
         <IconCredit names={pieces.flatMap((piece) => (piece.icon ? [piece.icon] : []))} />

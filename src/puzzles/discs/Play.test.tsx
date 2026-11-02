@@ -93,6 +93,15 @@ describe('the players’ page', () => {
     }
   });
 
+  it('lights the names already in their places, when the game master lets names glow', async () => {
+    const glowing = await toPuzzle({ ...design, glow: true });
+    render(<>{(await pageFor({ page: 'play', kind: 'discs', data: JSON.parse(JSON.stringify(glowing)) })).content}</>);
+    // This puzzle's one move from solved leaves some names in place (as its seed has it; turning the centre would leave none).
+    await waitFor(() => expect(document.querySelectorAll('.board .piece.lit').length).toBeGreaterThanOrEqual(2), { timeout: 3000 });
+    expect(document.querySelectorAll('.board .piece.lit').length).toBeLessThan(12);
+    expect(document.querySelector('.board.solved')).toBeNull();
+  });
+
   it('keeps a player’s board in the browser, for when they come back', async () => {
     const { user } = await openPlayer();
     await user.click(screen.getByRole('button', { name: /^Turn the bottom disc:/ }));

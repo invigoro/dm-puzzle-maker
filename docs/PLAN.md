@@ -14,7 +14,7 @@ puzzle spells the six great towns of the game master's realm.
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
 **Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures, saved
-puzzles and setting the start by hand are done; the glow and the stone-and-bronze look are to come.
+puzzles, setting the start by hand and the glow are done; the stone-and-bronze look is to come.
 
 ## The site
 
@@ -203,6 +203,10 @@ Sator's engine.
 - **The pairs:** six rows of first half and second half, in order from the mark. Halves of up to
   about seven letters fit their spokes, and longer ones are set smaller.
 - **Any start:** off by default.
+- **Glow:** off by default. It lights each name gold as it comes right. The player link then holds a
+  fingerprint for each name, sorted: of the pair and its contact, or with any start, the pair
+  alone. The players' page checks each centre contact after every move, making each contact's
+  fingerprint once.
 - **Start from the example:** while the names are blank, a button fills in the example's six
   made-up towns and its words, to see how it works.
 - **Filler:** 30 boxes. Blank ones show, faintly, the half they'll be filled with, with 🎲 for
@@ -368,9 +372,10 @@ scrambles are 20, 10 or 5 moves from solved.)*
 
 ## Risks
 
-- **The answer leaking:** see [Keeping the answer secret](#keeping-the-answer-secret). A glow for
-  each pair would let a player test one contact at a time, which is far quicker than guessing the
-  whole board, so it's off unless the game master turns it on.
+- **The answer leaking:** see [Keeping the answer secret](#keeping-the-answer-secret). The glow
+  lets a player test one contact at a time, which is far quicker than guessing the whole board
+  (about 1,700 pairs to try a contact, against some 10¹⁷ boards), so it's off unless the game
+  master turns it on, and the maker says why.
 - **Small screens:** 42 spokes of letters is a lot for a phone. The board fills the width, halves
   are kept short, and the phone can be turned sideways. Phase 1 checks it at a phone's width.
 - **Long links:** short halves and icon names keep a player link to about a thousand characters. A

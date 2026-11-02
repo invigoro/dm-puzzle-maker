@@ -39,8 +39,9 @@ the arrow points.
 - **Solving:** a solved board lights up the names, and shows the line for solving it.
 - **Making one:**
   - **The names:** six of them, each in two halves, in order clockwise from the arrow. **Any start**
-    counts them in order from any contact, and takes the arrow away. **Start from the example**
-    fills in six made-up towns, to see how it works.
+    counts them in order from any contact, and takes the arrow away. **Glow** lights each name as it
+    comes right, for an easier puzzle; it's off unless you turn it on, as a player could then test
+    names one at a time. **Start from the example** fills in six made-up towns, to see how it works.
   - **Pictures:** a half can be words, a picture, or both. 🖼 beside any half opens a search of
     about 4,000 fantasy icons from [game-icons.net](https://game-icons.net/). A picture stands at
     the rim end of its spoke like the letters, and the page names whoever made each picture on show,

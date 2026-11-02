@@ -3,7 +3,7 @@ import { fingerprint, newSalt } from '../../kit/check';
 import { isIconName } from '../../kit/icons';
 import { mulberry32, randomSeed } from '../../kit/rng';
 import { readWords, tidyWords, type Words } from '../../kit/words';
-import { answerKeys, isBlank, LONGEST_HALF, piecesOf, wordsOf, type Content, type Piece } from './engine/answer';
+import { answerKeys, glowKeys, isBlank, LONGEST_HALF, piecesOf, wordsOf, type Content, type Piece } from './engine/answer';
 import { readBoard, type Board } from './engine/board';
 import { fillBlanks } from './engine/filler';
 import { FLOWER, positionCount } from './engine/layout';
@@ -27,6 +27,8 @@ export interface DiscsDesign {
   filler: Piece[];
   /** Whether the names count in order from any contact round the centre, not just the mark's. */
   anyStart: boolean;
+  /** Whether each name lights up as it comes right: easier, and quicker to guess at. */
+  glow: boolean;
   mix: Start;
   /** The board set by hand, numbering pieces as `piecesOf` does: only when `mix` is 'hand'. */
   start?: number[];
@@ -46,6 +48,7 @@ export function newDesign(): DiscsDesign {
     pairs: Array.from({ length: PAIRS }, () => [blank(), blank()]),
     filler: Array.from({ length: FILLER }, blank),
     anyStart: false,
+    glow: false,
     mix: 'full',
     fillSeed: randomSeed(),
     seed: randomSeed(),
@@ -82,6 +85,7 @@ export function readDesign(data: unknown): DiscsDesign | null {
     }),
     filler: Array.from({ length: FILLER }, (_, i) => halfIn(filler[i])),
     anyStart: input.anyStart === true,
+    glow: input.glow === true,
     mix,
     ...(start ? { start: [...start] } : {}),
     fillSeed: seedIn(input.fillSeed),
@@ -126,5 +130,7 @@ export async function toPuzzle(design: DiscsDesign): Promise<DiscsPuzzle> {
     mark: !design.anyStart,
     salt,
     answers: await Promise.all(answerKeys(content, design.anyStart).map((key) => fingerprint(key, salt))),
+    // Sorted, so their order says nothing.
+    ...(design.glow ? { glows: (await Promise.all(glowKeys(content, design.anyStart).map((key) => fingerprint(key, salt)))).sort() } : {}),
   };
 }

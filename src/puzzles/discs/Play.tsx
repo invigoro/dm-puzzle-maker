@@ -4,7 +4,7 @@ import { IconCredit } from '../../ui/IconCredit';
 import type { Board, Move } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { Game } from './Game';
-import { isRight, piecesIn, progressKey, readProgress, type DiscsPuzzle } from './puzzle';
+import { glowing, isRight, piecesIn, progressKey, readProgress, type DiscsPuzzle } from './puzzle';
 
 /** The players' side: the board as the link starts it, checked against its fingerprints, and kept in this browser as they go. */
 export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
@@ -14,6 +14,11 @@ export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
   const isSolved = useCallback((board: Board) => isRight(puzzle, board), [puzzle]);
   const [initial] = useState(() => readProgress(load(progressKey(puzzle))));
   const keep = useCallback((board: Board, moves: readonly Move[]) => store(progressKey(puzzle), { board, moves }), [puzzle]);
+  // Each contact's fingerprint is made once, however often the board comes back to it.
+  const glow = useMemo(() => {
+    const seen = new Map<string, Promise<string>>();
+    return puzzle.glows ? (board: Board) => glowing(puzzle, board, seen) : undefined;
+  }, [puzzle]);
   return (
     <>
       <Game
@@ -22,6 +27,7 @@ export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
         start={start}
         initial={initial}
         onProgress={keep}
+        glowing={glow}
         isSolved={isSolved}
         mark={puzzle.mark}
         success={puzzle.words.success}

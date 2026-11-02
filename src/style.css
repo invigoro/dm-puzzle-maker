@@ -635,7 +635,8 @@ h2 {
   color: var(--ink);
 }
 
-.board.solved .piece.goal {
+.board.solved .piece.goal,
+.board .piece.lit {
   color: var(--gold);
 }
 
@@ -647,7 +648,8 @@ h2 {
   dominant-baseline: central;
 }
 
-.board.solved .piece.goal text {
+.board.solved .piece.goal text,
+.board .piece.lit text {
   fill: var(--gold);
 }
 

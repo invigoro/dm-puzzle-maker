@@ -42,6 +42,8 @@ interface BoardProps {
   mark: boolean;
   /** Whether the board is solved, so the pairs light up. */
   solved: boolean;
+  /** The goal contacts whose names glow, when names glow as they come right. */
+  lit?: readonly number[];
 }
 
 /** Where a piece is drawn: its letters run along `angle` from the pivot, the first nearest it, `reach` further out than at rest. */
@@ -77,7 +79,7 @@ function useProgress(motion: Motion | null): number {
 }
 
 /** The discs, their pieces and the contacts between them, to turn and swap. */
-export function Board({ layout, pieces, board, motion, onMove, mark, solved }: BoardProps) {
+export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit = [] }: BoardProps) {
   const t = ease(useProgress(motion));
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ disc: number; pointer: number; angle: number; turned: boolean } | null>(null);
@@ -91,7 +93,9 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
   const fit = (piece: Piece) => Math.min(MOST_ADVANCE, roomFor(piece) / Math.max(1, [...wordsOf(piece)].length - 1));
   const advance = Math.min(...pieces.filter((piece) => !piece.icon).map(fit), MOST_ADVANCE);
   const advanceOf = (piece: Piece) => (piece.icon ? Math.min(advance, fit(piece)) : advance);
-  const goals = new Set(layout.goals.flatMap((goal) => [layout.contacts[goal].a, layout.contacts[goal].b]));
+  const ends = (goal: number) => [layout.contacts[goal].a, layout.contacts[goal].b];
+  const goals = new Set(layout.goals.flatMap(ends));
+  const glowing = new Set(lit.flatMap((goal) => ends(layout.goals[goal])));
   const textAt = (position: number) => describe(pieces[board[position]]);
 
   /** Where the piece at a position is drawn, partway through the motion that brought it there. */
@@ -223,6 +227,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
               rim={100 - RIM - (icon ? BESIDE_ICON : 0)}
               advance={advanceOf(pieces[piece])}
               goal={goals.has(position)}
+              lit={glowing.has(position)}
             />
           );
         })}
@@ -274,6 +279,8 @@ interface LettersProps extends Pose {
   rim: number;
   advance: number;
   goal: boolean;
+  /** Whether its name glows, being right. */
+  lit: boolean;
 }
 
 /**
@@ -282,14 +289,14 @@ interface LettersProps extends Pose {
  * halves meeting at a contact stand foot to foot, and each reads down from its own hub. A picture
  * stands the same way, at the rim end, with the letters running in from it.
  */
-const Letters = memo(function Letters({ text, icon, x, y, angle, reach, rim, advance, goal }: LettersProps) {
+const Letters = memo(function Letters({ text, icon, x, y, angle, reach, rim, advance, goal, lit }: LettersProps) {
   const letters = [...text];
   const along = direction(angle);
   const at = (out: number) => [x + (out + reach) * along.x, y + (out + reach) * along.y];
   const [size, inward] = letters.length > 0 ? [ICON, ICON_IN] : [ICON_ALONE, ICON_ALONE_IN];
   const [ix, iy] = at(100 - RIM - inward);
   return (
-    <g className={goal ? 'piece goal' : 'piece'}>
+    <g className={['piece', goal && 'goal', lit && 'lit'].filter(Boolean).join(' ')}>
       {icon && (
         <g
           className="icon"

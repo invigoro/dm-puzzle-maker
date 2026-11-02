@@ -2,7 +2,7 @@
 import { fingerprint } from '../../kit/check';
 import { isIconName } from '../../kit/icons';
 import { readWords, type Words } from '../../kit/words';
-import { answerKey, LONGEST_HALF, type Piece } from './engine/answer';
+import { answerKey, glowKeysAt, LONGEST_HALF, type Piece } from './engine/answer';
 import { readBoard, readMoves, type Board, type Move } from './engine/board';
 import { FLOWER, positionCount } from './engine/layout';
 
@@ -23,6 +23,8 @@ export interface DiscsPuzzle {
   mark: boolean;
   salt: string;
   answers: string[];
+  /** Fingerprints of each name where it glows, when the game master lets names glow as they come right. */
+  glows?: string[];
 }
 
 const NO_WORDS: Words = { title: '', intro: '', success: '' };
@@ -39,8 +41,9 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   if (!textIn(salt, 64) || salt === '') return null;
   const most = FLOWER.goals.length;
   if (!Array.isArray(answers) || answers.length === 0 || answers.length > most || !answers.every((answer) => textIn(answer, 64))) return null;
-  const { icons } = input;
+  const { icons, glows } = input;
   if (icons !== undefined && (!Array.isArray(icons) || icons.length !== pieces.length || !icons.every((icon) => icon === '' || isIconName(icon)))) return null;
+  if (glows !== undefined && (!Array.isArray(glows) || glows.length > most || !glows.every((glow) => textIn(glow, 64)))) return null;
   return {
     v: 1,
     words: readWords(input.words, NO_WORDS),
@@ -50,6 +53,7 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
     mark: input.mark !== false,
     salt,
     answers,
+    ...(glows ? { glows } : {}),
   };
 }
 
@@ -60,6 +64,23 @@ export const piecesIn = (puzzle: DiscsPuzzle): Piece[] =>
 /** Whether a board is solved: the fingerprint of its answer key is one of the puzzle's. */
 export async function isRight(puzzle: DiscsPuzzle, board: Board): Promise<boolean> {
   return puzzle.answers.includes(await fingerprint(answerKey(FLOWER, piecesIn(puzzle), board), puzzle.salt));
+}
+
+/**
+ * Which goal contacts glow on a board: those whose fingerprint is one of the puzzle's glows. Most
+ * moves leave most contacts as they were, so each key's fingerprint is made once, in `seen`.
+ */
+export async function glowing(puzzle: DiscsPuzzle, board: Board, seen = new Map<string, Promise<string>>()): Promise<number[]> {
+  if (!puzzle.glows) return [];
+  const glows = new Set(puzzle.glows);
+  const keys = glowKeysAt(FLOWER, piecesIn(puzzle), board, !puzzle.mark);
+  const fingerprints = await Promise.all(
+    keys.map((key) => {
+      if (!seen.has(key)) seen.set(key, fingerprint(key, puzzle.salt));
+      return seen.get(key)!;
+    }),
+  );
+  return fingerprints.flatMap((made, goal) => (glows.has(made) ? [goal] : []));
 }
 
 /** A player's board and the moves that made it, as the browser keeps them. */

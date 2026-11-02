@@ -18,14 +18,26 @@ interface GameProps {
   initial?: { board: Pieces; moves: readonly Move[] } | null;
   /** Told of the board and its moves whenever they change, to keep them. */
   onProgress?(board: Pieces, moves: readonly Move[]): void;
+  /** Which goal contacts glow on a board, when names glow as they come right. */
+  glowing?(board: Pieces): Promise<number[]>;
 }
 
 /** A puzzle to play: the board, with Undo, Start over and a count of moves, and the game master's line once it's solved. */
-export function Game({ layout, pieces, start, isSolved, mark, success, initial, onProgress }: GameProps) {
+export function Game({ layout, pieces, start, isSolved, mark, success, initial, onProgress, glowing }: GameProps) {
   const [board, setBoard] = useState(initial?.board ?? start);
   const [moves, setMoves] = useState<readonly Move[]>(initial?.moves ?? []);
   const [motion, setMotion] = useState<Motion | null>(null);
   const [solved, setSolved] = useState(false);
+  const [lit, setLit] = useState<readonly number[]>([]);
+
+  useEffect(() => {
+    if (!glowing) return setLit([]);
+    let current = true;
+    glowing(board).then((goals) => current && setLit(goals));
+    return () => {
+      current = false;
+    };
+  }, [board, glowing]);
   // The line stays once it's said, even if a player carries on turning.
   const [said, setSaid] = useState(false);
 
@@ -67,7 +79,7 @@ export function Game({ layout, pieces, start, isSolved, mark, success, initial, 
 
   return (
     <div className="game">
-      <Board layout={layout} pieces={pieces} board={board} motion={motion} onMove={move} mark={mark} solved={solved} />
+      <Board layout={layout} pieces={pieces} board={board} motion={motion} onMove={move} mark={mark} solved={solved} lit={lit} />
       <p className="hint">
         Tap a disc to turn it clockwise (Shift-click turns it back), or drag it round either way. Tap where two discs
         meet to swap the halves there.

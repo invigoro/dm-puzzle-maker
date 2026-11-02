@@ -53,6 +53,26 @@ export function answerKeys(content: Content, anyStart: boolean): string[] {
   return [...new Set(starts.map((start) => JSON.stringify([...pairs.slice(start), ...pairs.slice(0, start)])))];
 }
 
+/**
+ * What a goal contact's glow is checked by: the pair there, and, unless any start counts, which
+ * contact it's at. With any start, a name glows at any contact round the centre.
+ */
+const glowKey = (pair: string[], goal: number, anyStart: boolean) => JSON.stringify(anyStart ? pair : [goal, pair]);
+
+/** The glow keys that count: one for each name. */
+export const glowKeys = (content: Content, anyStart: boolean): string[] =>
+  content.pairs.map(([one, other], goal) => glowKey(pairKey(one, other), goal, anyStart));
+
+/** The glow key of each goal contact on a board, in order from the mark. */
+export const glowKeysAt = (layout: Layout, pieces: readonly Piece[], board: Board, anyStart: boolean): string[] =>
+  goalPairs(layout, pieces, board).map((pair, goal) => glowKey(pair, goal, anyStart));
+
+/** The goal contacts that glow on a board: those holding a name where it counts. */
+export function lit(layout: Layout, content: Content, board: Board, anyStart: boolean): number[] {
+  const keys = new Set(glowKeys(content, anyStart));
+  return glowKeysAt(layout, piecesOf(content), board, anyStart).flatMap((key, goal) => (keys.has(key) ? [goal] : []));
+}
+
 /** The goal contacts holding the pair that belongs there, counting from the mark. */
 export function pairsInPlace(layout: Layout, content: Content, board: Board): number[] {
   const at = goalPairs(layout, piecesOf(content), board);

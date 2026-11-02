@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../../../kit/rng';
-import { answerKey, answerKeys, holdsAPair, keyOf, pairsInPlace, piecesOf, type Content } from './answer';
+import { answerKey, answerKeys, glowKeys, glowKeysAt, holdsAPair, keyOf, lit, pairsInPlace, piecesOf, type Content } from './answer';
 import { swap, turn } from './board';
 import { FLOWER } from './layout';
 import { solvedBoard } from './scramble';
@@ -60,6 +60,27 @@ describe('answer keys', () => {
     const other = board.indexOf(12);
     [board[frost], board[other]] = [board[other], board[frost]];
     expect(answerKeys(lookalike, false)).toContain(answerKey(FLOWER, piecesOf(lookalike), board));
+  });
+});
+
+describe('lit', () => {
+  it('lights each name where it counts: at its own contact, or with any start, at any', () => {
+    expect(lit(FLOWER, content, solved, false)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(lit(FLOWER, content, turn(FLOWER, solved, 1, 1), false)).toEqual([1, 2, 3, 4, 5]);
+    // Every name moved one contact on keeps its pair, but only counts where it is with any start.
+    const moved = [...solved];
+    FLOWER.goals.forEach((goal, i) => {
+      const next = FLOWER.contacts[FLOWER.goals[(i + 1) % 6]];
+      moved[next.a] = solved[FLOWER.contacts[goal].a];
+      moved[next.b] = solved[FLOWER.contacts[goal].b];
+    });
+    expect(lit(FLOWER, content, moved, false)).toEqual([]);
+    expect(lit(FLOWER, content, moved, true)).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it('checks a board by the same keys the link holds', () => {
+    expect(glowKeysAt(FLOWER, pieces, solved, false)).toEqual(glowKeys(content, false));
+    expect(new Set(glowKeysAt(FLOWER, pieces, solved, true))).toEqual(new Set(glowKeys(content, true)));
   });
 });
 
