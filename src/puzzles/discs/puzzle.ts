@@ -4,7 +4,7 @@ import { isIconName } from '../../kit/icons';
 import { readWords, type Words } from '../../kit/words';
 import { answerKey, glowKeysAt, LONGEST_HALF, type Piece } from './engine/answer';
 import { readBoard, readMoves, type Board, type Move } from './engine/board';
-import { FLOWER, positionCount } from './engine/layout';
+import { FLOWER, layoutById, positionCount, type Layout, type LayoutId } from './engine/layout';
 
 /**
  * A puzzle as players get it: the pieces as they start, spoke by spoke, and fingerprints of the
@@ -14,7 +14,7 @@ import { FLOWER, positionCount } from './engine/layout';
 export interface DiscsPuzzle {
   v: 1;
   words: Words;
-  layout: 'flower';
+  layout: LayoutId;
   /** Each spoke's piece at the start, in the layout's order of positions: its words. */
   pieces: string[];
   /** Each piece's picture, in the same order, '' for none. Only there when some piece has one. */
@@ -36,10 +36,11 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
   const input = data as Record<string, unknown>;
   const { pieces, salt, answers } = input;
-  if (input.v !== 1 || input.layout !== 'flower') return null;
-  if (!Array.isArray(pieces) || pieces.length !== positionCount(FLOWER) || !pieces.every((piece) => textIn(piece, LONGEST_HALF))) return null;
+  const layout = layoutById(input.layout);
+  if (input.v !== 1 || !layout) return null;
+  if (!Array.isArray(pieces) || pieces.length !== positionCount(layout) || !pieces.every((piece) => textIn(piece, LONGEST_HALF))) return null;
   if (!textIn(salt, 64) || salt === '') return null;
-  const most = FLOWER.goals.length;
+  const most = layout.goals.length;
   if (!Array.isArray(answers) || answers.length === 0 || answers.length > most || !answers.every((answer) => textIn(answer, 64))) return null;
   const { icons, glows } = input;
   if (icons !== undefined && (!Array.isArray(icons) || icons.length !== pieces.length || !icons.every((icon) => icon === '' || isIconName(icon)))) return null;
@@ -47,7 +48,7 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   return {
     v: 1,
     words: readWords(input.words, NO_WORDS),
-    layout: 'flower',
+    layout: layout.id,
     pieces,
     ...(icons ? { icons } : {}),
     mark: input.mark !== false,
@@ -57,13 +58,16 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   };
 }
 
+/** The puzzle's layout. */
+export const layoutIn = (puzzle: DiscsPuzzle): Layout => layoutById(puzzle.layout) ?? FLOWER;
+
 /** The puzzle's pieces, numbered as its boards number them: by where each starts. */
 export const piecesIn = (puzzle: DiscsPuzzle): Piece[] =>
   puzzle.pieces.map((text, i) => (puzzle.icons?.[i] ? { text, icon: puzzle.icons[i] } : { text }));
 
 /** Whether a board is solved: the fingerprint of its answer key is one of the puzzle's. */
 export async function isRight(puzzle: DiscsPuzzle, board: Board): Promise<boolean> {
-  return puzzle.answers.includes(await fingerprint(answerKey(FLOWER, piecesIn(puzzle), board), puzzle.salt));
+  return puzzle.answers.includes(await fingerprint(answerKey(layoutIn(puzzle), piecesIn(puzzle), board), puzzle.salt));
 }
 
 /**
@@ -73,7 +77,7 @@ export async function isRight(puzzle: DiscsPuzzle, board: Board): Promise<boolea
 export async function glowing(puzzle: DiscsPuzzle, board: Board, seen = new Map<string, Promise<string>>()): Promise<number[]> {
   if (!puzzle.glows) return [];
   const glows = new Set(puzzle.glows);
-  const keys = glowKeysAt(FLOWER, piecesIn(puzzle), board, !puzzle.mark);
+  const keys = glowKeysAt(layoutIn(puzzle), piecesIn(puzzle), board, !puzzle.mark);
   const fingerprints = await Promise.all(
     keys.map((key) => {
       if (!seen.has(key)) seen.set(key, fingerprint(key, puzzle.salt));
@@ -89,11 +93,11 @@ export interface Progress {
   moves: Move[];
 }
 
-/** Progress from untrusted data, or null if it isn't any. */
-export function readProgress(data: unknown): Progress | null {
+/** Progress from untrusted data, on a layout, or null if it isn't any. */
+export function readProgress(layout: Layout, data: unknown): Progress | null {
   const input = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
-  const board = readBoard(FLOWER, input.board);
-  const moves = readMoves(FLOWER, input.moves);
+  const board = readBoard(layout, input.board);
+  const moves = readMoves(layout, input.moves);
   return board && moves ? { board, moves } : null;
 }
 

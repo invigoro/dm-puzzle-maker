@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { angleOf, angleTo, direction, discOf, FLOWER, layoutOf, positionCount, touch } from './layout';
+import { angleOf, angleTo, direction, discOf, FLOWER, layoutById, layoutOf, LAYOUTS, positionCount, touch, TREFOIL } from './layout';
 
 const discsAt = (contact: { a: number; b: number }) => [discOf(FLOWER, contact.a), discOf(FLOWER, contact.b)];
 
@@ -55,9 +55,66 @@ describe('the flower', () => {
   });
 });
 
+describe('three discs', () => {
+  const discsOf = (contact: { a: number; b: number }) => [discOf(TREFOIL, contact.a), discOf(TREFOIL, contact.b)];
+
+  it('has three discs of six spokes, each touching the other two', () => {
+    expect(TREFOIL.discs).toHaveLength(3);
+    expect(positionCount(TREFOIL)).toBe(18);
+    expect(TREFOIL.contacts).toHaveLength(3);
+    for (const [one, other] of [
+      [0, 1],
+      [1, 2],
+      [0, 2],
+    ]) {
+      expect(touch(TREFOIL, one, other)).toBe(true);
+    }
+    expect(TREFOIL.hub).toBeNull();
+  });
+
+  it('turns its spokes half a step, so each contact meets a spoke of both discs', () => {
+    expect(TREFOIL.phase).toBe(30);
+    for (const contact of TREFOIL.contacts) {
+      for (const end of [contact.a, contact.b]) {
+        const disc = TREFOIL.discs[discOf(TREFOIL, end)];
+        const along = direction(angleOf(TREFOIL, end));
+        expect(disc.x + disc.r * along.x).toBeCloseTo(contact.x);
+        expect(disc.y + disc.r * along.y).toBeCloseTo(contact.y);
+      }
+    }
+  });
+
+  it('reads the three names clockwise round the gap in the middle, from the top', () => {
+    expect(TREFOIL.goals.map((goal) => discsOf(TREFOIL.contacts[goal]))).toEqual([
+      [0, 1], // between the two upper discs
+      [1, 2], // lower right
+      [0, 2], // lower left
+    ]);
+    const first = TREFOIL.contacts[TREFOIL.goals[0]];
+    expect(first.x).toBeCloseTo(0);
+    expect(first.y).toBeLessThan(TREFOIL.mark.y);
+  });
+});
+
+describe('layouts', () => {
+  it('are found by their names in links, smallest first', () => {
+    expect(LAYOUTS.map((layout) => layout.id)).toEqual(['trefoil', 'flower']);
+    expect(layoutById('flower')).toBe(FLOWER);
+    expect(layoutById('trefoil')).toBe(TREFOIL);
+    expect(layoutById('nineteen')).toBeUndefined();
+  });
+});
+
 describe('layoutOf', () => {
+  const spec = { id: 'flower' as const, name: 'Test', spokes: 6, mark: { x: 0, y: 0 }, isGoal: () => true };
+
   it('turns down discs that touch between their spokes', () => {
-    expect(() => layoutOf([...FLOWER.discs], 4, 0)).toThrow(/between its spokes/);
+    expect(() => layoutOf({ ...spec, discs: [...FLOWER.discs], spokes: 4 })).toThrow(/between its spokes/);
+  });
+
+  it('turns down a disc that doesn’t join the rest', () => {
+    const apart = [...FLOWER.discs.slice(0, 2), { x: 900, y: 900, r: 100, name: 'a far disc' }];
+    expect(() => layoutOf({ ...spec, discs: apart })).toThrow(/must join the rest/);
   });
 });
 

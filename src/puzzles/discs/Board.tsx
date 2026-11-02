@@ -181,7 +181,6 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
   const ys = layout.discs.flatMap((disc) => [disc.y - disc.r, disc.y + disc.r]);
   const [left, top] = [Math.min(...xs) - MARGIN, Math.min(...ys) - MARGIN];
   const viewBox = `${left} ${top} ${Math.max(...xs) + MARGIN - left} ${Math.max(...ys) + MARGIN - top}`;
-  const hub = layout.discs[layout.hub];
   const firstGoal = layout.contacts[layout.goals[0]];
   const turning = t < 1 && motion?.move.kind === 'turn' ? motion.move : null;
 
@@ -225,7 +224,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
                 );
               })}
             </g>
-            {/* The hub's arrow, when there is one, stands where its boss would be. */}
+            {/* The arrow, when it stands on a hub, stands where the hub's boss would be. */}
             {!(mark && d === layout.hub) && <circle className="boss" cx={disc.x} cy={disc.y} r={4.5} fill={url('bronze')} />}
           </g>
         );
@@ -252,7 +251,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
           className="mark"
           d="M0 -10 L5 -2.5 L1.8 -2.5 L1.8 6 L-1.8 6 L-1.8 -2.5 L-5 -2.5 Z"
           fill={url('bronze')}
-          transform={`translate(${hub.x} ${hub.y}) rotate(${angleTo(hub, firstGoal)})`}
+          transform={`translate(${layout.mark.x} ${layout.mark.y}) rotate(${angleTo(layout.mark, firstGoal)})`}
         />
       )}
       {layout.contacts.map((contact, c) => (

@@ -127,6 +127,39 @@ describe('the turning discs maker', () => {
     expect(screen.getByRole('button', { name: 'Picture for filler 4' })).toHaveAttribute('title', 'Add a picture');
   });
 
+  it('offers three discs or seven, with the names and filler to match, and keeps the rest aside', async () => {
+    const user = await openMaker();
+    const names = () => screen.getAllByRole('textbox', { name: /^Name \d, first half$/ });
+    const discs = () => within(screen.getByRole('group', { name: 'Try it' })).getAllByRole('button', { name: /^Turn / });
+    expect(screen.getByRole('radio', { name: /^Seven discs/ })).toBeChecked();
+    expect(names()).toHaveLength(6);
+    expect(discs()).toHaveLength(7);
+    await user.type(screen.getByRole('textbox', { name: 'Name 5, first half' }), 'Lantern');
+
+    await user.click(screen.getByRole('radio', { name: /^Three discs/ }));
+    expect(names()).toHaveLength(3);
+    expect(screen.getAllByRole('textbox', { name: /^Filler / })).toHaveLength(12);
+    expect(discs()).toHaveLength(3);
+    expect(screen.getByText('Names 4 to 6 are kept aside, and come back with more discs.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /^Seven discs/ }));
+    expect(screen.getByRole('textbox', { name: 'Name 5, first half' })).toHaveValue('Lantern');
+  });
+
+  it('starts three discs from their own example, and sends them', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('radio', { name: /^Three discs/ }));
+    await user.click(screen.getByRole('button', { name: 'Start from the example' }));
+    expect(screen.getByRole('textbox', { name: 'Name 3, second half' })).toHaveValue('mere');
+    expect(screen.getByRole('textbox', { name: 'Title' })).toHaveValue('The ferry-gate');
+    await linkReady();
+    await user.click(copyButton());
+    const route = await readRoute(new URL(await navigator.clipboard.readText()).hash, ['discs']);
+    const puzzle = readPuzzle(route.page === 'play' ? route.data : null);
+    expect(puzzle?.layout).toBe('trefoil');
+    expect(puzzle?.pieces).toHaveLength(18);
+  });
+
   it('sets the start by hand, on a board of its own, and tries it from there', async () => {
     const user = await openMaker();
     await user.click(screen.getByRole('button', { name: 'Start from the example' }));
@@ -138,9 +171,9 @@ describe('the turning discs maker', () => {
     expect(top(arrange)).toBe(top(trial));
 
     await user.click(within(arrange).getByRole('button', { name: 'Start from solved' }));
-    expect(within(arrange).getByText(/6 names start in their places\./)).toBeInTheDocument();
+    expect(within(arrange).getByText(/Six names start in their places\./)).toBeInTheDocument();
     await user.click(within(arrange).getByRole('button', { name: /^Turn the top disc:/ }));
-    expect(within(arrange).getByText(/5 names start in their places\./)).toBeInTheDocument();
+    expect(within(arrange).getByText(/Five names start in their places\./)).toBeInTheDocument();
     expect(top(screen.getByRole('group', { name: 'Try it' }))).toBe(top(arrange));
     await waitFor(() => expect(location.hash).toMatch(/^#m=/));
     const route = await readRoute(location.hash, ['discs']);

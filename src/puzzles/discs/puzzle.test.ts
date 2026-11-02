@@ -28,6 +28,8 @@ describe('readPuzzle', () => {
     const broken = [
       { ...puzzle, v: 2 },
       { ...puzzle, layout: 'square' },
+      // Forty-two pieces are seven discs' worth, not three's.
+      { ...puzzle, layout: 'trefoil' },
       { ...puzzle, pieces: puzzle.pieces.slice(1) },
       { ...puzzle, pieces: ['X'.repeat(40), ...puzzle.pieces.slice(1)] },
       { ...puzzle, salt: '' },
@@ -59,12 +61,12 @@ describe('progress', () => {
 
   it('reads back a board and its moves', () => {
     const progress = { board, moves: [{ kind: 'turn', disc: 1, by: 1 }] };
-    expect(readProgress(JSON.parse(JSON.stringify(progress)))).toEqual(progress);
+    expect(readProgress(FLOWER, JSON.parse(JSON.stringify(progress)))).toEqual(progress);
   });
 
   it('turns away anything else', () => {
     for (const junk of [null, {}, { board }, { board: board.slice(1), moves: [] }, { board, moves: [{ kind: 'fly' }] }]) {
-      expect(readProgress(junk)).toBeNull();
+      expect(readProgress(FLOWER, junk)).toBeNull();
     }
   });
 

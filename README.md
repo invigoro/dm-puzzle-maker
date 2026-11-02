@@ -27,9 +27,12 @@ doesn't lose the board.
 
 ### Turning discs
 
-Seven touching discs of stone, rimmed in bronze, each with six word-halves or pictures cut into its
+Touching discs of stone, rimmed in bronze, each with six word-halves or pictures cut into its
 spokes. The players turn the discs and swap halves at the bronze studs where they meet, until the
-six names around the centre are spelled out in order, from where the arrow points.
+names are spelled out in order, from where the arrow points:
+- **Seven discs:** six names round the centre disc.
+- **Three discs**, as in Baldur's Gate 3's Defiled Temple: three names, where the three discs meet.
+  A quick puzzle.
 
 - **Lettering:** each half reads down its spoke from its own disc's hub, every letter standing on
   the rim. So the two halves at a contact stand foot to foot, and a name counts either way round.
@@ -38,10 +41,13 @@ six names around the centre are spelled out in order, from where the arrow point
   or a contact, the arrow keys turn and Enter swaps. **Undo** and **Start over** are below the board.
 - **Solving:** a solved board lights up the names, and shows the line for solving it.
 - **Making one:**
-  - **The names:** six of them, each in two halves, in order clockwise from the arrow. **Any start**
-    counts them in order from any contact, and takes the arrow away. **Glow** lights each name as it
-    comes right, for an easier puzzle; it's off unless you turn it on, as a player could then test
-    names one at a time. **Start from the example** fills in six made-up towns, to see how it works.
+  - **The discs:** three or seven, each drawn small. The names and filler follow the choice, and
+    any beyond its count are kept aside in case you change back.
+  - **The names:** six or three of them, each in two halves, in order clockwise from the arrow.
+    **Any start** counts them in order from any of their contacts, and takes the arrow away.
+    **Glow** lights each name as it comes right, for an easier puzzle; it's off unless you turn it
+    on, as a player could then test names one at a time. **Start from the example** fills in
+    made-up towns, to see how it works.
   - **Pictures:** a half can be words, a picture, or both. 🖼 beside any half opens a search of
     about 4,000 fantasy icons from [game-icons.net](https://game-icons.net/). A picture stands at
     the rim end of its spoke like the letters, and the page names whoever made each picture on show,

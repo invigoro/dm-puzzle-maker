@@ -19,9 +19,8 @@ Defiled Temple. Three new kinds of puzzle will follow:
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 4 (three discs or seven). Phases 0 to 3 are done and live at
-https://daedalus.invigoro.me/, and Phase 5 (more kinds of puzzle) comes next. See
-[Milestones](#milestones).
+**Current phase:** none. Phases 0 to 4 are done and live at https://daedalus.invigoro.me/, and
+Phase 5 (more kinds of puzzle) is next. See [Milestones](#milestones).
 
 ## The site
 
@@ -171,9 +170,9 @@ two neighbours.
 The engine lives in `src/puzzles/discs/engine/`, in plain TypeScript with no React or DOM, like
 Sator's engine.
 
-- **Layout:** the discs' centres and radii, and the contacts, found where discs touch. The flower of
-  seven is the first layout. Being data, other layouts (three discs, nineteen) can be added the same
-  way.
+- **Layout:** the discs' centres and radii, where their spokes point, and the contacts, found where
+  discs touch. The flower of seven and three discs are the layouts (see
+  [More layouts](#more-layouts)).
 - **Board:** which node is on each of the 42 spokes, as seen on the board. A turn moves a disc's six
   nodes round, and a swap trades the two at a contact. The page counts each disc's turns separately,
   so a disc always animates the way it turned.
@@ -471,7 +470,7 @@ src/
     registry.ts                  # every kind of puzzle
     discs/
       engine/                    # no React, no DOM
-        layout.ts                # discs, spokes and contacts; the flower of seven
+        layout.ts                # discs, spokes and contacts; seven discs and three
         board.ts                 # which piece is on each spoke; turns and swaps
         answer.ts                # pieces, pairs, and answer keys that count either way round
         scramble.ts              # solved boards, full and light scrambles
@@ -544,7 +543,11 @@ cheap, and slate in the dark theme.)*
 - *Done when* the realm's puzzle can be made with pictures for some halves, and found again from the
   home page.
 
-**Phase 4: Three discs or seven.** See [More layouts](#more-layouts).
+**Phase 4: Three discs or seven.** See [More layouts](#more-layouts). *(done. Nineteen discs was
+dropped before it was built. A design keeps six names and 30 filler whatever its layout, and three
+discs use the first of them, so changing back loses nothing. The maker writes counts in words ("Six
+names start in their places"). Each layout has its own example to start from. A three-disc player
+link comes to about 520 characters.)*
 - Layouts by name, each with its discs, where its spokes point, its goal contacts in order, and its
   mark. The design, the player link, the board and the maker take the layout, rather than assuming
   the flower.

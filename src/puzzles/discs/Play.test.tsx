@@ -8,8 +8,7 @@ import { pageFor } from '../../ui/pages';
 import { contentOf, newDesign, toPuzzle, type DiscsDesign } from './design';
 import { answerKey, answerKeys } from './engine/answer';
 import { play, type Move } from './engine/board';
-import { FLOWER } from './engine/layout';
-import { piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
+import { layoutIn, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
 
 const design: DiscsDesign = {
   ...newDesign(),
@@ -37,22 +36,33 @@ afterEach(() => {
   localStorage.clear();
 });
 
-async function openPlayer() {
+async function openPlayer(link = puzzle) {
   const user = userEvent.setup();
-  const page = await pageFor({ page: 'play', kind: 'discs', data: puzzle });
+  const page = await pageFor({ page: 'play', kind: 'discs', data: link });
   render(<>{page.content}</>);
   return { user, title: page.title };
 }
 
-/** The move that solves the puzzle, found the way only the game master could: knowing the answer. */
-function solvingMove(): Move {
-  const keys = answerKeys(contentOf(design), false);
-  const start = puzzle.pieces.map((_, piece) => piece);
+/** The move that solves a puzzle, found the way only the game master could: knowing the answer. */
+function solvingMove(made: DiscsDesign, link: DiscsPuzzle): Move {
+  const layout = layoutIn(link);
+  const keys = answerKeys(contentOf(made), false);
+  const start = link.pieces.map((_, piece) => piece);
   const moves: Move[] = [
-    ...FLOWER.discs.flatMap((_, disc) => [1, -1].map((by): Move => ({ kind: 'turn', disc, by }))),
-    ...FLOWER.contacts.map((_, contact): Move => ({ kind: 'swap', contact })),
+    ...layout.discs.flatMap((_, disc) => [1, -1].map((by): Move => ({ kind: 'turn', disc, by }))),
+    ...layout.contacts.map((_, contact): Move => ({ kind: 'swap', contact })),
   ];
-  return moves.find((move) => keys.includes(answerKey(FLOWER, piecesIn(puzzle), play(FLOWER, start, move))))!;
+  return moves.find((move) => keys.includes(answerKey(layout, piecesIn(link), play(layout, start, move))))!;
+}
+
+/** Makes the move that solves a puzzle, as a player would: a tap, a Shift-click, or a tap on a contact. */
+async function solve(user: ReturnType<typeof userEvent.setup>, made: DiscsDesign, link: DiscsPuzzle) {
+  const move = solvingMove(made, link);
+  if (move.kind === 'swap') return user.click(screen.getAllByRole('button', { name: /^Swap / })[move.contact]);
+  const disc = screen.getByRole('button', { name: new RegExp(`^Turn ${layoutIn(link).discs[move.disc].name}:`) });
+  if (move.by < 0) await user.keyboard('{Shift>}');
+  await user.click(disc);
+  if (move.by < 0) await user.keyboard('{/Shift}');
 }
 
 describe('the players’ page', () => {
@@ -67,15 +77,18 @@ describe('the players’ page', () => {
   it('says the game master’s line once the board is solved, checked against the fingerprints', async () => {
     const { user } = await openPlayer();
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
-    const move = solvingMove();
-    if (move.kind === 'swap') {
-      await user.click(screen.getAllByRole('button', { name: /^Swap / })[move.contact]);
-    } else {
-      const disc = screen.getByRole('button', { name: new RegExp(`^Turn ${FLOWER.discs[move.disc].name}:`) });
-      if (move.by < 0) await user.keyboard('{Shift>}');
-      await user.click(disc);
-      if (move.by < 0) await user.keyboard('{/Shift}');
-    }
+    await solve(user, design, puzzle);
+    expect(await screen.findByText(design.words.success, {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it('plays three discs, and says the line when they’re solved', async () => {
+    const three: DiscsDesign = { ...design, layout: 'trefoil', words: { ...design.words, title: 'The ferry-gate' } };
+    const link = readPuzzle(JSON.parse(JSON.stringify(await toPuzzle(three))))!;
+    const { user, title } = await openPlayer(link);
+    expect(title).toBe('The ferry-gate');
+    expect(screen.getAllByRole('button', { name: /^Turn / })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: /^Swap / })).toHaveLength(3);
+    await solve(user, three, link);
     expect(await screen.findByText(design.words.success, {}, { timeout: 3000 })).toBeInTheDocument();
   });
 

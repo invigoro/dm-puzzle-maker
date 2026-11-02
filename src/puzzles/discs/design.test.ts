@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { playerHash } from '../../kit/route';
-import { contentOf, FILLER, fillerOf, newDesign, PAIRS, problemsOf, readDesign, solvedOf, startOf, toPuzzle, type DiscsDesign } from './design';
+import { contentOf, fillerOf, MOST_FILLER as FILLER, MOST_PAIRS as PAIRS, newDesign, problemsOf, readDesign, solvedOf, startOf, toPuzzle, type DiscsDesign } from './design';
 import { isBlank, keyOf, piecesOf, wordsOf, type Piece } from './engine/answer';
 import { FLOWER } from './engine/layout';
 import { turn } from './engine/board';
-import { glowing, isRight, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
+import { glowing, isRight, layoutIn, piecesIn, readPuzzle, type DiscsPuzzle } from './puzzle';
 
 // Made-up towns, never a game master's own.
 const NAMES: [string, string][] = [
@@ -25,12 +25,13 @@ const design: DiscsDesign = {
   seed: 4,
 };
 
-/** A solved board in a player puzzle's numbering, the first name at goal contact `from`. */
+/** A solved board in a player puzzle's numbering, on its layout, the first name at goal contact `from`. */
 function solvedIn(puzzle: DiscsPuzzle, pairs = design.pairs, from = 0, flip = false): number[] {
+  const layout = layoutIn(puzzle);
   const pieces = piecesIn(puzzle).map(keyOf);
   const board: number[] = [];
-  pairs.forEach(([first, second], i) => {
-    const { a, b } = FLOWER.contacts[FLOWER.goals[(from + i) % PAIRS]];
+  pairs.slice(0, layout.goals.length).forEach(([first, second], i) => {
+    const { a, b } = layout.contacts[layout.goals[(from + i) % layout.goals.length]];
     [board[a], board[b]] = [first, second].map((piece) => pieces.indexOf(keyOf(piece)));
     if (flip && i === 0) [board[a], board[b]] = [board[b], board[a]];
   });
@@ -199,6 +200,50 @@ describe('the glow', () => {
   it('lights a name at any contact, with any start', async () => {
     const puzzle = await toPuzzle({ ...design, glow: true, anyStart: true });
     expect(await glowing(puzzle, solvedIn(puzzle, design.pairs, 2))).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+});
+
+describe('three discs', () => {
+  const three: DiscsDesign = { ...design, layout: 'trefoil' };
+
+  it('read a link made before there was a choice as seven discs', () => {
+    const { layout: _, ...old } = design;
+    expect(readDesign(JSON.parse(JSON.stringify(old)))?.layout).toBe('flower');
+    expect(readDesign({ ...design, layout: 'nineteen' })?.layout).toBe('flower');
+    expect(readDesign(JSON.parse(JSON.stringify(three)))).toEqual(three);
+  });
+
+  it('use the first three names and twelve filler, keeping the rest aside', () => {
+    const content = contentOf(three);
+    expect(content.pairs).toEqual(design.pairs.slice(0, 3));
+    expect(content.filler).toHaveLength(12);
+    expect(piecesOf(content)).toHaveLength(18);
+    // Names 4 to 6 aren't on the board, so can be left blank.
+    const short: DiscsDesign = { ...three, pairs: [...design.pairs.slice(0, 3), [blank(), blank()], [blank(), blank()], [blank(), blank()]] };
+    expect(problemsOf(short)).toEqual([]);
+    expect(problemsOf({ ...short, pairs: [[blank(), blank()], ...short.pairs.slice(1)] })).toEqual(['Give both halves of all three names words or a picture.']);
+  });
+
+  it('make a player link that names its layout, and checks on three discs', async () => {
+    const puzzle = readPuzzle(JSON.parse(JSON.stringify(await toPuzzle(three))))!;
+    expect(puzzle.layout).toBe('trefoil');
+    expect(puzzle.pieces).toHaveLength(18);
+    expect(await isRight(puzzle, solvedIn(puzzle))).toBe(true);
+    expect(await isRight(puzzle, solvedIn(puzzle, design.pairs, 0, true))).toBe(true);
+    expect(await isRight(puzzle, solvedIn(puzzle, design.pairs, 1))).toBe(false);
+  });
+
+  it('count from any contact with any start, and glow where names are right', async () => {
+    const any = await toPuzzle({ ...three, anyStart: true, glow: true });
+    expect(any.answers).toHaveLength(3);
+    expect(await isRight(any, solvedIn(any, design.pairs, 1))).toBe(true);
+    expect(await glowing(any, solvedIn(any, design.pairs, 2))).toEqual([0, 1, 2]);
+  });
+
+  it('keep a start set by hand only when it fits their board', () => {
+    const hand = { ...three, mix: 'hand', start: [...solvedOf(three)] };
+    expect(readDesign(JSON.parse(JSON.stringify(hand)))).toEqual(hand);
+    expect(readDesign({ ...hand, start: [...solvedOf(design)] })?.mix).toBe('full');
   });
 });
 
