@@ -25,6 +25,14 @@ export const KINDS: readonly PuzzleKind[] = [
     maker: () => import('./maze/maker'),
     player: () => import('./maze/player'),
   },
+  {
+    id: 'trapped-floor',
+    name: 'Trapped floor',
+    blurb:
+      'A room’s floor of squares, some trapped, to cross by minesweeper’s rules: each safe square, stood on, shows how many of the eight round it are trapped.',
+    maker: () => import('./trapped-floor/maker'),
+    player: () => import('./trapped-floor/player'),
+  },
 ];
 
 /** The kind of puzzle with this id, if there is one. */

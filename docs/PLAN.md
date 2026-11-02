@@ -11,17 +11,16 @@ each with six word-halves or pictures on its spokes. The players turn the discs,
 where two discs touch, until the six pairs around the centre spell six names in order. The first
 puzzle spells the six great towns of the game master's realm.
 
-More are planned. The discs will get [a second layout](#more-layouts): three discs, as in the
-Defiled Temple. Three new kinds of puzzle will follow:
+The discs have [a second layout](#more-layouts): three discs, as in the Defiled Temple. Three more
+kinds of puzzle followed:
 - a [word guess](#word-guess), tried a letter at a time
 - a [maze](#maze) to find the way out of
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 5 (more kinds of puzzle). Phases 0 to 4 are done and live at
-https://daedalus.invigoro.me/, and so are the word guess (5a) and the maze (5b); the trapped floor
-is to come. See [Milestones](#milestones).
+**Current phase:** none. Phases 0 to 5 are done and live at https://daedalus.invigoro.me/. What
+comes next is Tim's to choose, from the backlog under [Milestones](#milestones) or elsewhere.
 
 ## The site
 
@@ -419,8 +418,9 @@ count, as on a D&D grid. It lives in `src/puzzles/trapped-floor/`, with the id `
 ### Keeping the answer secret
 
 The page has to say what's under any square a player steps on, so the link holds every square's
-count, and whether it's a trap. Each square is sealed separately, so the link never shows the floor
-plainly. But the page can open any square, so a programmer could open them all.
+count, and whether it's a trap. Each square is masked separately, with a byte from a salted hash of
+its place, so the link never shows the floor plainly. But the page can open any square, so a
+programmer could open them all.
 
 For a table that's all in one room, the game master can run it instead: their own page plays it on
 their screen, and no link holds the floor at all.
@@ -491,6 +491,10 @@ src/
     maze/
       engine/                    # the grid and its numbered walls, making mazes, the way through, the lantern
       MazeBoard.tsx · MazeGame.tsx   # the maze drawn from above; walking it
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
+    trapped-floor/
+      engine/                    # the room and its counts, placing traps, the fair-floor solver, masking
+      FloorGame.tsx              # the floor of squares: stepping, chalk marks, sprung traps
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
@@ -601,7 +605,15 @@ its own, in this order.
   - The players' token, moved by keys, taps or swipes, with progress kept.
   - *Done when* a 14 by 14 maze lit by a lantern can be made, sent and walked on a phone, and the
     line shows at the way out.
-- **5c. Trapped floor.** See [Trapped floor](#trapped-floor).
+- **5c. Trapped floor.** See [Trapped floor](#trapped-floor). *(done. The solver that keeps a
+  floor fair reads each count on its own, then compares counts whose squares overlap; the maker
+  places traps up to 300 times for a fair floor, and says when none turns up, or which hand-placed
+  floor needs a guess. A single square as the goal is kept clear too. Squares are masked with a
+  salted hash rather than sealed one by one, as each is opened by stepping on it anyway. Going back
+  to the start keeps the sprung traps showing, so a party isn't made to find them twice. Up to six
+  kinds of trap, each trap one of them at random. Marking is a toggle, or a right-click. Running it
+  for the table is a full-size dialog in the maker. An 8 by 10 link comes to about 800 characters,
+  and a 20 by 20 one fits in a Discord message.)*
   - The room, the start and the goal (a square or a side), traps placed from a seed or by hand, and
     the kinds of trap with their pictures and lines.
   - The solver that keeps a fair floor fair, what happens when a trap is sprung, and how the party

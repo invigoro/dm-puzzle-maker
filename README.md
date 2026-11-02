@@ -94,6 +94,27 @@ A maze to find the way out of, seen from above.
 - **Playing:** move with the arrow keys (or WASD), by tapping the next cell, or by swiping. Steps
   are counted, and where the party is and has been is kept in the browser.
 
+### Trapped floor
+
+A room's floor of 5-foot squares, some trapped, to cross by minesweeper's rules: each safe square,
+stood on, shows how many of the eight round it are trapped, diagonals and all, as on a D&D grid.
+
+- **The room:** 3 to 20 squares each way. The party starts on a side or a square, and is going to
+  another side or square.
+- **The traps:** how many, placed at random (🎲 for others) or by hand on the plan. The start and
+  the squares beside it are kept clear, so the first step tells the party something. **Fair**
+  floors can always be crossed by reasoning from the counts, never by luck: the maker keeps placing
+  traps until a careful solver gets across, and says when none turns up.
+- **Kinds of trap:** up to six, each with a picture and what it does ("Darts from the walls: 1d4
+  piercing, DC 12 Dexterity save for half"). Each trap is one of them at random.
+- **When a trap springs:** its line is said and the party carries on, or they go back to the start
+  (remembering where it was), or after so many traps they fail, with a line for that.
+- **How they move:** spreading out onto any square beside one they've stood on, or one at a time as
+  a token. Squares can be chalk-marked as suspected traps. Progress is kept in the browser.
+- **Secrecy:** the link holds every square masked, never plainly, but the players' page has to open
+  any square stepped on, so a programmer could open them all. For a table all in one room, **Play
+  it full size** runs it on your own screen, and no link holds the floor at all.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

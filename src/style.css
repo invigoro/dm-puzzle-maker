@@ -923,6 +923,190 @@ legend.label-text {
   margin-right: 0.5rem;
 }
 
+/* A trapped floor: flagstones, the ones stood on lighter, each carved with its count. */
+
+.floor {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  max-width: min(38rem, 70vh);
+  margin: 0 auto;
+  padding: 3px;
+  background: var(--bronze-edge);
+  border-radius: 6px;
+}
+
+.square {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: clamp(0.8rem, 3.6vw, 1.25rem);
+  font-weight: 700;
+  color: var(--engraved);
+  background: var(--stone-dark);
+  border: 0;
+  border-radius: 2px;
+}
+
+.square:hover {
+  background: var(--hub-dark);
+}
+
+.square.next {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.square.open {
+  background: var(--stone-light);
+}
+
+.square.start {
+  background: var(--hub-light);
+}
+
+.square.goal {
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.square.sprung {
+  color: #fff7ea;
+  background: var(--danger);
+}
+
+.square.trap-shown {
+  color: var(--danger);
+  opacity: 0.75;
+}
+
+.square.marked {
+  color: var(--danger);
+}
+
+.square .icon-thumb {
+  width: 70%;
+  height: 70%;
+}
+
+.square .party {
+  position: absolute;
+  inset: 22%;
+  background: var(--gold);
+  border: 2px solid var(--bronze-edge);
+  border-radius: 50%;
+}
+
+/* The counts, in colours of their own, as the familiar game has them. */
+.square.n1 {
+  color: #1f5a9e;
+}
+
+.square.n2 {
+  color: #2f7a35;
+}
+
+.square.n3 {
+  color: #b0302a;
+}
+
+.square.n4 {
+  color: #3d2c8f;
+}
+
+.square.n5,
+.square.n6,
+.square.n7,
+.square.n8 {
+  color: #7a2a12;
+}
+
+@media (prefers-color-scheme: dark) {
+  .square.open {
+    color: var(--ink);
+  }
+
+  .square.n1 {
+    color: #7fb3f0;
+  }
+
+  .square.n2 {
+    color: #86d08c;
+  }
+
+  .square.n3 {
+    color: #f08a7e;
+  }
+
+  .square.n4 {
+    color: #b8a6f5;
+  }
+
+  .square.n5,
+  .square.n6,
+  .square.n7,
+  .square.n8 {
+    color: #f0b27e;
+  }
+}
+
+/* The game master's plan: every trap and count shown, and the squares kept clear marked out. */
+.floor.plan .square.clear {
+  background: var(--hub-light);
+}
+
+.floor.plan .square.sprung {
+  background: var(--danger);
+}
+
+.kinds-of-trap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.kinds-of-trap li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.kinds-of-trap .picture-button {
+  border-radius: 6px;
+  margin: 0;
+}
+
+.kinds-of-trap input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Played full size on the game master's own screen, for a table all in one room. */
+.table-view {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+.table-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.table-view .floor {
+  max-width: min(56rem, 78vh);
+}
+
 /* The discs. Board units are a disc's radius of 100. */
 
 .board {
