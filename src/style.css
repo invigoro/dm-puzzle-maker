@@ -661,6 +661,152 @@ h2 {
   color: var(--gold);
 }
 
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend.label-text {
+  padding: 0;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+/* A word guess: rows of letter boxes, marked right (blue) or elsewhere (gold), which colour-blind players tell apart more easily than green and yellow. */
+
+.guess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem;
+  border-radius: 8px;
+  outline: none;
+}
+
+.guess:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.guess-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+}
+
+.guess-word {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: clamp(1.7rem, 7vw, 2.4rem);
+  aspect-ratio: 1;
+  font-family: var(--serif);
+  font-size: clamp(1rem, 4.5vw, 1.35rem);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--page);
+  border: 2px solid var(--line);
+  border-radius: 5px;
+}
+
+.guess-row.current .box.filled {
+  border-color: var(--muted);
+}
+
+.guess-row.hinted .box.filled {
+  border-style: dashed;
+  border-color: var(--gold);
+}
+
+.box.right {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.box.elsewhere {
+  color: #1b1408;
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.box.absent {
+  color: var(--muted);
+  background: var(--hover);
+  border-color: var(--hover);
+}
+
+.not-it {
+  font-size: 1.2rem;
+  color: var(--danger);
+}
+
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.keys {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.key {
+  min-width: clamp(1.6rem, 8vw, 2.4rem);
+  padding: 0.55rem 0.2rem;
+  font-weight: 600;
+}
+
+.key.right {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.key.elsewhere {
+  color: #1b1408;
+  background: var(--gold);
+}
+
+.key.absent {
+  opacity: 0.4;
+}
+
+.tray,
+.tiles-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.tile {
+  width: 2.4rem;
+  aspect-ratio: 1;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.tile:disabled {
+  visibility: hidden;
+}
+
+.success.out {
+  color: var(--muted);
+}
+
 /* The discs. Board units are a disc's radius of 100. */
 
 .board {

@@ -19,8 +19,9 @@ Defiled Temple. Three new kinds of puzzle will follow:
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 4 are done and live at https://daedalus.invigoro.me/, and
-Phase 5 (more kinds of puzzle) is next. See [Milestones](#milestones).
+**Current phase:** Phase 5 (more kinds of puzzle). Phases 0 to 4 are done and live at
+https://daedalus.invigoro.me/, and so is the word guess (5a); the maze and the trapped floor are to
+come. See [Milestones](#milestones).
 
 ## The site
 
@@ -465,6 +466,7 @@ src/
     storage.ts                   # things kept in the browser, when it allows
     icons.ts                     # pictures: loading, searching, crediting
     saved.ts                     # the game master's puzzles in this browser, and as a file
+    kept.ts · seal.ts            # a player's progress per link; lines sealed with the answer
   puzzles/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
@@ -482,6 +484,10 @@ src/
       puzzle.ts · Play.tsx       # what a player link holds, checked; the players' board, kept as they go
       example.ts                 # six made-up towns to start from
       maker.tsx · player.tsx     # each side as the registry loads it
+    word-guess/
+      engine/                    # letters, hints' order, and marking (from the answer, or from fingerprints)
+      GuessGame.tsx              # rows of tries, the keyboard or tiles, hints, and the lines
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
     MakerPage.tsx · WordsFields.tsx · Send.tsx   # the maker's shell: the address, the words, sending
@@ -564,7 +570,11 @@ link comes to about 520 characters.)*
 [Kinds of puzzle](#kinds-of-puzzle) says, with its own engine and tests. Each part below is done on
 its own, in this order.
 
-- **5a. Word guess.** See [Word guess](#word-guess).
+- **5a. Word guess.** See [Word guess](#word-guess). *(done. Letter marks use a quick salted
+  hash, not the slow one, as they're quick to guess however they're hashed, and a slow one would
+  only slow each try. The line for solving it is sealed with the answer, as the kit's sealing does.
+  Marks are blue for the right place and gold for elsewhere, which colour-blind players tell apart
+  more easily than green and yellow. A link comes to about 800 characters.)*
   - The answer, tiles or any letters, the number of tries, letter-by-letter marking or only right
     or wrong, hints, and the two lines.
   - The players' rows of tries, with tiles or typing and an on-screen keyboard, and the tries kept
@@ -591,10 +601,14 @@ its own, in this order.
   - Running it from the game master's own screen, for a table that's all in one room.
   - *Done when* a fair 8 by 10 floor, crossed from one side to the other, can be made, sent and
     crossed on a phone, and a sprung trap's line is said.
-- **The kit, along the way:**
-  - Progress and tries kept per link, shared by every kind, as the discs keep theirs now.
-  - Sealing: the line for solving a puzzle encrypted with a key made from its answer, so only
-    solving it opens it. Word guess needs it first, and the discs could take it too.
+- **The kit, along the way:** *(done with the word guess)*
+  - Progress and tries kept per link, shared by every kind (`kit/kept.ts`), as the discs keep theirs
+    now.
+  - Sealing (`kit/seal.ts`): the line for solving a puzzle encrypted (AES-GCM) with a key made
+    slowly from its answer, so only solving it opens it. The word guess uses it; the discs could
+    take it too.
+  - A quick fingerprint (`quickFingerprint`, one salted SHA-256) beside the slow one, for what's
+    quick to guess anyway.
 
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.

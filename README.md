@@ -61,6 +61,23 @@ names are spelled out in order, from where the arrow points:
     names start in their places.
   - **Try it:** the board as the players will see it, to play, or solved.
 
+### Word guess
+
+A word or phrase to guess in a set number of tries: a password at a door, a name, or a riddle's
+answer. Only its letters count, in capitals, with accents taken off.
+
+- **How they try:** they type any letters, knowing only how many there are (and where the words
+  break, unless that's hidden), or they arrange the answer's own letters as shuffled tiles.
+- **What a try tells them:** letter by letter (blue for the right place, gold for in the answer
+  elsewhere, counting repeated letters as the familiar game does), or only right or wrong. Marking
+  letter by letter puts a quick fingerprint of each letter in the player link, so a programmer could
+  read the answer from it; the maker says so beside the choice.
+- **Tries:** one, three, six, ten, or as many as they like, with a line for running out. The tries
+  made are kept in the browser, so a reload gives no more.
+- **Hints:** as many letters as you allow, a letter at a time, each word's first letter first.
+- **The line for solving it** is sealed with the answer, so the link holds it but only the right
+  answer opens it.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

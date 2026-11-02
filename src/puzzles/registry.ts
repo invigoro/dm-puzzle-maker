@@ -6,9 +6,17 @@ export const KINDS: readonly PuzzleKind[] = [
     id: 'discs',
     name: 'Turning discs',
     blurb:
-      'Seven touching discs of word-halves or pictures. The players turn the discs and swap halves where they meet, until the names around the centre are spelled out in order.',
+      'Three or seven touching discs of word-halves or pictures. The players turn the discs and swap halves where they meet, until the names are spelled out in order.',
     maker: () => import('./discs/maker'),
     player: () => import('./discs/player'),
+  },
+  {
+    id: 'word-guess',
+    name: 'Word guess',
+    blurb:
+      'A word or phrase to guess in a set number of tries, each try showing which letters are right: a password at a door, a name, a riddle’s answer.',
+    maker: () => import('./word-guess/maker'),
+    player: () => import('./word-guess/player'),
   },
 ];
 

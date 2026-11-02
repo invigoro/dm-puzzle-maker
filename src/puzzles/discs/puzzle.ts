@@ -1,6 +1,7 @@
 /** What a player link holds for turning discs, read and checked on the players' side. */
 import { fingerprint } from '../../kit/check';
 import { isIconName } from '../../kit/icons';
+import { keptKey } from '../../kit/kept';
 import { readWords, type Words } from '../../kit/words';
 import { answerKey, glowKeysAt, LONGEST_HALF, type Piece } from './engine/answer';
 import { readBoard, readMoves, type Board, type Move } from './engine/board';
@@ -102,4 +103,4 @@ export function readProgress(layout: Layout, data: unknown): Progress | null {
 }
 
 /** Where a player's progress on a puzzle is kept: each link has its own salt, so its own place. */
-export const progressKey = (puzzle: DiscsPuzzle) => `daedalus:discs:${puzzle.salt}`;
+export const progressKey = (puzzle: DiscsPuzzle) => keptKey('discs', puzzle.salt);
