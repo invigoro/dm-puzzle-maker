@@ -13,8 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phases 0 and 1 are built and tested. Phase 0 is done once the repository is
-public and a push to `main` deploys the site. Phase 2 is next.
+**Current phase:** none. Phases 0 to 2 are done and live at https://daedalus.invigoro.me/. Phase 3
+is next.
 
 ## The site
 
@@ -55,16 +55,22 @@ Each kind lives in its own folder under `src/puzzles/`, with an entry in
 - **The maker side** has:
   - `newDesign()`
   - `readDesign(data)`, which reads untrusted data from a link or a file
+  - `problemsOf(design)`, which says what stops the design making a player link yet
   - `toPuzzle(design)`, which makes what a player link holds
-  - the `Maker` component
+  - the `Maker` component, for the kind's own part of the page
 - **The player side** has `readPuzzle(data)` and the `Player` component.
+- **Designs and puzzles** both carry the puzzle's `words`, so the page shells can show and edit
+  them.
 - **The `id`** is written into every link, so it's never renamed. It's lowercase letters and
   hyphens, so it can't be mistaken for `m=` or `p=`.
 - **Each side** is its own chunk, loaded when its page opens.
 - **What every kind shares** lives in `src/kit/`:
   - link packing, fingerprints, seeded random numbers and the routes
-  - from Phase 2, the page shells: the puzzle's words (its title, its introduction and the line for
-    solving it), Copy player link, Preview as player, and progress kept in the browser
+  - the puzzle's words (its title, its introduction and the line for solving it), and storage in
+    the browser
+  - the page shells: the maker page keeps the design in its address, and adds the words and
+    **Send it** (Copy player link, Preview as player, the link's length, and a word about the
+    page's own link); the players' page shows the title and introduction above the kind's puzzle
 
 Adding a kind of puzzle takes a folder and a registry entry, and nothing else.
 
@@ -194,11 +200,16 @@ Sator's engine.
 - **The pairs:** six rows of first half and second half, in order from the mark. Halves of up to
   about seven letters fit their spokes, and longer ones are set smaller.
 - **Any start:** off by default.
-- **Filler:** 30 boxes. Blank ones are filled in from the built-in list, with 🎲 for another fill.
-- **Start:** full or light scramble, with 🎲 and the seed.
-- **The board:** shows the puzzle as the players will first see it, or solved.
-- **Links:** Preview as player and Copy player link, plus the page's own link, marked as holding
-  the answer.
+- **Start from the example:** while the names are blank, a button fills in the example's six
+  made-up towns and its words, to see how it works.
+- **Filler:** 30 boxes. Blank ones show, faintly, the half they'll be filled with, with 🎲 for
+  another fill. Each blank has a half of its own, so writing a half elsewhere changes only the blank
+  that had it.
+- **Start:** every piece anywhere, or 20, 10 or 5 moves from solved, with 🎲 and the seed.
+- **Try it:** the board as the players will first see it, to play, or solved.
+- **Links:** the player link is made a moment after the design last changed, with a new salt each
+  time. Copy player link and Preview as player use it, and the page says how long it is, warning past
+  2,000 characters. The page's own link is marked as holding the answer.
 
 ### Pictures
 
@@ -248,6 +259,8 @@ src/
     check.ts                     # salted PBKDF2 fingerprints, as in Sator
     rng.ts                       # seeded random numbers, as in Sator
     route.ts                     # which page a link opens, and the links to each
+    words.ts                     # the title, introduction and line for solving it, read and checked
+    storage.ts                   # things kept in the browser, when it allows
   puzzles/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
@@ -261,14 +274,20 @@ src/
         solver.ts                # puts any board right, for tests
       Board.tsx                  # the board in SVG: drawing, animating, tapping, dragging, keys
       Game.tsx                   # the board with Undo, Start over, moves, and the line for solving it
-      Example.tsx · examplePuzzle.ts  # the example to try, with made-up towns
-      maker.tsx · player.tsx     # the game master's side; the players' side
-  ui/                            # the site's own pages: home, the page shells, a link that holds nothing
+      design.ts · Designer.tsx   # the game master's design, its player link, and the form for it
+      puzzle.ts · Play.tsx       # what a player link holds, checked; the players' board, kept as they go
+      example.ts                 # six made-up towns to start from
+      maker.tsx · player.tsx     # each side as the registry loads it
+  ui/                            # the site's own pages
+    Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
+    MakerPage.tsx · WordsFields.tsx · Send.tsx   # the maker's shell: the address, the words, sending
+    PlayerPage.tsx               # the players' shell: the title and introduction
+    pages.tsx                    # which page a route opens, loading only its side's code
 ```
 
 ## Milestones
 
-**Phase 0: Setup and deploy.** *(built; going live waits on the repository going public)*
+**Phase 0: Setup and deploy.** *(done)*
 - Vite + React + TypeScript, Node 24, Vitest and Testing Library, set up as Sator is.
 - The kit's packing, fingerprints and random numbers from Sator, with their tests.
 - The registry and the routes: home, maker and player pages, with each kind's code loaded only for
@@ -289,7 +308,11 @@ line for solving it stays once said, even if a player carries on turning.)*
 - A built-in example puzzle, with made-up names, to try it on.
 - *Done when* a scrambled board can be solved by tapping, on a phone too.
 
-**Phase 2: Make it, send it.**
+**Phase 2: Make it, send it.** *(done. The example became a button in the maker, Start from the
+example. The player link is made as the design changes rather than on asking, so the page can show
+its length; a full one comes to about 700 characters. The page shells take the words from every
+kind's design and puzzle, so a kind only says what's its own, and what stops it being sent. Light
+scrambles are 20, 10 or 5 moves from solved.)*
 - The maker: the words, the pairs, filler, scrambles, Any start and Preview as player.
 - Player links with fingerprints, checked after every move. A solved board lights up and shows the
   game master's line, and progress is kept.

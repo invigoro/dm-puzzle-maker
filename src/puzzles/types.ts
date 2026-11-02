@@ -1,13 +1,17 @@
 import type { ComponentType } from 'react';
+import type { Words } from '../kit/words';
 
 /** The game master's side of a kind of puzzle. It holds the answer, so it loads only on the maker's page. */
-export interface MakerSide<Design> {
+export interface MakerSide<Design extends { words: Words }> {
   /** A puzzle to start from. */
   newDesign(): Design;
   /** A design from untrusted data, as a link or a file holds it, or null if it doesn't hold one. */
   readDesign(data: unknown): Design | null;
+  /** What stops the design making a player link yet, said to the game master. None when it's ready. */
+  problemsOf(design: Design): string[];
   /** What a player link holds: everything the players see, and a way to check their answer, but never the answer. */
-  toPuzzle(design: Design): Promise<unknown>;
+  toPuzzle(design: Design): Promise<{ words: Words }>;
+  /** The kind's own part of the maker. The page around it has the words, and sends the puzzle. */
   Maker: ComponentType<MakerProps<Design>>;
 }
 
@@ -17,9 +21,10 @@ export interface MakerProps<Design> {
 }
 
 /** The players' side of a kind of puzzle, loaded on its own, so their page holds nothing of the game master's. */
-export interface PlayerSide<Puzzle> {
+export interface PlayerSide<Puzzle extends { words: Words }> {
   /** A puzzle from a player link, which is untrusted, or null if it doesn't hold one. */
   readPuzzle(data: unknown): Puzzle | null;
+  /** The puzzle to play. The page around it shows the title and introduction. */
   Player: ComponentType<{ puzzle: Puzzle }>;
 }
 

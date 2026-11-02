@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../../../kit/rng';
-import { play, reverse, swap, turn, type Board } from './board';
+import { LONGEST_HISTORY, play, readBoard, readMoves, reverse, swap, turn, type Board } from './board';
 import { FLOWER, positionCount, positionOf } from './layout';
 import { randomMove } from './scramble';
 
@@ -28,6 +28,42 @@ describe('swap', () => {
     expect([swapped[a], swapped[b]]).toEqual([b, a]);
     expect(swapped.filter((piece, position) => piece !== ordered[position])).toHaveLength(2);
     expect(swap(FLOWER, swapped, FLOWER.goals[0])).toEqual(ordered);
+  });
+});
+
+describe('readBoard', () => {
+  it('takes a board with every piece on it once', () => {
+    expect(readBoard(FLOWER, turn(FLOWER, ordered, 2, 1))).toEqual(turn(FLOWER, ordered, 2, 1));
+  });
+
+  it('turns down anything else', () => {
+    const twice = [...ordered];
+    twice[0] = 1;
+    for (const junk of [null, 'board', ordered.slice(1), [...ordered, 42], twice, ordered.map((piece) => piece + 0.5)]) {
+      expect(readBoard(FLOWER, junk)).toBeNull();
+    }
+  });
+});
+
+describe('readMoves', () => {
+  it('takes moves that make sense on the layout', () => {
+    const moves = [
+      { kind: 'turn', disc: 6, by: -1 },
+      { kind: 'swap', contact: 11 },
+    ];
+    expect(readMoves(FLOWER, moves)).toEqual(moves);
+  });
+
+  it('turns down moves that don’t', () => {
+    for (const move of [{ kind: 'turn', disc: 7, by: 1 }, { kind: 'turn', disc: 0, by: 1.5 }, { kind: 'swap', contact: 12 }, { kind: 'jump' }, null]) {
+      expect(readMoves(FLOWER, [move])).toBeNull();
+    }
+    expect(readMoves(FLOWER, 'moves')).toBeNull();
+  });
+
+  it('keeps only the most recent, when there are too many', () => {
+    const moves = Array.from({ length: LONGEST_HISTORY + 5 }, (_, i) => ({ kind: 'swap', contact: i % 12 }));
+    expect(readMoves(FLOWER, moves)).toEqual(moves.slice(5));
   });
 });
 

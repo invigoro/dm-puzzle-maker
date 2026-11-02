@@ -29,5 +29,5 @@ export async function pageFor(route: Route): Promise<Page> {
   }
   const side = await kind.player();
   const puzzle = side.readPuzzle(route.data);
-  return puzzle === null ? LOST : { title: 'A puzzle', content: <PlayerPage side={side} puzzle={puzzle} /> };
+  return puzzle === null ? LOST : { title: puzzle.words.title || 'A puzzle', content: <PlayerPage side={side} puzzle={puzzle} /> };
 }

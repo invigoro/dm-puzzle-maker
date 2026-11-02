@@ -7,7 +7,6 @@ import { answerKey, answerKeys, piecesOf, type Content } from './engine/answer';
 import { swap, turn, type Board } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { solvedBoard } from './engine/scramble';
-import { Example } from './Example';
 import { Game } from './Game';
 
 afterEach(cleanup);
@@ -111,16 +110,31 @@ describe('the game', () => {
     // A pair counts either way round, so the flipped one counts too.
     expect(await screen.findByText(SUCCESS)).toBeInTheDocument();
   });
-});
 
-describe('the example', () => {
-  it('has a title, the towns to spell, and a fresh scramble on asking', async () => {
-    render(<Example seed={7} />);
+  it('carries on from where a player left off, and reports each move to keep', async () => {
+    const kept: number[] = [];
+    const start = turn(FLOWER, solved, 2, 1);
+    render(
+      <Game
+        layout={FLOWER}
+        pieces={pieces}
+        start={solved}
+        initial={{ board: start, moves: [{ kind: 'turn', disc: 2, by: 1 }] }}
+        onProgress={(_, moves) => kept.push(moves.length)}
+        isSolved={isSolved}
+        mark
+        success={SUCCESS}
+      />,
+    );
     const user = userEvent.setup();
-    expect(screen.getByRole('heading', { name: 'The road-stone of the Vale' })).toBeInTheDocument();
-    expect(screen.getByText(/Frostwick, Emberfall, Ravenspire/)).toBeInTheDocument();
-    expect(screen.getByText('Seed 7')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /New scramble/ }));
-    expect(screen.queryByText('Seed 7')).toBeNull();
+    expect(screen.getByText('1 move')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(await screen.findByText(SUCCESS)).toBeInTheDocument();
+    expect(kept.at(-1)).toBe(0);
+  });
+
+  it('says it’s solved, when the game master gave no line for it', async () => {
+    render(<Game layout={FLOWER} pieces={pieces} start={solved} isSolved={isSolved} mark success="" />);
+    expect(await screen.findByText('Solved.')).toBeInTheDocument();
   });
 });

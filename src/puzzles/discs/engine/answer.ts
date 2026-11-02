@@ -1,6 +1,9 @@
 import type { Board } from './board';
 import type { Layout } from './layout';
 
+/** The longest a piece's text may be. Past about seven letters, the board sets a piece's letters smaller to fit. */
+export const LONGEST_HALF = 16;
+
 /** What a spoke holds: half a name. (Not `Node`, which is the DOM's.) */
 export interface Piece {
   text: string;

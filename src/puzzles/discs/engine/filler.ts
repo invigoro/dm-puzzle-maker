@@ -19,10 +19,17 @@ export const PLACE_HALVES: readonly string[] = [
 /**
  * The filler with its blanks filled from the place-name halves, at random. A half is never used
  * twice, nor one that's on the board already: in the answer (`taken`) or written into the filler.
+ *
+ * Each blank has a half of its own, and takes a spare only when its own is used elsewhere. So as
+ * the game master writes, a half they happen to write changes only the blank that had it.
  */
 export function fillBlanks(filler: readonly string[], taken: readonly string[], random: Random): string[] {
   const key = (text: string) => keyOf({ text });
   const used = new Set([...taken, ...filler].map(key));
-  const halves = shuffled(PLACE_HALVES, random).filter((half) => !used.has(half));
-  return filler.map((text) => (key(text) === '' ? (halves.pop() ?? '') : text));
+  const halves = shuffled(PLACE_HALVES, random);
+  const spares = halves.slice(filler.length).filter((half) => !used.has(half));
+  return filler.map((text, i) => {
+    if (key(text) !== '') return text;
+    return used.has(halves[i]) ? (spares.shift() ?? '') : halves[i];
+  });
 }

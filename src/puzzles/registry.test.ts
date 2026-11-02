@@ -21,6 +21,11 @@ describe('the registry', () => {
       for (const junk of [null, 'design', 42, []]) expect(maker.readDesign(junk)).toBeNull();
     });
 
+    it('says what a new design still needs, if anything', async () => {
+      const maker = await kind.maker();
+      expect(Array.isArray(maker.problemsOf(maker.newDesign()))).toBe(true);
+    });
+
     it('makes a puzzle from a new design that the players’ side reads', async () => {
       const [maker, player] = await Promise.all([kind.maker(), kind.player()]);
       const puzzle = await maker.toPuzzle(maker.newDesign());

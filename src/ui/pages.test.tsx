@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Route } from '../kit/route';
+import { newDesign, toPuzzle } from '../puzzles/discs/design';
 import { KINDS } from '../puzzles/registry';
 import { pageFor } from './pages';
 
@@ -31,8 +32,10 @@ describe('pageFor', () => {
   });
 
   it('opens the players’ page without loading the game master’s side or frame', async () => {
+    const puzzle = JSON.parse(JSON.stringify(await toPuzzle(newDesign())));
     const maker = vi.spyOn(KINDS.find((kind) => kind.id === 'discs')!, 'maker');
-    expect((await show({ page: 'play', kind: 'discs', data: {} })).title).toBe('A puzzle');
+    // A puzzle with no title is called "A puzzle".
+    expect((await show({ page: 'play', kind: 'discs', data: puzzle })).title).toBe('A puzzle');
     expect(maker).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Daedalus' })).toHaveAttribute('href', './');
     expect(screen.queryByRole('link', { name: 'Source on GitHub' })).toBeNull();

@@ -50,9 +50,11 @@ Node 24 is pinned in `.nvmrc`; 22.12 or newer works.
 ### Adding a kind of puzzle
 
 1. Make `src/puzzles/<id>/` with:
-   - `maker.tsx`, exporting `newDesign`, `readDesign`, `toPuzzle` and `Maker`
+   - `maker.tsx`, exporting `newDesign`, `readDesign`, `problemsOf`, `toPuzzle` and `Maker`
    - `player.tsx`, exporting `readPuzzle` and `Player`
-   (see `src/puzzles/types.ts`).
+   (see `src/puzzles/types.ts`). Designs and player puzzles both carry `words` (`src/kit/words.ts`):
+   the page shells show and edit them, keep the design in the address, and send the player link, so
+   the kind's own components cover only what's its own. `src/puzzles/discs/` is the model.
 2. Add an entry to `KINDS` in `src/puzzles/registry.ts`. The `id` goes into every link: lowercase
    letters and hyphens, and never renamed once live.
 3. Give the kind's rules an engine under `engine/` with tests, and give its pages tests too.

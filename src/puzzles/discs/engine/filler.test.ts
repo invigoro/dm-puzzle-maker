@@ -30,6 +30,13 @@ describe('fillBlanks', () => {
     }
   });
 
+  it('changes only the blank that had a half, when the game master writes that half elsewhere', () => {
+    const before = fillBlanks(blanks(30), [], mulberry32(8));
+    const after = fillBlanks(blanks(30), [before[12].toLowerCase()], mulberry32(8));
+    expect(after.filter((half, i) => half !== before[i])).toHaveLength(1);
+    expect(after[12]).not.toBe(before[12]);
+  });
+
   it('fills the same way for the same seed', () => {
     expect(fillBlanks(blanks(30), [], mulberry32(5))).toEqual(fillBlanks(blanks(30), [], mulberry32(5)));
     expect(fillBlanks(blanks(30), [], mulberry32(5))).not.toEqual(fillBlanks(blanks(30), [], mulberry32(6)));

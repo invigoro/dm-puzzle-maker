@@ -14,12 +14,16 @@ interface GameProps {
   mark: boolean;
   /** The game master's line for solving it. */
   success: string;
+  /** Where a player left off, to carry on from; Start over still goes back to `start`. */
+  initial?: { board: Pieces; moves: readonly Move[] } | null;
+  /** Told of the board and its moves whenever they change, to keep them. */
+  onProgress?(board: Pieces, moves: readonly Move[]): void;
 }
 
 /** A puzzle to play: the board, with Undo, Start over and a count of moves, and the game master's line once it's solved. */
-export function Game({ layout, pieces, start, isSolved, mark, success }: GameProps) {
-  const [board, setBoard] = useState(start);
-  const [moves, setMoves] = useState<readonly Move[]>([]);
+export function Game({ layout, pieces, start, isSolved, mark, success, initial, onProgress }: GameProps) {
+  const [board, setBoard] = useState(initial?.board ?? start);
+  const [moves, setMoves] = useState<readonly Move[]>(initial?.moves ?? []);
   const [motion, setMotion] = useState<Motion | null>(null);
   const [solved, setSolved] = useState(false);
   // The line stays once it's said, even if a player carries on turning.
@@ -36,6 +40,10 @@ export function Game({ layout, pieces, start, isSolved, mark, success }: GamePro
       current = false;
     };
   }, [board, isSolved]);
+
+  useEffect(() => {
+    onProgress?.(board, moves);
+  }, [board, moves, onProgress]);
 
   function move(next: Move) {
     setBoard((board) => play(layout, board, next));
@@ -74,7 +82,7 @@ export function Game({ layout, pieces, start, isSolved, mark, success }: GamePro
         <span className="moves">{moves.length === 1 ? '1 move' : `${moves.length} moves`}</span>
       </div>
       <p className="success" role="status">
-        {said ? success : ''}
+        {said ? success || 'Solved.' : ''}
       </p>
     </div>
   );
