@@ -13,7 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 0.
+**Current phase:** Phase 0 is built and tested. It's done once the repository is public and a push
+to `main` deploys the site. Phase 1 is next.
 
 ## The site
 
@@ -254,7 +255,7 @@ src/
 
 ## Milestones
 
-**Phase 0: Setup and deploy.**
+**Phase 0: Setup and deploy.** *(built; going live waits on the repository going public)*
 - Vite + React + TypeScript, Node 24, Vitest and Testing Library, set up as Sator is.
 - The kit's packing, fingerprints and random numbers from Sator, with their tests.
 - The registry and the routes: home, maker and player pages, with each kind's code loaded only for

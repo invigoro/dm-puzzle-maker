@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#1f3f50"/>
+  <!-- A round labyrinth: three walls, each with its gateway, and the centre at its heart. -->
+  <g fill="none" stroke="#f1e8d6" stroke-width="4" stroke-linecap="round">
+    <path d="M39.52 11.33 A22 22 0 1 1 24.48 11.33"/>
+    <path d="M26.08 44.69 A14 14 0 1 1 37.92 44.69"/>
+    <path d="M35.44 27.09 A6 6 0 1 1 28.56 27.09"/>
+  </g>
+  <circle cx="32" cy="32" r="2.5" fill="#d98f5c"/>
+</svg>

@@ -1,0 +1,159 @@
+:root {
+  color-scheme: light dark;
+  --paper: #f3eee4;
+  --page: #fffdf8;
+  --ink: #1f2a30;
+  --muted: #5b676d;
+  --line: #d9d1c2;
+  --hover: #ebe4d6;
+  --accent: #1f5a73;
+  --accent-ink: #fbf8f1;
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #141b1f;
+    --page: #1c252a;
+    --ink: #e8e2d6;
+    --muted: #a3adb0;
+    --line: #34424a;
+    --hover: #26323a;
+    --accent: #7db8d1;
+    --accent-ink: #141b1f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* The game master's pages */
+
+.site,
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.site {
+  max-width: 56rem;
+}
+
+.site > main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.brand h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  line-height: 1.15;
+}
+
+.brand .home {
+  font-family: var(--serif);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.brand .home:hover {
+  color: var(--accent);
+}
+
+.lede {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1.1rem;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The kinds of puzzle, as cards */
+
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kind {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
+  padding: 1rem 1.1rem;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.kind:hover {
+  background: var(--hover);
+  border-color: var(--accent);
+}
+
+.kind strong {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.kind span {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.message {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.about {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.about p {
+  margin: 0 0 0.5rem;
+}
+
+/* The players' page: a puzzle to solve, and nothing else */
+
+.player {
+  max-width: 46rem;
+}
