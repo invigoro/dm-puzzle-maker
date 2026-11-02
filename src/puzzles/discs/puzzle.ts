@@ -1,5 +1,6 @@
 /** What a player link holds for turning discs, read and checked on the players' side. */
 import { fingerprint } from '../../kit/check';
+import { isIconName } from '../../kit/icons';
 import { readWords, type Words } from '../../kit/words';
 import { answerKey, LONGEST_HALF, type Piece } from './engine/answer';
 import { readBoard, readMoves, type Board, type Move } from './engine/board';
@@ -14,8 +15,10 @@ export interface DiscsPuzzle {
   v: 1;
   words: Words;
   layout: 'flower';
-  /** Each spoke's piece at the start, in the layout's order of positions. */
+  /** Each spoke's piece at the start, in the layout's order of positions: its words. */
   pieces: string[];
+  /** Each piece's picture, in the same order, '' for none. Only there when some piece has one. */
+  icons?: string[];
   /** Whether the board points out where the answer starts: it does unless any start counts. */
   mark: boolean;
   salt: string;
@@ -36,11 +39,23 @@ export function readPuzzle(data: unknown): DiscsPuzzle | null {
   if (!textIn(salt, 64) || salt === '') return null;
   const most = FLOWER.goals.length;
   if (!Array.isArray(answers) || answers.length === 0 || answers.length > most || !answers.every((answer) => textIn(answer, 64))) return null;
-  return { v: 1, words: readWords(input.words, NO_WORDS), layout: 'flower', pieces, mark: input.mark !== false, salt, answers };
+  const { icons } = input;
+  if (icons !== undefined && (!Array.isArray(icons) || icons.length !== pieces.length || !icons.every((icon) => icon === '' || isIconName(icon)))) return null;
+  return {
+    v: 1,
+    words: readWords(input.words, NO_WORDS),
+    layout: 'flower',
+    pieces,
+    ...(icons ? { icons } : {}),
+    mark: input.mark !== false,
+    salt,
+    answers,
+  };
 }
 
 /** The puzzle's pieces, numbered as its boards number them: by where each starts. */
-export const piecesIn = (puzzle: DiscsPuzzle): Piece[] => puzzle.pieces.map((text) => ({ text }));
+export const piecesIn = (puzzle: DiscsPuzzle): Piece[] =>
+  puzzle.pieces.map((text, i) => (puzzle.icons?.[i] ? { text, icon: puzzle.icons[i] } : { text }));
 
 /** Whether a board is solved: the fingerprint of its answer key is one of the puzzle's. */
 export async function isRight(puzzle: DiscsPuzzle, board: Board): Promise<boolean> {

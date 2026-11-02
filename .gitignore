@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Written by scripts/build-icons.ts before each dev server and build
+public/icons/
+
 # Test output
 coverage/
 

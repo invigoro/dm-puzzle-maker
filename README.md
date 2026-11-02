@@ -38,6 +38,10 @@ the arrow points.
   - **The names:** six of them, each in two halves, in order clockwise from the arrow. **Any start**
     counts them in order from any contact, and takes the arrow away. **Start from the example**
     fills in six made-up towns, to see how it works.
+  - **Pictures:** a half can be words, a picture, or both. 🖼 beside any half opens a search of
+    about 4,000 fantasy icons from [game-icons.net](https://game-icons.net/). A picture stands at
+    the rim end of its spoke like the letters, and the page names whoever made each picture on show,
+    as their license asks.
   - **Filler:** the other 30 spokes. Blank boxes fill themselves with halves of place names (ASH,
     THORN, WICK…), and 🎲 picks others. Names that look right but aren't make the best filler.
   - **The start:** every piece anywhere, or 20, 10 or 5 moves from solved for an easier puzzle, with
@@ -59,6 +63,10 @@ npm test          # unit and page tests
 npm run build     # type-check, then build to dist/
 npm run preview   # serve the production build locally
 ```
+
+The pictures are written to `public/icons/` before every dev server and build, from the
+`@iconify-json/game-icons` package. [SOURCES.md](SOURCES.md) says where they come from, how each is
+credited, and how to update them.
 
 Each kind of puzzle is a folder under [`src/puzzles/`](src/puzzles/) and an entry in
 [`registry.ts`](src/puzzles/registry.ts). [docs/PLAN.md](docs/PLAN.md#kinds-of-puzzle) says what

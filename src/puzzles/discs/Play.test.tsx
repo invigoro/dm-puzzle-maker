@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { forgetIcons } from '../../kit/icons';
+import { fakeIconFetch } from '../../test/icons';
 import { pageFor } from '../../ui/pages';
 import { contentOf, newDesign, toPuzzle, type DiscsDesign } from './design';
 import { answerKey, answerKeys } from './engine/answer';
@@ -13,12 +15,12 @@ const design: DiscsDesign = {
   ...newDesign(),
   words: { title: 'The mill-wheel', intro: 'Six villages, as the river finds them.', success: 'The wheel turns, and the sluice opens.' },
   pairs: [
-    ['Ashen', 'mark'],
-    ['Gull', 'ford'],
-    ['Thistle', 'down'],
-    ['Copper', 'vale'],
-    ['Lantern', 'wold'],
-    ['Hob', 'marsh'],
+    [{ text: 'Ashen' }, { text: 'mark' }],
+    [{ text: 'Gull' }, { text: 'ford' }],
+    [{ text: 'Thistle' }, { text: 'down' }],
+    [{ text: 'Copper' }, { text: 'vale' }],
+    [{ text: 'Lantern' }, { text: 'wold' }],
+    [{ text: 'Hob' }, { text: 'marsh' }],
   ],
   // One move from solved, so a test can find the move that solves it.
   mix: 1,
@@ -75,6 +77,20 @@ describe('the players’ page', () => {
       if (move.by < 0) await user.keyboard('{/Shift}');
     }
     expect(await screen.findByText(design.words.success, {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it('draws the pictures, and names who made them', async () => {
+    vi.stubGlobal('fetch', fakeIconFetch);
+    try {
+      const pictured = await toPuzzle({ ...design, pairs: [[{ text: '', icon: 'stone-tower' }, design.pairs[0][1]], ...design.pairs.slice(1)] });
+      render(<>{(await pageFor({ page: 'play', kind: 'discs', data: JSON.parse(JSON.stringify(pictured)) })).content}</>);
+      expect(screen.getAllByRole('button', { name: /a picture of stone tower/ }).length).toBeGreaterThan(0);
+      expect(await screen.findByText(/^Icons made by Lorc/)).toBeInTheDocument();
+      await waitFor(() => expect(document.querySelectorAll('.board .icon')).toHaveLength(1));
+    } finally {
+      vi.unstubAllGlobals();
+      forgetIcons();
+    }
   });
 
   it('keeps a player’s board in the browser, for when they come back', async () => {

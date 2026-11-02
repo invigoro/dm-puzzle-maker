@@ -1,5 +1,6 @@
 import { memo, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
-import { keyOf, type Piece } from './engine/answer';
+import { iconWords, useIcons, type Icon } from '../../kit/icons';
+import { wordsOf, type Piece } from './engine/answer';
 import type { Board as Pieces, Move } from './engine/board';
 import { angleOf, angleTo, direction, discOf, positionOf, type Layout, type Point } from './engine/layout';
 
@@ -12,6 +13,14 @@ const HUB = 16;
 const MOST_ADVANCE = 14;
 /** A letter's size for the room it takes along its spoke: a capital's height, and a little space. */
 const LETTER_SIZE = 1.22;
+/** A picture's size, and how much further in than the last letter its middle sits: it stands at the rim end of its spoke. */
+const ICON = 27;
+const ICON_IN = 7;
+/** A picture without words has the spoke to itself, so it's drawn larger. */
+const ICON_ALONE = 40;
+const ICON_ALONE_IN = 16;
+/** How much further in a piece's words end when it has a picture, to clear it. */
+const BESIDE_ICON = ICON_IN + ICON / 2 + 9;
 /** Room round the discs, in board units. */
 const MARGIN = 6;
 /** Keys that turn a focused disc, and which way: Shift turns it back with Enter or Space. */
@@ -76,10 +85,14 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
   const dragged = useRef(false);
 
   const step = 360 / layout.spokes;
-  const longest = Math.max(1, ...pieces.map((piece) => [...keyOf(piece)].length));
-  const advance = Math.min(MOST_ADVANCE, (100 - RIM - HUB) / Math.max(1, longest - 1));
+  const icons = useIcons(pieces.flatMap((piece) => (piece.icon ? [piece.icon] : [])));
+  // Words without a picture share one size, set by the longest; words beside a picture get less room, so may be smaller.
+  const roomFor = (piece: Piece) => 100 - RIM - HUB - (piece.icon ? BESIDE_ICON : 0);
+  const fit = (piece: Piece) => Math.min(MOST_ADVANCE, roomFor(piece) / Math.max(1, [...wordsOf(piece)].length - 1));
+  const advance = Math.min(...pieces.filter((piece) => !piece.icon).map(fit), MOST_ADVANCE);
+  const advanceOf = (piece: Piece) => (piece.icon ? Math.min(advance, fit(piece)) : advance);
   const goals = new Set(layout.goals.flatMap((goal) => [layout.contacts[goal].a, layout.contacts[goal].b]));
-  const textAt = (position: number) => keyOf(pieces[board[position]]);
+  const textAt = (position: number) => describe(pieces[board[position]]);
 
   /** Where the piece at a position is drawn, partway through the motion that brought it there. */
   function poseOf(position: number): Pose {
@@ -199,9 +212,20 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
         );
       })}
       <g className="pieces" aria-hidden="true">
-        {board.map((piece, position) => (
-          <Letters key={piece} text={keyOf(pieces[piece])} {...poseOf(position)} rim={100 - RIM} advance={advance} goal={goals.has(position)} />
-        ))}
+        {board.map((piece, position) => {
+          const icon = pieces[piece].icon;
+          return (
+            <Letters
+              key={piece}
+              text={wordsOf(pieces[piece])}
+              icon={icon ? (icons.get(icon) ?? null) : null}
+              {...poseOf(position)}
+              rim={100 - RIM - (icon ? BESIDE_ICON : 0)}
+              advance={advanceOf(pieces[piece])}
+              goal={goals.has(position)}
+            />
+          );
+        })}
       </g>
       {mark && (
         <path
@@ -234,8 +258,18 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
   );
 }
 
+/** A piece as screen readers hear it: its words, its picture, or both. */
+export function describe(piece: Piece): string {
+  const words = wordsOf(piece);
+  if (!piece.icon) return words || 'nothing';
+  const picture = `a picture of ${iconWords(piece.icon)}`;
+  return words ? `${words} with ${picture}` : picture;
+}
+
 interface LettersProps extends Pose {
   text: string;
+  /** The piece's picture, once it's loaded. */
+  icon: Icon | null;
   /** How far out the last letter sits, at rest. */
   rim: number;
   advance: number;
@@ -245,16 +279,26 @@ interface LettersProps extends Pose {
 /**
  * A piece's letters, one above the other along its spoke, the first nearest its disc's hub. Each
  * stands on the rim: its foot towards the rim end of the spoke, its head towards the hub. So two
- * halves meeting at a contact stand foot to foot, and each reads down from its own hub.
+ * halves meeting at a contact stand foot to foot, and each reads down from its own hub. A picture
+ * stands the same way, at the rim end, with the letters running in from it.
  */
-const Letters = memo(function Letters({ text, x, y, angle, reach, rim, advance, goal }: LettersProps) {
+const Letters = memo(function Letters({ text, icon, x, y, angle, reach, rim, advance, goal }: LettersProps) {
   const letters = [...text];
   const along = direction(angle);
+  const at = (out: number) => [x + (out + reach) * along.x, y + (out + reach) * along.y];
+  const [size, inward] = letters.length > 0 ? [ICON, ICON_IN] : [ICON_ALONE, ICON_ALONE_IN];
+  const [ix, iy] = at(100 - RIM - inward);
   return (
     <g className={goal ? 'piece goal' : 'piece'}>
+      {icon && (
+        <g
+          className="icon"
+          transform={`translate(${ix} ${iy}) rotate(${angle + 180}) translate(${-size / 2} ${-size / 2}) scale(${size / 512})`}
+          dangerouslySetInnerHTML={{ __html: icon.body }}
+        />
+      )}
       {letters.map((letter, i) => {
-        const out = rim - (letters.length - 1 - i) * advance + reach;
-        const [lx, ly] = [x + out * along.x, y + out * along.y];
+        const [lx, ly] = at(rim - (letters.length - 1 - i) * advance);
         return (
           <text key={i} x={lx} y={ly} fontSize={advance * LETTER_SIZE} transform={`rotate(${angle + 180} ${lx} ${ly})`}>
             {letter}

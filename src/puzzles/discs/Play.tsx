@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { load, store } from '../../kit/storage';
+import { IconCredit } from '../../ui/IconCredit';
 import type { Board, Move } from './engine/board';
 import { FLOWER } from './engine/layout';
 import { Game } from './Game';
@@ -14,15 +15,18 @@ export function Play({ puzzle }: { puzzle: DiscsPuzzle }) {
   const [initial] = useState(() => readProgress(load(progressKey(puzzle))));
   const keep = useCallback((board: Board, moves: readonly Move[]) => store(progressKey(puzzle), { board, moves }), [puzzle]);
   return (
-    <Game
-      layout={FLOWER}
-      pieces={pieces}
-      start={start}
-      initial={initial}
-      onProgress={keep}
-      isSolved={isSolved}
-      mark={puzzle.mark}
-      success={puzzle.words.success}
-    />
+    <>
+      <Game
+        layout={FLOWER}
+        pieces={pieces}
+        start={start}
+        initial={initial}
+        onProgress={keep}
+        isSolved={isSolved}
+        mark={puzzle.mark}
+        success={puzzle.words.success}
+      />
+      <IconCredit names={puzzle.icons?.filter(Boolean) ?? []} />
+    </>
   );
 }

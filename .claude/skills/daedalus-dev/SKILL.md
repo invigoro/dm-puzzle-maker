@@ -35,6 +35,10 @@ npm run preview   # serve the production build
 
 Node 24 is pinned in `.nvmrc`; 22.12 or newer works.
 
+The pictures (`public/icons/`, not committed) are written before every `dev` and `build` by
+`scripts/build-icons.ts`. After updating `@iconify-json/game-icons`, run `npm run icon-authors`
+and commit `scripts/icon-authors.json`; SOURCES.md says why, and must stay current.
+
 ## How the code is laid out
 
 - `src/main.tsx` reads the URL's fragment (`src/kit/route.ts`) and loads only that page's code:

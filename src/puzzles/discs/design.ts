@@ -1,8 +1,9 @@
 /** A turning discs puzzle as the game master makes it, answer and all, and what its player link holds. */
 import { fingerprint, newSalt } from '../../kit/check';
+import { isIconName } from '../../kit/icons';
 import { mulberry32, randomSeed } from '../../kit/rng';
 import { readWords, tidyWords, type Words } from '../../kit/words';
-import { answerKeys, keyOf, LONGEST_HALF, piecesOf, type Content } from './engine/answer';
+import { answerKeys, isBlank, LONGEST_HALF, piecesOf, wordsOf, type Content, type Piece } from './engine/answer';
 import type { Board } from './engine/board';
 import { fillBlanks } from './engine/filler';
 import { FLOWER, positionCount } from './engine/layout';
@@ -20,9 +21,9 @@ export interface DiscsDesign {
   v: 1;
   words: Words;
   /** Each name's two halves, in order clockwise from the mark. Either may come first in the name. */
-  pairs: [string, string][];
+  pairs: [Piece, Piece][];
   /** What goes on the other spokes. Blanks fill themselves from halves of place names. */
-  filler: string[];
+  filler: Piece[];
   /** Whether the names count in order from any contact round the centre, not just the mark's. */
   anyStart: boolean;
   mix: Mix;
@@ -33,12 +34,14 @@ export interface DiscsDesign {
 
 export const NEW_WORDS: Words = { title: '', intro: '', success: 'The discs lock into place.' };
 
+const blank = (): Piece => ({ text: '' });
+
 export function newDesign(): DiscsDesign {
   return {
     v: 1,
     words: NEW_WORDS,
-    pairs: Array.from({ length: PAIRS }, () => ['', '']),
-    filler: Array.from({ length: FILLER }, () => ''),
+    pairs: Array.from({ length: PAIRS }, () => [blank(), blank()]),
+    filler: Array.from({ length: FILLER }, blank),
     anyStart: false,
     mix: 'full',
     fillSeed: randomSeed(),
@@ -46,7 +49,15 @@ export function newDesign(): DiscsDesign {
   };
 }
 
-const half = (value: unknown) => (typeof value === 'string' && value.length <= LONGEST_HALF ? value : '');
+const textIn = (value: unknown) => (typeof value === 'string' && value.length <= LONGEST_HALF ? value : '');
+
+/** A half from untrusted data: its words, and its picture if it names one. Links made before pictures hold just the words. */
+function halfIn(value: unknown): Piece {
+  if (typeof value === 'string') return { text: textIn(value) };
+  const input = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  return isIconName(input.icon) ? { text: textIn(input.text), icon: input.icon } : { text: textIn(input.text) };
+}
+
 const seedIn = (value: unknown) => (Number.isInteger(value) && (value as number) >= 0 && (value as number) < 2 ** 32 ? (value as number) : 1);
 
 /** A design from untrusted data, each field checked, with a new design's for any that's missing or malformed. */
@@ -61,9 +72,9 @@ export function readDesign(data: unknown): DiscsDesign | null {
     words: readWords(input.words, NEW_WORDS),
     pairs: Array.from({ length: PAIRS }, (_, i) => {
       const pair: unknown[] = Array.isArray(pairs[i]) ? pairs[i] : [];
-      return [half(pair[0]), half(pair[1])];
+      return [halfIn(pair[0]), halfIn(pair[1])];
     }),
-    filler: Array.from({ length: FILLER }, (_, i) => half(filler[i])),
+    filler: Array.from({ length: FILLER }, (_, i) => halfIn(filler[i])),
     anyStart: input.anyStart === true,
     mix: MIXES.find((mix) => mix === input.mix) ?? 'full',
     fillSeed: seedIn(input.fillSeed),
@@ -72,15 +83,10 @@ export function readDesign(data: unknown): DiscsDesign | null {
 }
 
 /** The filler as the board shows it, its blanks filled. */
-export const fillerOf = (design: DiscsDesign): string[] => fillBlanks(design.filler, design.pairs.flat(), mulberry32(design.fillSeed));
+export const fillerOf = (design: DiscsDesign): Piece[] => fillBlanks(design.filler, design.pairs.flat(), mulberry32(design.fillSeed));
 
 /** The design's pieces: its pairs, and its filler with the blanks filled. */
-export function contentOf(design: DiscsDesign): Content {
-  return {
-    pairs: design.pairs.map(([first, second]) => [{ text: first }, { text: second }] as const),
-    filler: fillerOf(design).map((text) => ({ text })),
-  };
-}
+export const contentOf = (design: DiscsDesign): Content => ({ pairs: design.pairs, filler: fillerOf(design) });
 
 /** The board as the players first see it. */
 export const startOf = (design: DiscsDesign): Board => scramble(FLOWER, contentOf(design), mulberry32(design.seed), design.mix);
@@ -89,20 +95,23 @@ export const startOf = (design: DiscsDesign): Board => scramble(FLOWER, contentO
 export const solvedOf = (design: DiscsDesign): Board => solvedBoard(FLOWER, contentOf(design), mulberry32(design.seed));
 
 export function problemsOf(design: DiscsDesign): string[] {
-  return design.pairs.some((pair) => pair.some((text) => keyOf({ text }) === '')) ? ['Write both halves of all six names.'] : [];
+  return design.pairs.some((pair) => pair.some(isBlank)) ? ['Give both halves of all six names words or a picture.'] : [];
 }
 
 /** What a player link holds: the pieces as they start, and fingerprints of the answers that count. */
 export async function toPuzzle(design: DiscsDesign): Promise<DiscsPuzzle> {
   const content = contentOf(design);
   const pieces = piecesOf(content);
+  const start = startOf(design).map((piece) => pieces[piece]);
   const salt = newSalt();
   return {
     v: 1,
     words: tidyWords(design.words),
     layout: 'flower',
     // Spoke by spoke, as they start: in no order that says which are the answer's, or which go together.
-    pieces: startOf(design).map((piece) => keyOf(pieces[piece])),
+    pieces: start.map(wordsOf),
+    // Only when there are pictures, to keep links short.
+    ...(start.some((piece) => piece.icon) ? { icons: start.map((piece) => piece.icon ?? '') } : {}),
     mark: !design.anyStart,
     salt,
     answers: await Promise.all(answerKeys(content, design.anyStart).map((key) => fingerprint(key, salt))),

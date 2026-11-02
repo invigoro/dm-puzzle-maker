@@ -207,8 +207,102 @@ input.half {
 
 .filler {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
   gap: 0.4rem;
+}
+
+/* A half's box, with its picture button joined on. */
+.half-field {
+  display: flex;
+  min-width: 0;
+}
+
+.half-field input {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.picture-button {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  padding: 0;
+  margin-left: -1px;
+  font-size: 0.95rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.picture-button:not(.chosen) span {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+.picture-button[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+
+/* An icon drawn in the text's colour: the icon's file is the mask, the colour shows through it. */
+.icon-thumb {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  background: currentColor;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--paper);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+}
+
+.picker input[type='search'] {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.icon-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.9rem, 1fr));
+  gap: 0.35rem;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.icon-choice {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+}
+
+.icon-choice .icon-thumb {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.icon-choice[aria-pressed='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.credit {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 .send input.link {
@@ -464,6 +558,14 @@ h2 {
 .board .mark,
 .board .arrows {
   pointer-events: none;
+}
+
+.board .piece {
+  color: var(--ink);
+}
+
+.board.solved .piece.goal {
+  color: var(--gold);
 }
 
 .board .piece text {

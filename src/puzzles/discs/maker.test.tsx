@@ -1,16 +1,24 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { forgetIcons } from '../../kit/icons';
 import { unpack } from '../../kit/packing';
 import { readRoute } from '../../kit/route';
+import { fakeIconFetch } from '../../test/icons';
 import { pageFor } from '../../ui/pages';
 import { readDesign } from './design';
 import { readPuzzle } from './puzzle';
 
+beforeEach(() => {
+  vi.stubGlobal('fetch', fakeIconFetch);
+});
+
 afterEach(() => {
   cleanup();
   history.replaceState(null, '', '/');
+  vi.unstubAllGlobals();
+  forgetIcons();
 });
 
 async function openMaker() {
@@ -26,7 +34,7 @@ const linkReady = () => waitFor(() => expect(copyButton()).toBeEnabled(), { time
 describe('the turning discs maker', () => {
   it('won’t send a puzzle until all six names are written', async () => {
     await openMaker();
-    expect(screen.getByText('Write both halves of all six names.')).toBeInTheDocument();
+    expect(screen.getByText('Give both halves of all six names words or a picture.')).toBeInTheDocument();
     expect(copyButton()).toBeDisabled();
   });
 
@@ -61,7 +69,7 @@ describe('the turning discs maker', () => {
     await user.type(screen.getByRole('textbox', { name: 'Name 3, second half' }), 'mere');
     await waitFor(() => expect(location.hash).toMatch(/^#m=/));
     const route = await readRoute(location.hash, ['discs']);
-    expect(route.page === 'make' && readDesign(route.data)?.pairs[2]).toEqual(['', 'mere']);
+    expect(route.page === 'make' && readDesign(route.data)?.pairs[2]).toEqual([{ text: '' }, { text: 'mere' }]);
   });
 
   it('fills blank filler, and fills it differently on asking', async () => {
@@ -72,6 +80,36 @@ describe('the turning discs maker', () => {
     expect(before.every((half) => half)).toBe(true);
     await user.click(screen.getByRole('button', { name: /Other filler/ }));
     expect(placeholders()).not.toEqual(before);
+  });
+
+  it('gives a half a picture, puts it on the board with its maker named, and in the player link', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('button', { name: 'Start from the example' }));
+    await user.click(screen.getByRole('button', { name: 'Picture for name 1, second half' }));
+    const picker = screen.getByRole('group', { name: 'Picture for name 1, second half' });
+    await user.type(within(picker).getByRole('searchbox', { name: 'Search the pictures' }), 'stone');
+    await user.click(await within(picker).findByRole('button', { name: 'stone tower' }));
+    expect(screen.queryByRole('group', { name: /^Picture for/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Picture for name 1, second half' })).toHaveAttribute('title', 'stone tower');
+    expect(screen.getAllByRole('button', { name: /WICK with a picture of stone tower/ }).length).toBeGreaterThan(0);
+    expect(await screen.findByText(/^Icons made by Lorc/)).toBeInTheDocument();
+    await waitFor(() => expect(document.querySelector('.board .icon path')).not.toBeNull());
+
+    await linkReady();
+    await user.click(copyButton());
+    const route = await readRoute(new URL(await navigator.clipboard.readText()).hash, ['discs']);
+    expect(readPuzzle(route.page === 'play' ? route.data : null)?.icons?.filter(Boolean)).toEqual(['stone-tower']);
+  });
+
+  it('takes a picture away again', async () => {
+    const user = await openMaker();
+    await user.click(screen.getByRole('button', { name: 'Picture for filler 4' }));
+    await user.type(screen.getByRole('searchbox', { name: 'Search the pictures' }), 'flag');
+    await user.click(await screen.findByRole('button', { name: 'tower flag' }));
+    expect(screen.getByRole('button', { name: 'Picture for filler 4' })).toHaveAttribute('title', 'tower flag');
+    await user.click(screen.getByRole('button', { name: 'Picture for filler 4' }));
+    await user.click(screen.getByRole('button', { name: 'No picture' }));
+    expect(screen.getByRole('button', { name: 'Picture for filler 4' })).toHaveAttribute('title', 'Add a picture');
   });
 
   it('shows the board solved, and takes the arrow away for any start', async () => {

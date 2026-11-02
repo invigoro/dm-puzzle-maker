@@ -4,9 +4,11 @@ import type { Layout } from './layout';
 /** The longest a piece's text may be. Past about seven letters, the board sets a piece's letters smaller to fit. */
 export const LONGEST_HALF = 16;
 
-/** What a spoke holds: half a name. (Not `Node`, which is the DOM's.) */
+/** What a spoke holds: half a name, in words, a picture, or both. (Not `Node`, which is the DOM's.) */
 export interface Piece {
   text: string;
+  /** A picture's name, from the icon set. */
+  icon?: string;
 }
 
 /** A puzzle's pieces: each pair's two halves, in order from the mark, and the filler. */
@@ -18,8 +20,17 @@ export interface Content {
 /** Every piece, numbered as boards number them: each pair's two halves in turn, then the filler. */
 export const piecesOf = (content: Content): Piece[] => [...content.pairs.flat(), ...content.filler];
 
-/** How a piece reads and compares: its words in capitals, spacing tidied, so pieces that look alike count alike. */
-export const keyOf = (piece: Piece) => piece.text.trim().replace(/\s+/g, ' ').toUpperCase();
+/** How a piece's words read: in capitals, spacing tidied. */
+export const wordsOf = (piece: Piece) => piece.text.trim().replace(/\s+/g, ' ').toUpperCase();
+
+/**
+ * How a piece compares: its words and its picture, so pieces that look alike count alike. A piece
+ * without a picture compares by its words alone, as pieces did before there were pictures.
+ */
+export const keyOf = (piece: Piece) => (piece.icon ? `${wordsOf(piece)}|${piece.icon}` : wordsOf(piece));
+
+/** Whether a piece has nothing on it: no words and no picture. */
+export const isBlank = (piece: Piece) => keyOf(piece) === '';
 
 /** A pair as it's compared: its two keys, sorted, so it counts either way round. */
 const pairKey = (one: Piece, other: Piece) => [keyOf(one), keyOf(other)].sort();

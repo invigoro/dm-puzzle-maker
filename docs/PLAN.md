@@ -13,8 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 2 are done and live at https://daedalus.invigoro.me/. Phase 3
-is next.
+**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures are done;
+saved puzzles, setting the start by hand, the glow and the stone-and-bronze look are to come.
 
 ## The site
 
@@ -213,16 +213,30 @@ Sator's engine.
 
 ### Pictures
 
-Pictures come from [game-icons.net](https://game-icons.net/): 4,133 fantasy and game icons in SVG,
-by Lorc, Delapouite and others, under CC BY 3.0 (a few are CC0). They're on GitHub as
-`game-icons/icons` and on npm as `@iconify-json/game-icons`.
+Pictures come from [game-icons.net](https://game-icons.net/): fantasy and game icons in SVG, by
+Lorc, Delapouite and others, under CC BY 3.0 (a few are CC0). They're on GitHub as
+`game-icons/icons` and on npm as `@iconify-json/game-icons`. [SOURCES.md](../SOURCES.md) has the
+details.
 
-- A node can be a picture, words, or both. A picture sits at the rim end of its spoke, with any
-  words running in from it.
-- A build script writes each icon to `public/icons/` as its own file, plus a search index for the
-  maker. A puzzle loads only the icons it uses, and links name them, so links stay short.
-- SOURCES.md credits the icons' authors, as the license asks, and the site links to it.
-- Picture pairs count either way round, as words do.
+- **On a spoke:** a node can be a picture, words, or both. A picture stands at the rim end of its
+  spoke, foot to the rim like the letters, with any words running in from it. A picture alone is
+  drawn larger.
+- **In the maker:** 🖼 beside every half, names and filler alike, opens a picker that searches the
+  icons' names.
+- **Who made each:** the set's license asks for "Icons made by {author}", and the npm package
+  doesn't say who made which. The set's repository keeps each contributor's icons in a folder of
+  their own, so `npm run icon-authors` records each folder's icons, committed as
+  scripts/icon-authors.json. Icons whose author is uncertain are left out: those in two folders,
+  or in `badges` or `various-artists`. That leaves 4,068 of 4,134.
+- **Serving them:** `scripts/build-icons.ts` writes each icon to `public/icons/` as its own file,
+  with its author in it, plus an index for the picker. It runs before every dev server and build,
+  and its output isn't committed. A puzzle loads only the icons it uses, and links name them, so
+  links stay short.
+- **Credit:** wherever a puzzle shows icons, the maker and the players' page name their makers.
+- **Checking:** a piece's picture counts with its words, so a picture can't stand in for words, nor
+  one picture for another. Pairs with pictures count either way round, as words do.
+- **Drawing:** icons are drawn in the text's colour, inlined on the board and as CSS masks in the
+  picker, so they suit light and dark alike.
 
 ## Stack and hosting
 
@@ -251,7 +265,9 @@ by Lorc, Delapouite and others, under CC BY 3.0 (a few are CC0). They're on GitH
 .github/workflows/               # deploy.yml (main → Pages), test.yml (other branches)
 index.html · vite.config.ts · package.json · .nvmrc · tsconfig.json
 docs/PLAN.md                     # this file
-public/                          # copied as-is: the favicon, and (Phase 3) icons
+SOURCES.md                       # where the pictures come from, and who made them
+scripts/                         # icon-authors.ts (by hand), build-icons.ts (before dev and build), icons.ts
+public/                          # copied as-is: the favicon, and icons/ (written by build-icons.ts)
 src/
   main.tsx · style.css           # opens the page the link holds
   kit/                           # shared by every kind of puzzle
@@ -261,6 +277,7 @@ src/
     route.ts                     # which page a link opens, and the links to each
     words.ts                     # the title, introduction and line for solving it, read and checked
     storage.ts                   # things kept in the browser, when it allows
+    icons.ts                     # pictures: loading, searching, crediting
   puzzles/
     types.ts                     # what a kind of puzzle provides
     registry.ts                  # every kind of puzzle
@@ -281,6 +298,7 @@ src/
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
     MakerPage.tsx · WordsFields.tsx · Send.tsx   # the maker's shell: the address, the words, sending
+    IconPicker.tsx · IconCredit.tsx  # choosing a picture; naming who made the ones on show
     PlayerPage.tsx               # the players' shell: the title and introduction
     pages.tsx                    # which page a route opens, loading only its side's code
 ```

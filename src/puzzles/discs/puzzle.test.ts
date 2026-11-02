@@ -7,12 +7,12 @@ import { progressKey, readProgress, readPuzzle } from './puzzle';
 const design: DiscsDesign = {
   ...newDesign(),
   pairs: [
-    ['Ashen', 'mark'],
-    ['Gull', 'ford'],
-    ['Thistle', 'down'],
-    ['Copper', 'vale'],
-    ['Lantern', 'wold'],
-    ['Hob', 'marsh'],
+    [{ text: 'Ashen' }, { text: 'mark' }],
+    [{ text: 'Gull' }, { text: 'ford' }],
+    [{ text: 'Thistle' }, { text: 'down' }],
+    [{ text: 'Copper' }, { text: 'vale' }],
+    [{ text: 'Lantern' }, { text: 'wold' }],
+    [{ text: 'Hob' }, { text: 'marsh' }],
   ],
 };
 const sent = async () => JSON.parse(JSON.stringify(await toPuzzle(design)));
@@ -33,11 +33,20 @@ describe('readPuzzle', () => {
       { ...puzzle, salt: '' },
       { ...puzzle, answers: [] },
       { ...puzzle, answers: Array(7).fill(puzzle.answers[0]) },
+      { ...puzzle, icons: ['stone-tower'] },
+      { ...puzzle, icons: puzzle.pieces.map(() => '../../index') },
+      { ...puzzle, icons: 'stone-tower' },
       null,
       [],
       'puzzle',
     ];
     for (const junk of broken) expect(readPuzzle(junk)).toBeNull();
+  });
+
+  it('reads each piece’s picture, when there are any', async () => {
+    const puzzle = await sent();
+    const icons = puzzle.pieces.map((_: string, i: number) => (i === 3 ? 'stone-tower' : ''));
+    expect(readPuzzle({ ...puzzle, icons })?.icons).toEqual(icons);
   });
 
   it('leaves out words that aren’t text', async () => {
