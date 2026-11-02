@@ -51,6 +51,20 @@ describe('the game', () => {
     expect(piecesOn('top')).toEqual(before);
   });
 
+  it('stands each letter on its disc’s rim, its foot towards the rim end of its spoke', () => {
+    play(solved);
+    // Pieces are drawn in the order of their positions: the centre's spokes first, then the top disc's.
+    const turnOf = (position: number) =>
+      [...document.querySelectorAll('.pieces > g')[position].querySelectorAll('text')].map(
+        (letter) => Number(letter.getAttribute('transform')!.match(/^rotate\((\S+) /)![1]) % 360,
+      );
+    // The centre's top spoke points up, so its letters stand on their heads; the top disc's bottom spoke points down.
+    expect(new Set(turnOf(0))).toEqual(new Set([180]));
+    expect(new Set(turnOf(9))).toEqual(new Set([0]));
+    // The centre's upper-right spoke points at 60°, so its letters lean to stand on that rim.
+    expect(new Set(turnOf(1))).toEqual(new Set([240]));
+  });
+
   it('swaps the halves where two discs meet', async () => {
     const user = play(solved);
     const [first] = contacts();

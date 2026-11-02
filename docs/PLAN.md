@@ -118,7 +118,8 @@ two neighbours.
     hub reads K A R N T S E R, each half read outward from its own hub.
   - A pair spells its name whichever disc holds which half, so there's no first half to get wrong,
     and swapping a right pair leaves it right.
-  - Each letter stays upright as its disc turns.
+  - Each letter stands on the rim: its foot towards the rim end of its spoke and its head towards
+    the hub, so the two halves at a contact stand foot to foot. Letters turn with their disc.
   - Letters are all capitals, so case can't give away which half comes first in the name.
   - Letters are sized so the board's longest half fits its spoke: up to about seven letters read
     comfortably.
@@ -277,8 +278,8 @@ src/
   [Stack and hosting](#stack-and-hosting)).
 
 **Phase 1: The discs and the board.** *(done. Moves are animated by working out where each letter
-is, frame by frame, rather than by CSS transitions, so letters stay upright and a swap can swing
-round its contact. Shift-click, dragging and the arrow keys turn a disc back, so it needs no ↺
+is, frame by frame, rather than by CSS transitions, so a swap can swing round its contact. Letters
+stood upright at first, and now stand on the rim, as Tim asked. Shift-click, dragging and the arrow keys turn a disc back, so it needs no ↺
 handle. The example lives on the turning discs page until Phase 2's maker takes it over, and the
 line for solving it stays once said, even if a player carries on turning.)*
 - The engine with tests: layout, board, turning and swapping, answer keys, scrambles, filler and the

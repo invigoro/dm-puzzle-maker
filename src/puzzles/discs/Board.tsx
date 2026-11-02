@@ -6,10 +6,12 @@ import { angleOf, angleTo, direction, discOf, positionOf, type Layout, type Poin
 /** How long a move takes to show, in milliseconds. */
 const DURATION = 280;
 /** Room kept clear at a disc's rim for the swap buttons, and round its hub, on a disc of radius 100. */
-const RIM = 14;
+const RIM = 15;
 const HUB = 16;
 /** The most room a letter takes along its spoke; longer halves get less, so they fit. */
-const MOST_ADVANCE = 15.5;
+const MOST_ADVANCE = 14;
+/** A letter's size for the room it takes along its spoke: a capital's height, and a little space. */
+const LETTER_SIZE = 1.22;
 /** Room round the discs, in board units. */
 const MARGIN = 6;
 /** Keys that turn a focused disc, and which way: Shift turns it back with Enter or Space. */
@@ -204,7 +206,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved }: B
       {mark && (
         <path
           className="mark"
-          d="M0 -11 L5 -3 L1.6 -3 L1.6 6 L-1.6 6 L-1.6 -3 L-5 -3 Z"
+          d="M0 -9 L4.2 -2.5 L1.4 -2.5 L1.4 5 L-1.4 5 L-1.4 -2.5 L-4.2 -2.5 Z"
           transform={`translate(${hub.x} ${hub.y}) rotate(${angleTo(hub, firstGoal)})`}
         />
       )}
@@ -241,8 +243,9 @@ interface LettersProps extends Pose {
 }
 
 /**
- * A piece's letters, upright and one above the other along its spoke: the first nearest its disc's
- * hub, the last at the rim, so two halves meeting at a contact each read outward from their own hub.
+ * A piece's letters, one above the other along its spoke, the first nearest its disc's hub. Each
+ * stands on the rim: its foot towards the rim end of the spoke, its head towards the hub. So two
+ * halves meeting at a contact stand foot to foot, and each reads down from its own hub.
  */
 const Letters = memo(function Letters({ text, x, y, angle, reach, rim, advance, goal }: LettersProps) {
   const letters = [...text];
@@ -251,8 +254,9 @@ const Letters = memo(function Letters({ text, x, y, angle, reach, rim, advance, 
     <g className={goal ? 'piece goal' : 'piece'}>
       {letters.map((letter, i) => {
         const out = rim - (letters.length - 1 - i) * advance + reach;
+        const [lx, ly] = [x + out * along.x, y + out * along.y];
         return (
-          <text key={i} x={x + out * along.x} y={y + out * along.y} fontSize={advance * 1.02}>
+          <text key={i} x={lx} y={ly} fontSize={advance * LETTER_SIZE} transform={`rotate(${angle + 180} ${lx} ${ly})`}>
             {letter}
           </text>
         );
