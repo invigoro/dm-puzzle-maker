@@ -27,9 +27,9 @@ doesn't lose the board.
 
 ### Turning discs
 
-Seven touching discs, each with six word-halves on its spokes. The players turn the discs and swap
-halves where they meet, until the six names around the centre are spelled out in order, from where
-the arrow points.
+Seven touching discs of stone, rimmed in bronze, each with six word-halves or pictures cut into its
+spokes. The players turn the discs and swap halves at the bronze studs where they meet, until the
+six names around the centre are spelled out in order, from where the arrow points.
 
 - **Lettering:** each half reads down its spoke from its own disc's hub, every letter standing on
   the rim. So the two halves at a contact stand foot to foot, and a name counts either way round.

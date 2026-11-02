@@ -1,5 +1,6 @@
-import { memo, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
+import { memo, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import { iconWords, useIcons, type Icon } from '../../kit/icons';
+import { mulberry32 } from '../../kit/rng';
 import { wordsOf, type Piece } from './engine/answer';
 import type { Board as Pieces, Move } from './engine/board';
 import { angleOf, angleTo, direction, discOf, positionOf, type Layout, type Point } from './engine/layout';
@@ -81,6 +82,7 @@ function useProgress(motion: Motion | null): number {
 /** The discs, their pieces and the contacts between them, to turn and swap. */
 export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit = [] }: BoardProps) {
   const t = ease(useProgress(motion));
+  const ids = `board${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ disc: number; pointer: number; angle: number; turned: boolean } | null>(null);
   // A drag that turned a disc ends in a click, which shouldn't turn it again.
@@ -183,8 +185,17 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
   const firstGoal = layout.contacts[layout.goals[0]];
   const turning = t < 1 && motion?.move.kind === 'turn' ? motion.move : null;
 
+  // Each board's own names for its gradients and grain, as a page can show two boards.
+  const url = (name: string) => `url(#${ids}-${name})`;
+
   return (
     <svg ref={svg} className={solved ? 'board solved' : 'board'} viewBox={viewBox} role="group" aria-label="The discs">
+      <Stone ids={ids} />
+      <g className="shadows" aria-hidden="true">
+        {layout.discs.map((disc, d) => (
+          <circle key={d} cx={disc.x} cy={disc.y + disc.r * 0.04} r={disc.r * 1.06} fill={url('shadow')} />
+        ))}
+      </g>
       {layout.discs.map((disc, d) => {
         const spokes = Array.from({ length: layout.spokes }, (_, spoke) => positionOf(layout, d, spoke));
         const turned = turning?.disc === d ? -turning.by * step * (1 - t) : 0;
@@ -202,16 +213,20 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
             onPointerUp={pointerUp}
             onPointerCancel={pointerUp}
           >
-            <circle className="face" cx={disc.x} cy={disc.y} r={disc.r} />
+            <circle className="face" cx={disc.x} cy={disc.y} r={disc.r - 2} fill={url(d === layout.hub ? 'hub' : 'stone')} stroke={url('bronze')} />
+            <circle className="grain" cx={disc.x} cy={disc.y} r={disc.r - 5} fill={url('grain')} />
+            <circle className="bevel" cx={disc.x} cy={disc.y} r={disc.r - 5.5} />
             <g transform={`rotate(${turned} ${disc.x} ${disc.y})`}>
               {spokes.map((position) => {
                 const along = direction(angleOf(layout, position));
-                const [from, to] = [HUB * 0.55, disc.r - 4].map((reach) => (reach * disc.r) / 100);
+                const [from, to] = [HUB * 0.55, disc.r - 7].map((reach) => (reach * disc.r) / 100);
                 return (
                   <line key={position} className="spoke" x1={disc.x + from * along.x} y1={disc.y + from * along.y} x2={disc.x + to * along.x} y2={disc.y + to * along.y} />
                 );
               })}
             </g>
+            {/* The hub's arrow, when there is one, stands where its boss would be. */}
+            {!(mark && d === layout.hub) && <circle className="boss" cx={disc.x} cy={disc.y} r={4.5} fill={url('bronze')} />}
           </g>
         );
       })}
@@ -235,7 +250,8 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
       {mark && (
         <path
           className="mark"
-          d="M0 -9 L4.2 -2.5 L1.4 -2.5 L1.4 5 L-1.4 5 L-1.4 -2.5 L-4.2 -2.5 Z"
+          d="M0 -10 L5 -2.5 L1.8 -2.5 L1.8 6 L-1.8 6 L-1.8 -2.5 L-5 -2.5 Z"
+          fill={url('bronze')}
           transform={`translate(${hub.x} ${hub.y}) rotate(${angleTo(hub, firstGoal)})`}
         />
       )}
@@ -251,7 +267,7 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
         >
           {/* Wide enough for a finger, and still clear of the next contact, 100 units round the rim. */}
           <circle className="hit" cx={contact.x} cy={contact.y} r={20} />
-          <circle className="dot" cx={contact.x} cy={contact.y} r={7.5} />
+          <circle className="dot" cx={contact.x} cy={contact.y} r={7.5} fill={url('bronze')} />
           <path
             className="arrows"
             d="M-4.5 0 H4.5 M-4.5 0 l2.4 -2.4 M-4.5 0 l2.4 2.4 M4.5 0 l-2.4 -2.4 M4.5 0 l-2.4 2.4"
@@ -262,6 +278,45 @@ export function Board({ layout, pieces, board, motion, onMove, mark, solved, lit
     </svg>
   );
 }
+
+/** Specks of grain in the stone, the same on every board: x, y, radius and how dark, on a tile of 41. */
+const GRAIN = (() => {
+  const random = mulberry32(17);
+  return Array.from({ length: 34 }, () => [random() * 41, random() * 41, 0.35 + random() * 0.9, 0.06 + random() * 0.22] as const);
+})();
+
+/**
+ * The stone and bronze the discs are made of: gradients and a grain pattern, coloured from the
+ * page's theme. They're drawn once, rather than as filters, so turning a disc stays cheap.
+ */
+const Stone = memo(function Stone({ ids }: { ids: string }) {
+  return (
+    <defs>
+      <radialGradient id={`${ids}-stone`} cx="42%" cy="36%" r="72%">
+        <stop offset="0" className="stone-light" />
+        <stop offset="1" className="stone-dark" />
+      </radialGradient>
+      <radialGradient id={`${ids}-hub`} cx="42%" cy="36%" r="72%">
+        <stop offset="0" className="hub-light" />
+        <stop offset="1" className="hub-dark" />
+      </radialGradient>
+      <linearGradient id={`${ids}-bronze`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" className="bronze-light" />
+        <stop offset="0.55" className="bronze-dark" />
+        <stop offset="1" className="bronze-light" />
+      </linearGradient>
+      <radialGradient id={`${ids}-shadow`}>
+        <stop offset="0.86" stopColor="#000" stopOpacity="0.2" />
+        <stop offset="1" stopColor="#000" stopOpacity="0" />
+      </radialGradient>
+      <pattern id={`${ids}-grain`} width="41" height="41" patternUnits="userSpaceOnUse">
+        {GRAIN.map(([x, y, r, opacity], i) => (
+          <circle key={i} className="speck" cx={x} cy={y} r={r} opacity={opacity} />
+        ))}
+      </pattern>
+    </defs>
+  );
+});
 
 /** A piece as screen readers hear it: its words, its picture, or both. */
 export function describe(piece: Piece): string {

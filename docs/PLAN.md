@@ -13,8 +13,8 @@ puzzle spells the six great towns of the game master's realm.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 3, live at https://daedalus.invigoro.me/ as it goes. Pictures, saved
-puzzles, setting the start by hand and the glow are done; the stone-and-bronze look is to come.
+**Current phase:** none. Phases 0 to 3 are done and live at https://daedalus.invigoro.me/, and the
+[backlog](#milestones) has what could come next.
 
 ## The site
 
@@ -352,7 +352,13 @@ scrambles are 20, 10 or 5 moves from solved.)*
 - *Done when* the game master can make the realm's puzzle and paste the player link into the group's
   chat, and a player who solves it sees the line for solving it.
 
-**Phase 3: Pictures and polish.**
+**Phase 3: Pictures and polish.** *(done. The icon package doesn't say who made which icon, so
+each icon's author comes from its folder in the set's repository, and the 66 whose author is
+uncertain are left out. The icons are written at build time rather than committed. Puzzles are
+saved as they're made, rather than on asking, and the maker's address holds each one's id. Setting
+the start by hand has a board of its own, which says how many names start in their places. The
+stone and bronze are gradients and a grain pattern rather than live filters, so turning a disc stays
+cheap, and slate in the dark theme.)*
 - Icons from game-icons.net, with a picker in the maker, and SOURCES.md.
 - Saved puzzles on the home page, kept in the browser, and exported and imported as a file.
 - Setting the start by hand, on the board.
