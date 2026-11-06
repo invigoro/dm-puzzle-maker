@@ -18,12 +18,15 @@ kinds of puzzle followed:
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
 A fifth followed: [pedestals](#pedestals), each with a riddle, and objects to choose among and set
-on them.
+on them. Two more are planned:
+- a [cipher](#cipher), read with a turning wheel, or worked out as a cryptogram
+- [braziers](#braziers), where touching one flips it and its neighbours, until all are out
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none. Phases 0 to 6 are done and live at https://daedalus.invigoro.me/. What
-comes next is Tim's to choose, from the backlog under [Milestones](#milestones), or elsewhere.
+**Current phase:** none in progress. Phases 0 to 6 are done and live at
+https://daedalus.invigoro.me/. Next is Phase 7 (the cipher), then Phase 8 (braziers), when Tim says
+to start. The backlog under [Milestones](#milestones) holds the rest.
 
 ## The site
 
@@ -539,66 +542,132 @@ It lives in `src/puzzles/pedestals/`, with the id `pedestals`.
   right), the link holds a quick fingerprint of each pedestal with its object. With so few to try,
   a programmer could find them all, but a player reading the link sees nothing.
 
-## Cipher wheel
+## Cipher
 
-*(Planned, not yet a phase: Tim chooses when.)* A message in cipher, and the wheel to read it with:
-two rings, the outer one fixed with the alphabet, the inner one turning, with the cipher's symbols.
-Set the wheel right and each symbol of the message sits under its letter. A dwarven rune-wheel, a
-thieves' guild cipher, or the lich's journal. It would live in `src/puzzles/cipher-wheel/`, with
-the id `cipher-wheel`.
+*(Phase 7)* A message in cipher, for the players to read: a dwarven rune-script, a thieves' guild
+cipher, the lich's journal. The game master writes the message in plain words and picks the
+cipher, and the cipher picks how the players read it:
+- **The wheel** (7a): two rings, the outer one fixed with the alphabet, the inner one turning, with
+  the cipher's symbols. Set the wheel right and each symbol of the message sits under its letter.
+- **The cryptogram** (7b): each letter is swapped for a symbol from a scrambled alphabet, with no
+  key at all. The players work it out from the shapes of words and which symbols come most often.
+
+It lives in `src/puzzles/cipher/`, with the id `cipher`.
 
 ### The game master's choices
 
-- **The message:** plain words, up to 300 characters. Letters are put in cipher; spaces and
-  punctuation stay, or, for a harder puzzle, the letters run on in groups of five.
-- **The inner ring:**
-  - letters, as a Caesar wheel has
-  - letters mixed by a keyword (DRAGON, then the rest of the alphabet), so the ring isn't in order
-  - runes, 24 of the Elder Futhark and two more, drawn with Noto Sans Runic from Google Fonts
+- **The message:** plain words, up to 300 characters. Letters are put in cipher, and accented ones
+  made plain (É is E). Spaces and punctuation stay, or, for a harder puzzle, the letters run on in
+  groups of five.
+- **The symbols:**
+  - letters
+  - runes: 24 of the Elder Futhark and two more, drawn with Noto Sans Runic from Google Fonts
   - pictures, one for each letter, from the icon sets, with 🎲 to fill the rest
-- **The key:**
-  - **one setting:** which symbol sits under A. With 26 to try, the players can find it by turning,
-    which is the puzzle.
-  - **a keyword:** each letter of the message is read with the wheel turned to the next letter of
-    the keyword, as Vigenère's cipher does. Turning won't find it: the players need the keyword,
-    which the game master hides elsewhere in the game.
+- **The cipher**, from easiest to hardest by hand:
+  - **The wheel at one setting:** the inner ring holds the symbols in order, or mixed by a keyword
+    (DRAGON, then the rest of the alphabet), and the whole message is read at one setting. With 26
+    to try, turning finds it in a minute, so it's for an easy puzzle, or for players new to the
+    wheel.
+  - **The wheel turning as it goes:** it turns one notch after every letter, or after every word.
+    There's no keyword: noticing the rule is the puzzle, and the game master can hint at it in the
+    game ("the wheel turns with every word").
+  - **The wheel by autokey:** a short starting word sets the wheel for the first letters. After
+    that, each letter read sets it for the next, so the message carries its own key. The players
+    need only the starting word, which the game master hides in the game.
+  - **The wheel by a keyword:** each letter is read with the wheel turned to the next letter of the
+    keyword, round and round, as Vigenère's cipher does. Without the keyword it's beyond most
+    tables, so the game master hides it in the game.
+  - **A cryptogram:** the symbols stand for letters in a scrambled order, from a seed with 🎲, and
+    there's no key. How hard it is comes from the message's length, from keeping the spaces between
+    words or not, and from letters given away from the start (a fragment of a translation), which
+    the game master picks.
 - **Checking:**
   - none: reading the message is the reward
-  - an answer box for the message, or a password it gives, opening the line for solving it, with
-    wrong tries counted and a line for them, as the discs and pedestals have
-- **Reading for them:** off unless the game master turns it on. It shows what the wheel's setting
-  reads under the message, which makes one setting easy, but saves tedium with a keyword once the
-  players have found it.
+  - when every box is filled: the page checks the letters written against the message, and opens
+    the line for solving it
+  - an answer box, for a password the message gives, with wrong tries counted and a line for them,
+    as the discs and pedestals have, and failing after so many if the game master likes
+- **Reading for them:** off unless the game master turns it on, and only for the wheel. Under the
+  message, it shows what the wheel reads: at its setting, turning as it goes from there, or with the
+  keyword or starting word the players type. It saves tedium once they know the key, but at one
+  setting it gives the answer away as fast as turning does.
+- **The lines:** for solving it, from the words; for a wrong try; and for failing.
 
 ### The players' page
 
-- **The wheel**, in SVG, as the discs are: drag to turn it, tap the arrows, or use the arrow keys.
-  It clicks to each setting, with a pointer at the top.
-- **The message** in cipher, with a box under each symbol for the letter the players read there.
-  Writing one fills every like symbol when the key is one setting, as every like symbol then reads
-  the same.
+- **The message** in cipher, in lines that wrap on a phone, with a box under each symbol for the
+  letter the players read there.
+  - At one setting and in a cryptogram, every like symbol reads the same, so writing one fills them
+    all.
+  - The arrow keys and Backspace move between boxes, as the word guess's tiles do.
+- **The wheel**, for the wheel's ciphers, in SVG as the discs are: drag to turn it, tap the arrows,
+  or use the arrow keys. It clicks to each setting, with a pointer at the top, and stays in view as
+  the message scrolls on a phone.
+- **The cryptogram's alphabet:** each symbol, with the letter written for it so far. Letters given
+  away are fixed, and a letter given to two symbols is marked.
 - **The answer box**, when there's one, and the count of wrong tries.
-- **Progress:** the wheel's setting, the letters written, and the tries, kept in the browser.
+- **Progress:** the wheel's setting, the letters written and the tries, kept in the browser.
 
 ### Keeping the answer secret
 
-- The link holds the message only in cipher, and the inner ring as the players see it. The key isn't
-  in it. Anyone who reads the link can turn the cipher back with the wheel, as the page lets them
-  do, but the plain message is never in it.
-- An answer is checked against a slow fingerprint, and the line for solving it is sealed with it, as
-  for the pedestals.
+- The link holds the message only in cipher, and the symbols as the players see them. The key isn't
+  in it: not the setting, the keyword, the starting word, nor the cryptogram's alphabet beyond the
+  letters given away. A player who reads the link has the same puzzle as one who reads the page.
+- The whole message, when filled boxes are checked, and a password are slow fingerprints, and the
+  line for solving it is sealed with the answer, as for the pedestals.
 
-### Building it
+## Braziers
 
-1. The engine, with tests: the rings (shifted, mixed by a keyword, runes, pictures), putting a
-   message in cipher and back with one setting or a keyword, letters with accents made plain, and
-   groups of five.
-2. The maker: the message, the ring, the key, checking, the lines, and a made-up example, with the
-   wheel to try.
-3. The players' wheel and message, the boxes, the answer and progress, on a phone too.
-4. Tests that a player link never holds the plain message, the key or the answer.
-5. *Done when* a rune wheel with one setting and a made-up message can be made, sent and read on a
-   phone, and a keyword wheel with an answer box opens its line.
+*(Phase 8)* A floor of braziers, some burning. Touching one flips it and its neighbours: a burning
+one goes out, and a cold one lights. The players must put them all out. It follows the rules of the
+puzzle sold as Lights Out, but is named for what it is, as the word guess is. It lives in
+`src/puzzles/braziers/`, with the id `braziers`.
+
+Touching a brazier twice undoes it, and the order of touches doesn't matter, so every floor comes
+down to which braziers to touch, once each. That makes it simple sums (Gaussian elimination, with
+every number 0 or 1), so the engine can say for any floor whether it can be solved, and in how few
+touches.
+
+### The game master's choices
+
+- **The floor:**
+  - a grid, from 3 by 3 to 8 by 8, with any squares left bare, set by hand, for other shapes (a
+    cross, a ring of squares)
+  - or a ring of 5 to 16 braziers round a room
+- **What a touch flips:** the brazier and the four beside it, as usual; or the four on its corners;
+  or all eight round it; or its whole row and column. On a ring, the two beside it.
+- **The goal:** all out, as usual; or all burning; or a pattern the game master draws. A pattern can
+  be shown beside the floor, or hidden, so the players must learn it in the game (painted on the
+  door, sung in a song).
+- **The start:** so many touches from the goal, from a seed, so it can always be solved: 3, 5, 8 or
+  12, or as many as there are braziers, with 🎲. Or set by hand: the maker says whether it can be
+  solved, and in how few touches, and won't send one that can't.
+- **Touches:** counted, and, if the game master likes, limited: after so many the players fail, with
+  a line for that, as on the trapped floor. The maker shows the fewest touches, to set the limit
+  from.
+- **The picture:** a fire bowl by default, or another from the icon sets: a crystal, a candle, a
+  rune stone. Burning ones glow, and cold ones are dim.
+- **The lines:** for solving it, from the words, and for failing.
+
+### The players' page
+
+- **The floor:** the braziers as buttons, in their grid or ring. Touching one flips it and its
+  neighbours, each flaring or dying as it changes. The arrow keys move between them, and Enter or
+  Space touches.
+- **The goal**, when it's a pattern that's shown: a small drawing of it beside the floor.
+- **Undo** and **Start over**, and the count of touches, out of the limit when there is one. With a
+  limit, Undo and Start over take back the floor but never the count.
+- **Reaching the goal** settles the floor, which can't be touched again, and shows the line for
+  solving it.
+- **Progress:** the floor and the count, kept in the browser.
+
+### Keeping the answer secret
+
+- With the goal all out, all burning, or shown, there's nothing to hide: the link holds the start
+  and the goal, as the page shows them, and which to touch is the puzzle. The line for solving it is
+  sealed with the goal, so it isn't plain to read.
+- A hidden goal is a slow fingerprint, checked after each touch, and the line is sealed with it.
+  There are millions of floors a 5 by 5 start can reach, so a programmer can't simply try them all.
 
 ## Stack and hosting
 
@@ -855,20 +924,47 @@ other objects still fit in a Discord message.)*
 - Pictures: Font Awesome's free solid icons beside game-icons.net, searched together or one set at
   a time, mixed in any puzzle, and credited as each set asks. See [More sets](#more-sets).
 
+**Phase 7: Cipher.** See [Cipher](#cipher). Each part below is done on its own, in this order.
+
+- **7a. The wheel.**
+  - The engine with tests: the symbols, rings in order or mixed by a keyword, and putting a message
+    in cipher and back at one setting, turning as it goes, by autokey and by a keyword, with
+    accents made plain and groups of five.
+  - The maker: the message, the symbols, the cipher and its key, checking, reading for them, the
+    lines, and a made-up example, with the wheel to try.
+  - The players' wheel, the message with its boxes, the answer box, and progress.
+  - Tests that a player link never holds the plain message, the key or the answer.
+  - *Done when* a rune wheel at one setting, and a keyword wheel with an answer box, can each be
+    made, sent and read on a phone.
+- **7b. The cryptogram.**
+  - The scrambled alphabet from a seed, letters given away, and spaces kept or groups of five.
+  - The players' alphabet, a letter written once filling every like symbol, and the check when
+    every box is filled.
+  - Tests that a player link holds only the letters given away.
+  - *Done when* a cryptogram in pictures, with its word gaps and two letters given away, can be
+    made, sent and solved on a phone, and opens its line.
+
+**Phase 8: Braziers.** See [Braziers](#braziers).
+- The engine with tests: floors (grids with bare squares, and rings), what a touch flips, the
+  solver that says whether a floor can be solved and in how few touches, and starts from a seed.
+- The maker: the floor, what a touch flips, the goal, the start, touches and their limit, the
+  picture, the lines, and a made-up example.
+- The players' floor: touching, Undo, Start over, the count, and progress.
+- Player links with the goal shown or fingerprinted, and the line sealed, with tests.
+- *Done when* a 5 by 5 floor, 8 touches from all out, can be made, sent and solved on a phone, and
+  so can a ring of braziers with a hidden goal.
+
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
-- More kinds of puzzle:
-  - a [cipher wheel](#cipher-wheel), planned
-  - sliding tiles
-  - a combination lock
-  - lights out, under a name of its own (braziers, say), as the word guess is named for what it is
-    rather than after a game. A grid of lights, some lit. Pressing one flips it and its four
-    neighbours, lit to dark and dark to lit, and the players must put them all out: braziers on a
-    floor, crystals on a wall, or runes that flare when touched. Pressing twice undoes a press, and
-    the order of presses doesn't matter, so every puzzle comes down to which lights to press, once
-    each. That makes it easy for the maker to say whether one can be solved and in how few
-    presses. Variants: a goal pattern to match rather than all dark (one painted on the door, say),
-    other shapes of neighbours, or braziers in a ring.
+- More kinds of puzzle: sliding tiles, a combination lock.
+- More ciphers, each needing a tool of its own:
+  - Alberti's own: symbols in the message say where to turn the wheel next
+  - columnar transposition: the message's letters, shuffled by columns, which the players drag
+    back into order until the rows read as words
+  - a turning grille: a square of letters, and a plate with holes to lay over it and turn a
+    quarter at a time
+  - a book cipher: numbers pointing into a text the players already hold
+  - Playfair: letters in pairs, by a keyword's square; the hardest of these by hand
 - Round labyrinths for the maze, in rings like the one on the favicon.
 - Word guess: tries that must be real words, from Sator's word lists.
 - Discs to print and cut out for the table, and mazes and floors to print as handouts.
@@ -893,8 +989,9 @@ other objects still fit in a Discord message.)*
 - **Small screens:** 42 spokes of letters is a lot for a phone. The board fills the width, halves
   are kept short, and the phone can be turned sideways. Phase 1 checks it at a phone's width.
   The largest mazes and floors will need zooming in, and perhaps panning.
-- **A game's rules and a game's name:** the word guess and the trapped floor follow well-known
-  games' rules, which is fine, but they're named for what they are, not after those games.
+- **A game's rules and a game's name:** the word guess, the trapped floor and the braziers follow
+  well-known games' rules, which is fine, but they're named for what they are, not after those
+  games.
 - **Long links:** short halves and icon names keep a player link to about a thousand characters. A
   test holds it under 2,000.
 - **Sending the wrong link:** the maker's own link holds the answer. The maker labels it, and keeps
@@ -923,6 +1020,11 @@ other objects still fit in a Discord message.)*
   engine take any layout tidies the discs' code before the next kind copies its shape.
 - **Word guess first among the new kinds:** it's closest to what Sator already does, tiles and
   all, so it tests the kit's shells on a second kind with the fewest new parts.
+- **One kind for the ciphers:** the wheel and the cryptogram share the message, its boxes and its
+  checking, so they're one kind, and the cipher chosen says whether there's a wheel. A Caesar wheel
+  alone is too easy, as turning finds it in a minute, so the wheel also turns as it goes, by
+  autokey and by a keyword, and the cryptogram needs no key at all.
+- **The cipher, then braziers** (Phases 7 and 8), as Tim chose.
 - Everything runs in the browser, and nothing is sent anywhere.
 - The deploy workflow doesn't cache dependencies, following setup-node's guidance for workflows
   that publish.
