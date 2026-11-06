@@ -36,7 +36,9 @@ npm run preview   # serve the production build
 Node 24 is pinned in `.nvmrc`; 22.12 or newer works.
 
 The pictures (`public/icons/`, not committed) are written before every `dev` and `build` by
-`scripts/build-icons.ts`. After updating `@iconify-json/game-icons`, run `npm run icon-authors`
+`scripts/build-icons.ts`, from game-icons.net and Font Awesome (`@iconify-json/fa7-solid`, named
+`fa:key` in links). After updating either package, bring SOURCES.md's versions up to date. After
+updating `@iconify-json/game-icons`, run `npm run icon-authors`
 and commit `scripts/icon-authors.json`; SOURCES.md says why, and must stay current.
 
 ## How the code is laid out

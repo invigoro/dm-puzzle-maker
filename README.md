@@ -62,9 +62,10 @@ names are spelled out in order, from where the arrow points:
     on, as a player could then test names one at a time. **Start from the example** fills in
     made-up towns, to see how it works.
   - **Pictures:** a half can be words, a picture, or both. 🖼 beside any half opens a search of
-    about 4,000 fantasy icons from [game-icons.net](https://game-icons.net/). A picture stands at
-    the rim end of its spoke like the letters, and the page names whoever made each picture on show,
-    as their license asks.
+    about 4,000 fantasy icons from [game-icons.net](https://game-icons.net/) and 2,000 more
+    everyday ones from [Font Awesome](https://fontawesome.com/), together or one set at a time, and
+    a puzzle can mix them. A picture stands at the rim end of its spoke like the letters, and the
+    page names whoever made each picture on show, as their licenses ask.
   - **Filler:** the other 30 spokes. Blank boxes fill themselves with halves of place names (ASH,
     THORN, WICK…), and 🎲 picks others. Names that look right but aren't make the best filler.
   - **The start:** every piece anywhere, or 20, 10 or 5 moves from solved for an easier puzzle, with
@@ -114,7 +115,7 @@ A maze to find the way out of, seen from above.
 - **Their view:** the whole maze, or a window 3 to 11 cells across round the party, which slides as
   they move. Past the edges looks like the dark, so by lantern or in the dark only counting steps,
   and landmarks, tell them where they are.
-- **Pictures:** up to 20 in cells, from the icon set, each with a line said on reaching it:
+- **Pictures:** up to 20 in cells, from the icon sets, each with a line said on reaching it:
   landmarks to steer by, hazards to run into, and hidden hazards that show only once someone runs
   into them. A hazard's line is said and the party carries on, or goes back to the way in. The link
   holds every picture, so a programmer could find the hidden ones.
@@ -186,8 +187,8 @@ npm run preview   # serve the production build locally
 ```
 
 The pictures are written to `public/icons/` before every dev server and build, from the
-`@iconify-json/game-icons` package. [SOURCES.md](SOURCES.md) says where they come from, how each is
-credited, and how to update them.
+`@iconify-json/game-icons` and `@iconify-json/fa7-solid` packages. [SOURCES.md](SOURCES.md) says
+where they come from, how each is credited, and how to update them.
 
 Each kind of puzzle is a folder under [`src/puzzles/`](src/puzzles/) and an entry in
 [`registry.ts`](src/puzzles/registry.ts). [docs/PLAN.md](docs/PLAN.md#kinds-of-puzzle) says what

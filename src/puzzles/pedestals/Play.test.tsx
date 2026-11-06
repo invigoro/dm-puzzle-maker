@@ -27,7 +27,7 @@ const design: PedestalsDesign = {
     { riddle: { text: 'What cuts the grain' }, object: { text: 'Sickle' } },
     { riddle: { text: 'The miller’s due' }, object: { text: 'Coins' } },
   ],
-  others: [{ text: 'Hammer' }, { text: 'Rope', icon: 'stone-tower' }],
+  others: [{ text: 'Hammer', icon: 'fa:dragon' }, { text: 'Rope', icon: 'stone-tower' }],
   wrongLine: 'The floor shakes.',
   seed: 7,
 };
@@ -78,9 +78,10 @@ describe('pedestals checked when all are right', () => {
     expect(object('Rope')).toBeInTheDocument();
   });
 
-  it('names who made the pictures', async () => {
+  it('shows pictures from either set, and names who made them', async () => {
     await open();
-    expect(await screen.findByText(/^Icons made by Lorc/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Icons made by Lorc/)).toHaveTextContent('Icons made by Lorc, from game-icons.net (CC BY 3.0), and from Font Awesome (CC BY 4.0).');
+    expect(object('Hammer').querySelector('.icon-thumb')?.getAttribute('style')).toMatch(/icons\/fa\/dragon\.svg/);
   });
 });
 

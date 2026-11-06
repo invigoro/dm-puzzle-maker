@@ -51,7 +51,7 @@ and Stele's links are: JSON, deflate-raw compressed and base64url encoded. Each 
 - `#p=` holds only what the players see, plus a salt and fingerprints to check their board against.
 - A link that doesn't hold a puzzle this site knows opens a page that says so.
 - A player link should fit in a Discord message (2,000 characters). So it holds no uploaded images:
-  pictures are named from the built-in icon set.
+  pictures are named from the built-in icon sets.
 
 ### Kinds of puzzle
 
@@ -262,7 +262,7 @@ Sator's engine.
 Pictures come from [game-icons.net](https://game-icons.net/): fantasy and game icons in SVG, by
 Lorc, Delapouite and others, under CC BY 3.0 (a few are CC0). They're on GitHub as
 `game-icons/icons` and on npm as `@iconify-json/game-icons`. [SOURCES.md](../SOURCES.md) has the
-details.
+details. Since Phase 6, [Font Awesome's](#more-sets) everyday icons sit beside them.
 
 - **On a spoke:** a node can be a picture, words, or both. A picture stands at the rim end of its
   spoke, foot to the rim like the letters, with any words running in from it. A picture alone is
@@ -283,6 +283,26 @@ details.
   one picture for another. Pairs with pictures count either way round, as words do.
 - **Drawing:** icons are drawn in the text's colour, inlined on the board and as CSS masks in the
   picker, so they suit light and dark alike.
+
+#### More sets
+
+game-icons.net is sparse in places, so Font Awesome's free solid icons (2,000 of them, CC BY 4.0,
+from `@iconify-json/fa7-solid`) sit beside it. Other sets can follow the same way, such as Google's
+Material Symbols (Apache 2.0); Iconify publishes each set as a package, as it does game-icons.
+
+- **Names:** a link names a game-icons picture as before (`stone-tower`), and another set's with
+  its prefix (`fa:key`), so links made before there was a second set open as they did. The kit's
+  `ICON_SETS` lists each set with its prefix, its license and how it's credited, and a name with a
+  prefix it doesn't know is turned away like any other bad name.
+- **Files:** another set's icons are written to a folder of their own (`icons/fa/key.svg`), each
+  scaled and centred on game-icons' square of 512, so every picture is drawn the same way. The
+  picker's one index holds every set.
+- **The picker:** searches every set at once, or one on asking. A name that two sets share ranks
+  game-icons first, and Font Awesome's says so ("key, Font Awesome"). Brand logos and the regular
+  set (nearly all outlines of solid ones) are left out.
+- **Credit:** game-icons by each icon's maker, as before; Font Awesome as a whole, as its own files
+  do, each file keeping the note they carry. "Icons made by Lorc, from game-icons.net (CC BY 3.0),
+  and from Font Awesome (CC BY 4.0)."
 
 ### More layouts
 
@@ -395,7 +415,7 @@ riddle. It lives in `src/puzzles/word-guess/`, with the id `word-guess`.
     the maze sliding under it as they move. Past the maze's edges looks like any cell not yet seen,
     so by lantern or in the dark only counting steps, and landmarks, tell them where they are. Lit,
     the edges show where the window runs past them.
-- **Pictures** in cells, up to 20, from the icon set, each with a line said on reaching it, and
+- **Pictures** in cells, up to 20, from the icon sets, each with a line said on reaching it, and
   never on the way in or a way out:
   - **Landmarks** to steer by (a statue, a fountain), shown when their cell is in sight.
   - **Hazards** to run into (a pit, the minotaur), shown when their cell is in sight, or hidden until
@@ -474,7 +494,7 @@ It lives in `src/puzzles/pedestals/`, with the id `pedestals`.
 ### The game master's choices
 
 - **The pedestals:** one to eight. Each has its riddle, and the one object that's right for it.
-  - A riddle can be words, a picture from the icon set, or both.
+  - A riddle can be words, a picture from the icon sets, or both.
   - So can an object.
 - **Other objects:** up to twelve more, which are right for no pedestal: the sword and the war axe
   beside the olive branch. The best ones look as if they might be right.
@@ -770,6 +790,10 @@ other objects still fit in a Discord message.)*
   once unlocking when all are right, once judging each as it's placed with a trap's line, and once
   checking on asking, telling how many are right.
 
+**After Phase 6.** *(done)*
+- Pictures: Font Awesome's free solid icons beside game-icons.net, searched together or one set at
+  a time, mixed in any puzzle, and credited as each set asks. See [More sets](#more-sets).
+
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
 - More kinds of puzzle: a cipher wheel, sliding tiles, a combination lock, lights out.
@@ -779,11 +803,8 @@ other objects still fit in a Discord message.)*
 - Links to Sator (an anagram as a node) and Stele.
 - Pictures from a link, with a warning when the link's file name gives the answer away
   (`karn.png`).
-- More pictures: game-icons.net is sparse in places, so add a more general set, such as Font
-  Awesome's free icons (CC BY 4.0, credited as game-icons are), and later others, such as Google's
-  Material Symbols (Apache 2.0). The picker searches every set, so a puzzle can mix them. A name in
-  a link then says its set (`fa:key`), and a name without one is still game-icons, so older links
-  keep working. Iconify publishes each set as a package, as it does game-icons.
+- More pictures: a third set, such as Google's Material Symbols (Apache 2.0), as
+  [More sets](#more-sets) says.
 - Pedestals: a pedestal that takes any of several objects ("something that burns": a torch or a
   candle).
 
@@ -820,7 +841,7 @@ other objects still fit in a Discord message.)*
 - **Six spokes a disc**, so every spoke can turn to every contact. That makes 42 nodes, 12 of them
   the answer.
 - **Filler fills itself** unless the game master writes it.
-- **Pictures come from a built-in icon set**, not uploads, so links stay short and pictures need no
+- **Pictures come from built-in icon sets**, not uploads, so links stay short and pictures need no
   hosting.
 - **Each kind of puzzle is two chunks**, one per side, so the players' page loads as little as it
   can.
