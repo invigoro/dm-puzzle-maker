@@ -121,6 +121,8 @@ A maze to find the way out of, seen from above.
   holds every picture, so a programmer could find the hidden ones.
 - **Playing:** move with the arrow keys (or WASD), by tapping the next cell, or by swiping. Steps
   are counted, and where the party is and has been is kept in the browser.
+- **A way out** says its line. Reaching one needn't mean leaving: **Carry on exploring** walks on
+  from it, and coming back to it says its line again, as when the party leaves and returns there.
 
 ### Trapped floor
 

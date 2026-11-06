@@ -430,7 +430,8 @@ riddle. It lives in `src/puzzles/word-guess/`, with the id `word-guess`.
 
 - A token, moved with the arrow keys, by tapping a neighbouring cell, or by swiping. Steps are
   counted.
-- Reaching a way out shows its line, and so does reaching a picture.
+- Reaching a way out shows its line, and so does reaching a picture. A way out needn't be the end:
+  Carry on exploring walks on from it, and coming back to it shows its line again.
 - Where they are and where they've been are kept in the browser, and so are the hidden hazards
   they've run into, as places they've stood.
 
@@ -933,6 +934,9 @@ other objects still fit in a Discord message.)*
 **After Phase 6.** *(done)*
 - Pictures: Font Awesome's free solid icons beside game-icons.net, searched together or one set at
   a time, mixed in any puzzle, and credited as each set asks. See [More sets](#more-sets).
+- The maze: Carry on exploring at a way out, as reaching one needn't mean leaving, and the party
+  may leave and come back by it. The party stays put until they choose it, so a stray key doesn't
+  lose the way out's line.
 
 **Phase 7: Cipher.** See [Cipher](#cipher). Each part below is done on its own, in this order.
 

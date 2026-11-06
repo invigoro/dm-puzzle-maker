@@ -37,6 +37,7 @@ const second = Array.from({ length: 36 }, (_, cell) => cell).find(
 const design: MazeDesign = { ...base, exits: [...base.exits, { cell: second, line: 'The kitchen, and an angry cook.' }] };
 
 const ARROWS: Record<Direction, string> = { up: '{ArrowUp}', right: '{ArrowRight}', down: '{ArrowDown}', left: '{ArrowLeft}' };
+const OPPOSITE: Record<Direction, Direction> = { up: 'down', right: 'left', down: 'up', left: 'right' };
 
 /** The arrow keys that walk the shortest way from one cell to another. */
 function keysFor(made: MazeDesign, to: number): string {
@@ -123,6 +124,31 @@ describe('the maze', () => {
     await user.keyboard(keys);
     expect(screen.getByRole('status')).toHaveTextContent('The smugglers’ door.');
     expect(screen.getByText(`${keys.split('}').length - 1} steps`)).toBeInTheDocument();
+  });
+
+  it('carries on exploring from a way out, and says its line again on coming back to it', async () => {
+    const { user, puzzle } = await open();
+    const keys = keysFor(design, 35);
+    const count = keys.split('}').length - 1;
+    await user.keyboard(keys);
+    expect(screen.getByRole('status')).toHaveTextContent('The smugglers’ door.');
+    // At a way out, the party stays put until they choose to carry on.
+    const away = DIRECTIONS.find((direction) => canStep(mazeOf(design), 35, direction))!;
+    await user.keyboard(ARROWS[away]);
+    expect(screen.getByText(`${count} steps`)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Carry on exploring' }));
+    expect(screen.queryByRole('button', { name: 'Carry on exploring' })).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent(/^$/);
+    // The maze has the keys again, without a click.
+    await user.keyboard(ARROWS[away]);
+    expect(screen.getByText(`${count + 1} steps`)).toBeInTheDocument();
+    // Carrying on is kept, as the rest is; and coming back to the way out says its line again.
+    cleanup();
+    render(<>{(await pageFor({ page: 'play', kind: 'maze', data: puzzle })).content}</>);
+    expect(screen.queryByRole('button', { name: 'Carry on exploring' })).toBeNull();
+    await userEvent.setup().keyboard(ARROWS[OPPOSITE[away]]);
+    expect(screen.getByRole('status')).toHaveTextContent('The smugglers’ door.');
+    expect(screen.getByText(`${count + 2} steps`)).toBeInTheDocument();
   });
 
   it('says another way out’s own line', async () => {

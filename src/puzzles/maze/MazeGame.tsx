@@ -117,6 +117,13 @@ export function MazeGame({ maze, start, exits, light, reach, view, pictures, onH
     setSaid('');
   }
 
+  /** Reaching a way out needn't mean leaving: the party walks on from it, and reaching it again says its line again. */
+  function carryOn() {
+    setOut(null);
+    setSaid('');
+    box.current?.focus();
+  }
+
   return (
     <div className="game maze-game" ref={box} tabIndex={0} onKeyDown={keyDown} aria-label="The maze. Move with the arrow keys.">
       <MazeBoard
@@ -136,6 +143,11 @@ export function MazeGame({ maze, start, exits, light, reach, view, pictures, onH
       />
       <p className="hint">Move with the arrow keys, by tapping the next cell, or by swiping.</p>
       <div className="game-actions">
+        {out !== null && (
+          <button type="button" className="primary" onClick={carryOn}>
+            Carry on exploring
+          </button>
+        )}
         <button type="button" onClick={startOver} disabled={steps === 0}>
           Start over
         </button>
