@@ -24,8 +24,8 @@ on them. Two more are planned:
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none in progress. Phases 0 to 6 are done and live at
-https://daedalus.invigoro.me/. Next is Phase 7 (the cipher), then Phase 8 (braziers), when Tim says
+**Current phase:** Phase 7, the cipher. Phases 0 to 6 and 7a (the wheel) are done and live at
+https://daedalus.invigoro.me/. Next is 7b (the cryptogram), then Phase 8 (braziers), when Tim says
 to start. The backlog under [Milestones](#milestones) holds the rest.
 
 ## The site
@@ -549,6 +549,8 @@ cipher, the lich's journal. The game master writes the message in plain words an
 cipher, and the cipher picks how the players read it:
 - **The wheel** (7a): two rings, the outer one fixed with the alphabet, the inner one turning, with
   the cipher's symbols. Set the wheel right and each symbol of the message sits under its letter.
+  The first symbol on the inner ring has a mark, and the outer letter the mark sits under is the
+  wheel's setting, whatever the symbols are, so a key is always letters: "the mark under H".
 - **The cryptogram** (7b): each letter is swapped for a symbol from a scrambled alphabet, with no
   key at all. The players work it out from the shapes of words and which symbols come most often.
 
@@ -561,21 +563,24 @@ It lives in `src/puzzles/cipher/`, with the id `cipher`.
   groups of five.
 - **The symbols:**
   - letters
-  - runes: 24 of the Elder Futhark and two more, drawn with Noto Sans Runic from Google Fonts
+  - runes: 24 of the Elder Futhark and two of the Anglo-Saxon, drawn with Noto Sans Runic, which
+    is served with the site (from `@fontsource/noto-sans-runic`, only its runes), so nothing is
+    fetched from elsewhere
   - pictures, one for each letter, from the icon sets, with 🎲 to fill the rest
+- **The ring's order:** the symbols in order, or mixed by a word (DRAGON, then the rest of the
+  alphabet).
 - **The cipher**, from easiest to hardest by hand:
-  - **The wheel at one setting:** the inner ring holds the symbols in order, or mixed by a keyword
-    (DRAGON, then the rest of the alphabet), and the whole message is read at one setting. With 26
-    to try, turning finds it in a minute, so it's for an easy puzzle, or for players new to the
+  - **The wheel at one setting:** the whole message is read with the mark under one letter. With
+    26 to try, turning finds it in a minute, so it's for an easy puzzle, or for players new to the
     wheel.
-  - **The wheel turning as it goes:** it turns one notch after every letter, or after every word.
-    There's no keyword: noticing the rule is the puzzle, and the game master can hint at it in the
-    game ("the wheel turns with every word").
-  - **The wheel by autokey:** a short starting word sets the wheel for the first letters. After
-    that, each letter read sets it for the next, so the message carries its own key. The players
-    need only the starting word, which the game master hides in the game.
-  - **The wheel by a keyword:** each letter is read with the wheel turned to the next letter of the
-    keyword, round and round, as Vigenère's cipher does. Without the keyword it's beyond most
+  - **The wheel turning as it goes:** the mark moves a letter on after every letter, or after every
+    word. There's no keyword: noticing the rule is the puzzle, and the game master can hint at it
+    in the game ("the wheel turns with every word").
+  - **The wheel by autokey:** for the first letters, the mark goes under each letter of a short
+    starting word in turn. After that, it goes under each letter just read, so the message carries
+    its own key. The players need only the starting word, which the game master hides in the game.
+  - **The wheel by a keyword:** for each letter, the mark goes under the next letter of the
+    keyword, round and round, as Vigenère's cipher has. Without the keyword it's beyond most
     tables, so the game master hides it in the game.
   - **A cryptogram:** the symbols stand for letters in a scrambled order, from a seed with 🎲, and
     there's no key. How hard it is comes from the message's length, from keeping the spaces between
@@ -600,9 +605,10 @@ It lives in `src/puzzles/cipher/`, with the id `cipher`.
   - At one setting and in a cryptogram, every like symbol reads the same, so writing one fills them
     all.
   - The arrow keys and Backspace move between boxes, as the word guess's tiles do.
-- **The wheel**, for the wheel's ciphers, in SVG as the discs are: drag to turn it, tap the arrows,
-  or use the arrow keys. It clicks to each setting, with a pointer at the top, and stays in view as
-  the message scrolls on a phone.
+- **The wheel**, for the wheel's ciphers, in SVG as the discs are: drag to turn it, tap the
+  buttons, or use the arrow keys. It clicks to each setting, the outer letter by the mark lit gold,
+  and says where the mark is. Side by side with the message on a wide screen, it stays in view as
+  the message scrolls; on a phone it sits above it.
 - **The cryptogram's alphabet:** each symbol, with the letter written for it so far. Letters given
   away are fixed, and a letter given to two symbols is marked.
 - **The answer box**, when there's one, and the count of wrong tries.
@@ -746,6 +752,10 @@ src/
     pedestals/
       engine/                    # riddles and objects, the answer's keys, placing, the floor's scatter
       Room.tsx                   # the pedestals and the floor: placing, checking, the count
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
+    cipher/
+      engine/                    # letters made plain, the rings (letters, runes, pictures, mixed), the wheel's keys
+      Wheel.tsx · Reader.tsx     # the wheel, turned by dragging, keys or buttons; the message and its boxes, checked
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
@@ -926,7 +936,15 @@ other objects still fit in a Discord message.)*
 
 **Phase 7: Cipher.** See [Cipher](#cipher). Each part below is done on its own, in this order.
 
-- **7a. The wheel.**
+- **7a. The wheel.** *(done. The inner ring's first symbol has a mark, and the setting is the
+  outer letter it sits under, so every key is letters whatever the symbols: a keyword's letters
+  are where the mark goes in turn. That makes the keyword cipher Vigenère's read the other way
+  round (each letter is written as the symbol at its place less the key's), which a wheel reads
+  just as easily. The rune font is served with the site rather than fetched from Google Fonts, and
+  three runes it draws half height, which looked like punctuation, are swapped for Anglo-Saxon
+  ones. A wrong full set of boxes says so, uncounted; only answers are counted. The example makes a
+  link of about 740 characters, and the longest message in pictures still fits in a Discord
+  message.)*
   - The engine with tests: the symbols, rings in order or mixed by a keyword, and putting a message
     in cipher and back at one setting, turning as it goes, by autokey and by a keyword, with
     accents made plain and groups of five.

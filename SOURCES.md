@@ -111,3 +111,17 @@ The free solid icons of [Font Awesome](https://fontawesome.com/) 7, by Fonticons
 
 The place-name halves that fill blank filler (ASH, THORN, WICK…) are common parts of English place
 names, listed by hand in `src/puzzles/discs/engine/filler.ts`.
+
+## Runes
+
+A cipher's wheel can be runes, drawn with [Noto Sans Runic](https://fonts.google.com/noto/specimen/Noto+Sans+Runic),
+by Google, under the [SIL Open Font License 1.1](https://openfontlicense.org/).
+
+- **Where it comes from:** the npm package
+  [@fontsource/noto-sans-runic](https://www.npmjs.com/package/@fontsource/noto-sans-runic), version
+  5.3.0. Only its runes are used, about 7 kB, and they're served with the site, so nothing is fetched
+  from elsewhere.
+- **Which runes:** the Elder Futhark's 24, and gar and ear of the Anglo-Saxon. The font draws three
+  of the Futhark half height (kaunan, jera and ingwaz), which looked like punctuation in a message,
+  so cen, gēr and ior of the Anglo-Saxon stand in their places. The list is in
+  `src/puzzles/cipher/engine/rings.ts`.

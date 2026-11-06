@@ -170,6 +170,36 @@ olive branch is right.
   Judging pedestals one at a time puts a quick fingerprint of each in the link, so a programmer
   could find them.
 
+### Cipher
+
+A message in cipher, and a wheel to read it with: the alphabet runs round the outside, fixed, and
+the inner ring turns, with the cipher's symbols. The first symbol on the inner ring has a mark, and
+the letter the mark sits under is the wheel's setting.
+
+- **The message:** up to 300 characters. Its letters are put in cipher; spaces and punctuation
+  stay, or the letters run on in groups of five for a harder puzzle.
+- **The symbols:** letters, runes, or a picture of your choosing for each letter (🎲 fills the
+  rest). The ring can be mixed by a word (DRAGON gives D R A G O N B C E…).
+- **The key:**
+  - **One setting:** the whole message read with the mark under one letter. Turning finds it in a
+    minute or so, so it's for an easy puzzle.
+  - **Turning as it goes:** the mark moves a letter on after every letter, or every word. Noticing
+    that is the puzzle.
+  - **Autokey:** the mark goes under each letter of a starting word, then under each letter just
+    read. Hide the starting word in the game.
+  - **A keyword:** the mark goes under each letter of the keyword in turn, round and round, as
+    Vigenère's cipher has. Hide the keyword in the game.
+- **Checking:** when every box is filled with the right letters; by an answer the message gives (a
+  password), with your line for a wrong one, a count, and failing after so many if you like; or not
+  at all.
+- **Read it for them:** if you like, the page shows what the wheel reads as it turns, or reads the
+  message with the keyword the players type.
+- **Playing:** drag the inner ring round, use the arrow keys, or the buttons. Write under each
+  symbol the letter it stands for; at one setting, a letter goes under every symbol like it. The
+  wheel, the letters and the count are kept in the browser.
+- **Secrecy:** the link holds the message only in cipher, and the ring as the players see it, never
+  the key or the answer. Anyone who reads the link has the same puzzle as the page gives them.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

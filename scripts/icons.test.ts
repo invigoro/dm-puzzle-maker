@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { PICTURE_CHOICES } from '../src/puzzles/cipher/engine/rings.ts';
 import { fileOf, iconFiles, indexOf, setFiles, squared } from './icons.ts';
 
 const ICONS = {
@@ -56,6 +58,15 @@ describe('fileOf', () => {
   it('puts game-icons at the top, and another set’s in a folder of its own', () => {
     expect(fileOf('stone-tower')).toBe('stone-tower.svg');
     expect(fileOf('fa:key')).toBe('fa/key.svg');
+  });
+});
+
+describe('the pictures puzzles choose from', () => {
+  it('are all served, each with its one author', () => {
+    const { icons } = JSON.parse(readFileSync('node_modules/@iconify-json/game-icons/icons.json', 'utf8'));
+    const { folders } = JSON.parse(readFileSync('scripts/icon-authors.json', 'utf8'));
+    const served = new Set(iconFiles(icons, folders).files.map((file) => file.name));
+    expect(PICTURE_CHOICES.filter((name) => !served.has(name))).toEqual([]);
   });
 });
 

@@ -17,6 +17,7 @@
     "icon-authors": "node scripts/icon-authors.ts"
   },
   "dependencies": {
+    "@fontsource/noto-sans-runic": "^5.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

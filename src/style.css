@@ -1532,3 +1532,264 @@ legend.label-text {
     width: 8.5rem;
   }
 }
+
+/* The cipher: the wheel, and the message with a box under each symbol. */
+
+.rune {
+  font-family: 'Noto Sans Runic', var(--serif);
+}
+
+.cipher {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Side by side when there's room, the wheel staying in view as the message scrolls. */
+@media (min-width: 52rem) {
+  .cipher {
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .cipher .wheel {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wheel svg {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Dragging turns the inner ring, so it mustn't scroll the page; pinching still zooms in. */
+  touch-action: pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wheel .stone-light {
+  stop-color: var(--stone-light);
+}
+
+.wheel .stone-dark {
+  stop-color: var(--stone-dark);
+}
+
+.wheel .hub-light {
+  stop-color: var(--hub-light);
+}
+
+.wheel .hub-dark {
+  stop-color: var(--hub-dark);
+}
+
+.wheel .bronze-light {
+  stop-color: var(--bronze-light);
+}
+
+.wheel .bronze-dark {
+  stop-color: var(--bronze-dark);
+}
+
+.wheel .rim {
+  stroke-width: 3;
+}
+
+.wheel .face {
+  stroke-width: 2.5;
+}
+
+.wheel .parts line,
+.wheel .hub-line {
+  fill: none;
+  stroke: var(--engraved);
+  stroke-width: 0.5;
+  opacity: 0.25;
+}
+
+.wheel .outer,
+.wheel .symbols {
+  pointer-events: none;
+}
+
+/* Letters and symbols cut into the rings: a light edge below each, as if lit from above. */
+.wheel .outer text,
+.wheel .symbols {
+  filter: drop-shadow(0 0.5px 0 var(--engrave-light));
+}
+
+.wheel text {
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--engraved);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.wheel text.rune {
+  font-family: 'Noto Sans Runic', var(--serif);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.wheel .letter.marked {
+  fill: var(--gold);
+}
+
+.wheel .symbols {
+  color: var(--engraved);
+}
+
+.wheel .inner {
+  cursor: grab;
+  outline: none;
+  transition: transform 0.25s ease;
+}
+
+.wheel .inner:focus-visible .face {
+  stroke: var(--accent);
+}
+
+.wheel .mark,
+.wheel .boss {
+  stroke: var(--bronze-edge);
+  stroke-width: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel .inner {
+    transition: none;
+  }
+}
+
+.wheel-turns {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wheel-turns button {
+  padding: 0.15rem 0.8rem;
+  font-size: 1.25rem;
+}
+
+.cipher-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.1rem;
+  padding: 0.9rem;
+  background: var(--stone-light);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.cipher-word {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.glyph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.glyph .symbol,
+.cipher-mark {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.6rem;
+  color: var(--engraved);
+}
+
+.glyph .symbol.rune {
+  font-family: 'Noto Sans Runic', var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+.glyph .icon-thumb {
+  width: 1.5rem;
+  height: 1.6rem;
+  color: var(--engraved);
+}
+
+.glyph input {
+  width: 1.75rem;
+  padding: 0.15rem 0;
+  font-family: var(--serif);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cipher-mark {
+  align-self: flex-start;
+}
+
+.cipher.solved .glyph input {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.reading p {
+  margin: 0;
+}
+
+.reading .read {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cipher .answer input {
+  flex: 1;
+  min-width: 8rem;
+}
+
+/* The maker's alphabet of pictures, a letter beside each. */
+.picture-alphabet {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr));
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picture-alphabet li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.picture-alphabet .letter {
+  width: 1rem;
+  font-family: var(--serif);
+  font-weight: 700;
+  text-align: right;
+}
+
+.picture-alphabet .picture-button {
+  height: 2.3rem;
+  margin-left: 0;
+  border-radius: 6px;
+}

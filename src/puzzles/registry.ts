@@ -41,6 +41,14 @@ export const KINDS: readonly PuzzleKind[] = [
     maker: () => import('./pedestals/maker'),
     player: () => import('./pedestals/player'),
   },
+  {
+    id: 'cipher',
+    name: 'Cipher',
+    blurb:
+      'A message in cipher, in letters, runes or pictures, and a wheel to read it with: at one setting to find by turning, or with a keyword hidden elsewhere in the game.',
+    maker: () => import('./cipher/maker'),
+    player: () => import('./cipher/player'),
+  },
 ];
 
 /** The kind of puzzle with this id, if there is one. */
