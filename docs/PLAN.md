@@ -539,6 +539,67 @@ It lives in `src/puzzles/pedestals/`, with the id `pedestals`.
   right), the link holds a quick fingerprint of each pedestal with its object. With so few to try,
   a programmer could find them all, but a player reading the link sees nothing.
 
+## Cipher wheel
+
+*(Planned, not yet a phase: Tim chooses when.)* A message in cipher, and the wheel to read it with:
+two rings, the outer one fixed with the alphabet, the inner one turning, with the cipher's symbols.
+Set the wheel right and each symbol of the message sits under its letter. A dwarven rune-wheel, a
+thieves' guild cipher, or the lich's journal. It would live in `src/puzzles/cipher-wheel/`, with
+the id `cipher-wheel`.
+
+### The game master's choices
+
+- **The message:** plain words, up to 300 characters. Letters are put in cipher; spaces and
+  punctuation stay, or, for a harder puzzle, the letters run on in groups of five.
+- **The inner ring:**
+  - letters, as a Caesar wheel has
+  - letters mixed by a keyword (DRAGON, then the rest of the alphabet), so the ring isn't in order
+  - runes, 24 of the Elder Futhark and two more, drawn with Noto Sans Runic from Google Fonts
+  - pictures, one for each letter, from the icon sets, with 🎲 to fill the rest
+- **The key:**
+  - **one setting:** which symbol sits under A. With 26 to try, the players can find it by turning,
+    which is the puzzle.
+  - **a keyword:** each letter of the message is read with the wheel turned to the next letter of
+    the keyword, as Vigenère's cipher does. Turning won't find it: the players need the keyword,
+    which the game master hides elsewhere in the game.
+- **Checking:**
+  - none: reading the message is the reward
+  - an answer box for the message, or a password it gives, opening the line for solving it, with
+    wrong tries counted and a line for them, as the discs and pedestals have
+- **Reading for them:** off unless the game master turns it on. It shows what the wheel's setting
+  reads under the message, which makes one setting easy, but saves tedium with a keyword once the
+  players have found it.
+
+### The players' page
+
+- **The wheel**, in SVG, as the discs are: drag to turn it, tap the arrows, or use the arrow keys.
+  It clicks to each setting, with a pointer at the top.
+- **The message** in cipher, with a box under each symbol for the letter the players read there.
+  Writing one fills every like symbol when the key is one setting, as every like symbol then reads
+  the same.
+- **The answer box**, when there's one, and the count of wrong tries.
+- **Progress:** the wheel's setting, the letters written, and the tries, kept in the browser.
+
+### Keeping the answer secret
+
+- The link holds the message only in cipher, and the inner ring as the players see it. The key isn't
+  in it. Anyone who reads the link can turn the cipher back with the wheel, as the page lets them
+  do, but the plain message is never in it.
+- An answer is checked against a slow fingerprint, and the line for solving it is sealed with it, as
+  for the pedestals.
+
+### Building it
+
+1. The engine, with tests: the rings (shifted, mixed by a keyword, runes, pictures), putting a
+   message in cipher and back with one setting or a keyword, letters with accents made plain, and
+   groups of five.
+2. The maker: the message, the ring, the key, checking, the lines, and a made-up example, with the
+   wheel to try.
+3. The players' wheel and message, the boxes, the answer and progress, on a phone too.
+4. Tests that a player link never holds the plain message, the key or the answer.
+5. *Done when* a rune wheel with one setting and a made-up message can be made, sent and read on a
+   phone, and a keyword wheel with an answer box opens its line.
+
 ## Stack and hosting
 
 - **Vite + React + TypeScript**, set up as Sator and Jabberwock are.
@@ -796,7 +857,18 @@ other objects still fit in a Discord message.)*
 
 **Backlog:**
 - Checking by the game master, for the first kind of puzzle that needs it.
-- More kinds of puzzle: a cipher wheel, sliding tiles, a combination lock, lights out.
+- More kinds of puzzle:
+  - a [cipher wheel](#cipher-wheel), planned
+  - sliding tiles
+  - a combination lock
+  - lights out, under a name of its own (braziers, say), as the word guess is named for what it is
+    rather than after a game. A grid of lights, some lit. Pressing one flips it and its four
+    neighbours, lit to dark and dark to lit, and the players must put them all out: braziers on a
+    floor, crystals on a wall, or runes that flare when touched. Pressing twice undoes a press, and
+    the order of presses doesn't matter, so every puzzle comes down to which lights to press, once
+    each. That makes it easy for the maker to say whether one can be solved and in how few
+    presses. Variants: a goal pattern to match rather than all dark (one painted on the door, say),
+    other shapes of neighbours, or braziers in a ring.
 - Round labyrinths for the maze, in rings like the one on the favicon.
 - Word guess: tries that must be real words, from Sator's word lists.
 - Discs to print and cut out for the table, and mazes and floors to print as handouts.
