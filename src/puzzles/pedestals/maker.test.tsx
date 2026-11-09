@@ -30,7 +30,6 @@ async function openMaker() {
 const copyButton = () => screen.getByRole('button', { name: 'Copy player link' });
 const linkReady = () => waitFor(() => expect(copyButton()).toBeEnabled(), { timeout: 3000 });
 const designNow = async () => {
-  await waitFor(() => expect(location.hash).toMatch(/^#m=/));
   const route = await readRoute(location.hash, ['pedestals']);
   return route.page === 'make' ? readDesign(route.data)! : null;
 };
@@ -82,7 +81,7 @@ describe('the pedestals maker', () => {
     await user.click(screen.getByRole('button', { name: 'Picture for riddle 2' }));
     await user.type(screen.getByRole('searchbox', { name: 'Search the pictures' }), 'tower');
     await user.click(await screen.findByRole('button', { name: 'stone tower' }));
-    expect((await designNow())?.pedestals[1].riddle).toEqual({ text: '', icon: 'stone-tower' });
+    await waitFor(async () => expect((await designNow())?.pedestals[1].riddle).toEqual({ text: '', icon: 'stone-tower' }), { timeout: 3000 });
   });
 
   it('checks on asking, telling how many are right, and can fail the players', async () => {

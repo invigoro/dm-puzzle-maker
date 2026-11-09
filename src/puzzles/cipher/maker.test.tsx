@@ -33,7 +33,6 @@ async function openMaker() {
 const copyButton = () => screen.getByRole('button', { name: 'Copy player link' });
 const linkReady = () => waitFor(() => expect(copyButton()).toBeEnabled(), { timeout: 3000 });
 const designNow = async () => {
-  await waitFor(() => expect(location.hash).toMatch(/^#m=/));
   const route = await readRoute(location.hash, ['cipher']);
   return route.page === 'make' ? readDesign(route.data)! : null;
 };
@@ -77,7 +76,7 @@ describe('the cipher maker', () => {
     const puzzle = await copiedPuzzle(user);
     expect(puzzle?.ring.join('')).toBe('DRAGONBCEFHIJKLMPQSTUVWXYZ');
     expect(puzzle?.text).toMatch(/^[A-Z]{5} [A-Z]{5} [A-Z]{5} [A-Z]{3}$/);
-    expect(await designNow()).toMatchObject({ method: 'keyword', keyword: 'Cellar', mix: 'Dragon', groups: true });
+    await waitFor(async () => expect(await designNow()).toMatchObject({ method: 'keyword', keyword: 'Cellar', mix: 'Dragon', groups: true }), { timeout: 3000 });
   });
 
   it('turns as it goes, from a letter, after every word', async () => {
@@ -101,9 +100,14 @@ describe('the cipher maker', () => {
     await user.type(within(picker).getByRole('searchbox', { name: 'Search the pictures' }), 'dragon');
     await user.click(await within(picker).findByRole('button', { name: 'dragon, Font Awesome' }));
     await user.click(screen.getByRole('button', { name: '🎲 Fill the rest' }));
-    const design = await designNow();
-    expect(design?.pictures[1]).toBe('fa:dragon');
-    expect(new Set(design?.pictures).size).toBe(26);
+    await waitFor(
+      async () => {
+        const design = await designNow();
+        expect(design?.pictures[1]).toBe('fa:dragon');
+        expect(new Set(design?.pictures).size).toBe(26);
+      },
+      { timeout: 3000 },
+    );
     const puzzle = await copiedPuzzle(user);
     expect(puzzle?.script).toBe('pictures');
     expect(puzzle?.ring[1]).toBe('fa:dragon');
@@ -145,6 +149,6 @@ describe('the cipher maker', () => {
     expect(puzzle).toMatchObject({ method: 'cryptogram', script: 'letters' });
     expect(puzzle?.given?.map((pair) => pair[1])).toEqual(['E']);
     expect(puzzle?.ring.join('')).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-    expect((await designNow())?.given).toBe('E');
+    await waitFor(async () => expect((await designNow())?.given).toBe('E'), { timeout: 3000 });
   });
 });

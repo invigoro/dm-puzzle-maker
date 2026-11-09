@@ -30,7 +30,6 @@ async function openMaker() {
 const plan = () => screen.getByRole('group', { name: 'The plan' });
 const trapsOnPlan = () => within(plan()).getAllByRole('button', { name: / trap$/ });
 const designNow = async () => {
-  await waitFor(() => expect(location.hash).toMatch(/^#m=/));
   const route = await readRoute(location.hash, ['trapped-floor']);
   return route.page === 'make' ? readDesign(route.data)! : null;
 };
@@ -47,7 +46,7 @@ describe('the trapped floor maker', () => {
     const clearSquare = within(plan()).getAllByRole('button', { name: /^Row [2-6], column \d: \d round it$/ })[0];
     await user.click(clearSquare);
     expect(trapsOnPlan()).toHaveLength(13);
-    expect((await designNow())?.placed).toHaveLength(13);
+    await waitFor(async () => expect((await designNow())?.placed).toHaveLength(13), { timeout: 3000 });
     await user.click(screen.getByRole('button', { name: 'Back to placing at random' }));
     expect(trapsOnPlan()).toHaveLength(12);
   });
@@ -74,7 +73,7 @@ describe('the trapped floor maker', () => {
   it('starts from the example, with its goal a square, and sends a link that unmasks to the floor', async () => {
     const user = await openMaker();
     await user.click(screen.getByRole('button', { name: 'Start from the example' }));
-    expect((await designNow())?.goal).toEqual({ cell: 3 });
+    await waitFor(async () => expect((await designNow())?.goal).toEqual({ cell: 3 }), { timeout: 3000 });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Copy player link' })).toBeEnabled(), { timeout: 3000 });
     await user.click(screen.getByRole('button', { name: 'Copy player link' }));
     const route = await readRoute(new URL(await navigator.clipboard.readText()).hash, ['trapped-floor']);

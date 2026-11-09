@@ -30,7 +30,6 @@ async function openMaker() {
 const drawing = () => screen.getByRole('group', { name: 'The maze, to draw' });
 const cells = () => drawing().querySelectorAll('rect.cell');
 const designNow = async () => {
-  await waitFor(() => expect(location.hash).toMatch(/^#m=/));
   const route = await readRoute(location.hash, ['maze']);
   return route.page === 'make' ? readDesign(route.data)! : null;
 };
@@ -55,16 +54,16 @@ describe('the maze maker', () => {
     await user.click(wall);
     const now = within(drawing()).getByRole('button', { name: /the wall between row 1 column 1 and row 1 column 2$/ }).getAttribute('aria-label');
     expect(now).not.toBe(was);
-    expect((await designNow())?.edits).toHaveLength(1);
+    await waitFor(async () => expect((await designNow())?.edits).toHaveLength(1), { timeout: 3000 });
     await user.click(screen.getByRole('button', { name: 'Undo my walls' }));
-    expect((await designNow())?.edits).toEqual([]);
+    await waitFor(async () => expect((await designNow())?.edits).toEqual([]), { timeout: 3000 });
   });
 
   it('moves the way in, and adds and takes away ways out', async () => {
     const user = await openMaker();
     await user.click(screen.getByRole('radio', { name: 'Sets the way in' }));
     await user.click(cells()[11]);
-    expect((await designNow())?.start).toBe(11);
+    await waitFor(async () => expect((await designNow())?.start).toBe(11), { timeout: 3000 });
     await user.click(screen.getByRole('radio', { name: 'Adds or takes away a way out' }));
     await user.click(cells()[9]);
     expect(screen.getByRole('textbox', { name: 'What way out 2 says' })).toBeInTheDocument();
@@ -101,11 +100,11 @@ describe('the maze maker', () => {
     await user.click(await screen.findByRole('button', { name: 'stone tower' }));
     // The game master sees a hidden hazard; the players won't, until they run into it.
     expect(within(drawing()).getByRole('img', { name: 'stone tower, a hidden hazard' })).toBeInTheDocument();
-    expect((await designNow())?.pictures).toEqual([{ cell: 44, icon: 'stone-tower', kind: 'hidden', line: 'Rats!' }]);
+    await waitFor(async () => expect((await designNow())?.pictures).toEqual([{ cell: 44, icon: 'stone-tower', kind: 'hidden', line: 'Rats!' }]), { timeout: 3000 });
     // The way in can't go on a picture.
     await user.click(screen.getByRole('radio', { name: 'Sets the way in' }));
     await user.click(cells()[44]);
-    expect((await designNow())?.start).toBe(0);
+    await waitFor(async () => expect((await designNow())?.start).toBe(0), { timeout: 3000 });
     await user.click(screen.getByRole('radio', { name: 'Adds or takes away a picture' }));
     await user.click(cells()[44]);
     expect(screen.queryByRole('combobox', { name: 'What picture 1 is' })).toBeNull();
@@ -114,14 +113,14 @@ describe('the maze maker', () => {
   it('shows the players a window round them, if the game master likes', async () => {
     const user = await openMaker();
     await user.selectOptions(screen.getByRole('combobox', { name: 'Their view' }), '5 by 5 cells round them');
-    expect((await designNow())?.view).toBe(5);
+    await waitFor(async () => expect((await designNow())?.view).toBe(5), { timeout: 3000 });
     expect(screen.getByRole('group', { name: 'The maze' })).toHaveAttribute('viewBox', '0 0 100 100');
   });
 
   it('lets the light reach as far as the game master says, except when it’s lit', async () => {
     const user = await openMaker();
     await user.selectOptions(screen.getByRole('combobox', { name: 'How far they see' }), '4 cells');
-    expect((await designNow())?.reach).toBe(4);
+    await waitFor(async () => expect((await designNow())?.reach).toBe(4), { timeout: 3000 });
     await user.click(screen.getByRole('radio', { name: /^Dark:/ }));
     expect(screen.getByRole('combobox', { name: 'How far they see' })).toHaveValue('4');
     await user.click(screen.getByRole('radio', { name: /^Lit:/ }));

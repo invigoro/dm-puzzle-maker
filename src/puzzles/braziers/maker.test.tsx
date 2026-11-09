@@ -32,7 +32,6 @@ async function openMaker() {
 const copyButton = () => screen.getByRole('button', { name: 'Copy player link' });
 const linkReady = () => waitFor(() => expect(copyButton()).toBeEnabled(), { timeout: 3000 });
 const designNow = async () => {
-  await waitFor(() => expect(location.hash).toMatch(/^#m=/));
   const route = await readRoute(location.hash, ['braziers']);
   return route.page === 'make' ? readDesign(route.data)! : null;
 };
@@ -65,7 +64,7 @@ describe('the braziers maker', () => {
     expect(within(squares).getByRole('button', { name: 'Row 2, column 2: bare' })).toBeInTheDocument();
     expect(screen.getByText(/11 braziers\.$/)).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: 'it and all eight round it' }));
-    expect(await designNow()).toMatchObject({ width: 4, height: 3, bare: [5], reach: 'round' });
+    await waitFor(async () => expect(await designNow()).toMatchObject({ width: 4, height: 3, bare: [5], reach: 'round' }), { timeout: 3000 });
   });
 
   it('makes a ring with a hidden pattern, and sends only its fingerprint', async () => {
@@ -81,7 +80,7 @@ describe('the braziers maker', () => {
     expect(puzzle).toMatchObject({ aim: 'hidden', floor: { shape: 'ring', count: 6 } });
     expect(puzzle?.pattern).toBeUndefined();
     expect(puzzle?.answer).toBeTruthy();
-    expect((await designNow())?.pattern).toEqual([0, 2]);
+    await waitFor(async () => expect((await designNow())?.pattern).toEqual([0, 2]), { timeout: 3000 });
   });
 
   it('sets the start by hand, and won’t send one that’s the goal already', async () => {
@@ -122,6 +121,6 @@ describe('the braziers maker', () => {
     await user.clear(search);
     await user.type(search, 'tower');
     await user.click(await within(picker).findByRole('button', { name: 'stone tower' }));
-    expect((await designNow())?.icon).toBe('stone-tower');
+    await waitFor(async () => expect((await designNow())?.icon).toBe('stone-tower'), { timeout: 3000 });
   });
 });

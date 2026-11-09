@@ -12,5 +12,8 @@ export default defineConfig({
     // `// @vitest-environment jsdom`.
     environment: 'node',
     setupFiles: ['./src/test/setup.ts'],
+    // A maker's test types and clicks a good deal, and makes slow fingerprints, which a slow machine,
+    // such as CI's, can take more than the usual five seconds over.
+    testTimeout: 15_000,
   },
 });
