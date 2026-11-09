@@ -24,6 +24,9 @@
   --fog: #2b2620;
   --gold: #a86f0c;
   --danger: #a3261b;
+  /* A brazier burning, and the glow round it. */
+  --flame: #d0601a;
+  --flame-glow: rgba(255, 136, 32, 0.8);
   --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
@@ -56,6 +59,8 @@
     --fog: #0b0e10;
     --gold: #f0bd55;
     --danger: #f08a7e;
+    --flame: #f28a3a;
+    --flame-glow: rgba(255, 150, 60, 0.75);
   }
 }
 
@@ -1907,4 +1912,162 @@ legend.label-text {
   color: var(--accent-ink);
   background: var(--accent);
   border-color: var(--accent);
+}
+
+/* The braziers: a floor of them in a grid or a ring, each burning or cold. */
+
+.braziers-floors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.brazier-floor {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.brazier-floor.grid {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.45rem;
+  background: var(--stone-dark);
+  border-radius: 8px;
+}
+
+.brazier-floor.ring {
+  position: relative;
+  aspect-ratio: 1;
+  /* A band of stone under the braziers, which stand 40% of the way out: 80% of the way to the nearest side. */
+  background: radial-gradient(circle closest-side, transparent 0 65%, var(--stone-dark) 66% 94%, transparent 95%);
+}
+
+.brazier-floor .cell {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  background: var(--stone-light);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.brazier-floor.ring .cell {
+  position: absolute;
+  width: 14%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.brazier-floor .cell.bare {
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+
+.brazier-floor span.cell.bare {
+  border-color: transparent;
+}
+
+/* A settled floor, or one past its limit, is still drawn in full, not dimmed as a disabled button is. */
+.brazier-floor .cell:disabled {
+  opacity: 1;
+}
+
+.brazier-floor button.cell:not(:disabled):hover {
+  border-color: var(--accent);
+}
+
+.brazier-floor .cell.burning {
+  background: radial-gradient(circle, var(--flame-glow) 0, transparent 70%), var(--stone-light);
+}
+
+.brazier-floor .flame {
+  display: grid;
+  place-items: center;
+  width: 72%;
+  height: 72%;
+  transition:
+    color 0.3s ease,
+    filter 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.brazier-floor .flame .icon-thumb {
+  width: 100%;
+  height: 100%;
+}
+
+.brazier-floor .cold .flame {
+  color: var(--muted);
+  opacity: 0.45;
+  transform: scale(0.9);
+}
+
+.brazier-floor .burning .flame {
+  color: var(--flame);
+  filter: drop-shadow(0 0 4px var(--flame-glow));
+  transform: scale(1.05);
+}
+
+.brazier-floor.settled .cell {
+  border-color: var(--gold);
+}
+
+.brazier-floor.settled .burning .flame {
+  color: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brazier-floor .flame {
+    transition: none;
+  }
+}
+
+/* The goal, drawn small beside the floor: a dot for each brazier. */
+.brazier-goal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.brazier-goal figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.brazier-floor.small {
+  width: 7.5rem;
+}
+
+.brazier-floor.small.grid {
+  gap: 2px;
+  padding: 3px;
+}
+
+.brazier-floor.small .cell {
+  border-radius: 3px;
+}
+
+.brazier-floor .dot {
+  width: 55%;
+  aspect-ratio: 1;
+  background: var(--muted);
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.brazier-floor .burning .dot {
+  background: var(--flame);
+  box-shadow: 0 0 4px var(--flame-glow);
+  opacity: 1;
+}
+
+.brazier-floor.small .cell.burning {
+  background: var(--stone-light);
 }

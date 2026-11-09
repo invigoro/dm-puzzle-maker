@@ -211,6 +211,31 @@ symbol on the inner ring has a mark, and the letter the mark sits under is the w
   only the letters you give away are in it. Anyone who reads the link has the same puzzle as the
   page gives them.
 
+### Braziers
+
+A floor of braziers, some burning. Touching one flips it and its neighbours: a burning one goes
+out, and a cold one lights. The players must put them all out, or reach whatever goal you set.
+
+- **The floor:** a grid from 3 by 3 to 8 by 8, with any squares left bare for other shapes, or a
+  ring of 5 to 16 braziers round the room.
+- **What a touch flips:** on a grid, the four beside it, the four on its corners, all eight round
+  it, or every one in its row and column; on a ring, the two beside it.
+- **The picture:** a fire bowl, or any other from the pictures: a crystal, a candle, a rune stone.
+  Burning ones glow, and cold ones are dim.
+- **The goal:** every brazier out, every one burning, or a pattern you draw. A pattern can be shown
+  beside the floor, or hidden, for the players to learn in the game (painted on the door, sung in
+  a song).
+- **The start:** so many touches from the goal (3, 5, 8, 12, or any number), at random with 🎲, so
+  it can always be solved; or set by hand, starting from the goal if you like. The maker says how
+  few touches it takes, and won't send a start that can't reach the goal.
+- **Touches:** counted, and if you like, limited, from the fewest it takes: past the limit the
+  players fail, with a line for that.
+- **Playing:** tap a brazier, or move with the arrow keys and press Enter. Undo and Start over put
+  the floor back, and with a limit, never the count. The floor and the count are kept in the
+  browser.
+- **Secrecy:** a goal that's shown is in the link, as the page shows it; a hidden one is only a
+  fingerprint. Either way, the line for solving it is sealed with the goal.
+
 It pairs with [Sator](https://sator.invigoro.me/), which makes anagrams for puzzles,
 [Stele](https://stele.invigoro.me/), which carves or inks text onto a weathered object, and
 [Jabberwock](https://jabberwock.invigoro.me/), which writes text in made-up languages.

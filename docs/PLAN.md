@@ -18,15 +18,14 @@ kinds of puzzle followed:
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
 A fifth followed: [pedestals](#pedestals), each with a riddle, and objects to choose among and set
-on them; and a sixth, a [cipher](#cipher), read with a turning wheel, or worked out as a
-cryptogram. One more is planned: [braziers](#braziers), where touching one flips it and its
-neighbours, until all are out.
+on them; a sixth, a [cipher](#cipher), read with a turning wheel, or worked out as a cryptogram;
+and a seventh, [braziers](#braziers), where touching one flips it and its neighbours, until all are
+out.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** none in progress. Phases 0 to 7 are done and live at
-https://daedalus.invigoro.me/. Next is Phase 8 (braziers), when Tim says to start. The backlog
-under [Milestones](#milestones) holds the rest.
+**Current phase:** none. Phases 0 to 8 are done and live at https://daedalus.invigoro.me/. What
+comes next is Tim's to choose, from the backlog under [Milestones](#milestones), or elsewhere.
 
 ## The site
 
@@ -658,8 +657,9 @@ touches.
   be shown beside the floor, or hidden, so the players must learn it in the game (painted on the
   door, sung in a song).
 - **The start:** so many touches from the goal, from a seed, so it can always be solved: 3, 5, 8 or
-  12, or as many as there are braziers, with 🎲. Or set by hand: the maker says whether it can be
-  solved, and in how few touches, and won't send one that can't.
+  12, or any number (each brazier touched or not at random), with 🎲. Or set by hand, from the goal
+  if the game master likes: the maker says whether it can be solved, and in how few touches, and
+  won't send one that can't, nor one that's the goal already.
 - **Touches:** counted, and, if the game master likes, limited: after so many the players fail, with
   a line for that, as on the trapped floor. The maker shows the fewest touches, to set the limit
   from.
@@ -670,8 +670,9 @@ touches.
 ### The players' page
 
 - **The floor:** the braziers as buttons, in their grid or ring. Touching one flips it and its
-  neighbours, each flaring or dying as it changes. The arrow keys move between them, and Enter or
-  Space touches.
+  neighbours, each flaring or dying as it changes. The arrow keys move between them, passing over
+  bare squares, and Enter or Space touches. The page says what a touch flips, and the goal unless
+  it's hidden.
 - **The goal**, when it's a pattern that's shown: a small drawing of it beside the floor.
 - **Undo** and **Start over**, and the count of touches, out of the limit when there is one. With a
   limit, Undo and Start over take back the floor but never the count.
@@ -768,6 +769,10 @@ src/
     cipher/
       engine/                    # letters made plain, the rings (letters, runes, pictures, mixed), the wheel's keys, the cryptogram's scramble
       Wheel.tsx · Reader.tsx     # the wheel, turned by dragging, keys or buttons; the message and its boxes, the cryptogram's table, checked
+      design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
+    braziers/
+      engine/                    # floors (grids with bare squares, rings) and what a touch flips; the solver, and starts from a seed
+      BrazierFloor.tsx · Game.tsx    # the floor of braziers, a grid or a ring; touching, Undo, Start over, the count, the goal
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
@@ -983,7 +988,15 @@ other objects still fit in a Discord message.)*
   - *Done when* a cryptogram in pictures, with its word gaps and two letters given away, can be
     made, sent and solved on a phone, and opens its line.
 
-**Phase 8: Braziers.** See [Braziers](#braziers).
+**Phase 8: Braziers.** See [Braziers](#braziers). *(done. Which braziers burn is a bitmask, a
+bigint of up to 64 bits, and the solver's rows are too, so elimination is a few XORs. When more
+than one set of touches works, it tries every combination of the sets that change nothing, up to
+2¹⁶, for the fewest; a test checks it against trying every set of touches on floors of up to 16
+braziers. Designs and links name cells, not braziers, so leaving a square bare renumbers nothing
+else; a new shape or size clears the bare squares, the pattern and a start set by hand. A goal
+that's shown is sealed with too, so the line isn't plain in the link. The limit is chosen from the
+fewest touches, and the maker won't send one below it. The example makes a link of about 690
+characters, and an 8 by 8 floor with a hidden pattern fits in a Discord message.)*
 - The engine with tests: floors (grids with bare squares, and rings), what a touch flips, the
   solver that says whether a floor can be solved and in how few touches, and starts from a seed.
 - The maker: the floor, what a touch flips, the goal, the start, touches and their limit, the

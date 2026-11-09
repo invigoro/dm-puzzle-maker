@@ -49,6 +49,14 @@ export const KINDS: readonly PuzzleKind[] = [
     maker: () => import('./cipher/maker'),
     player: () => import('./cipher/player'),
   },
+  {
+    id: 'braziers',
+    name: 'Braziers',
+    blurb:
+      'A floor of braziers, some burning: touching one flips it and its neighbours, lit to cold and cold to lit, until all are out, or match a pattern. A limit on touches can cost them.',
+    maker: () => import('./braziers/maker'),
+    player: () => import('./braziers/player'),
+  },
 ];
 
 /** The kind of puzzle with this id, if there is one. */
