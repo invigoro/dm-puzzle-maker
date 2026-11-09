@@ -53,8 +53,9 @@ export function Send<Design extends { words: Words }>({ kind, side, design }: Se
     if (problems.length > 0) return;
     let current = true;
     const timer = setTimeout(async () => {
-      const made = linkTo(await playerHash(kind.id, await side.toPuzzle(design)));
-      if (current) setLink(made);
+      const hash = await playerHash(kind.id, await side.toPuzzle(design));
+      // Fingerprints take a moment, and the maker may have closed meanwhile, page and all.
+      if (current) setLink(linkTo(hash));
     }, PAUSE);
     return () => {
       current = false;
