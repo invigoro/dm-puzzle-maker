@@ -19,6 +19,7 @@ export function Play({ puzzle }: { puzzle: CipherPuzzle }) {
         start={puzzle.start}
         check={puzzle.check}
         reading={puzzle.reading ?? false}
+        given={puzzle.given}
         wrongLine={puzzle.wrong ?? ''}
         failAfter={puzzle.failAfter ?? 0}
         failLine={puzzle.failLine ?? ''}

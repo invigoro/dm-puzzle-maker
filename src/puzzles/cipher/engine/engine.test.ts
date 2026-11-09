@@ -1,7 +1,42 @@
 import { describe, expect, it } from 'vitest';
-import { decipher, encipher, type Key } from './cipher';
+import { mulberry32 } from '../../../kit/rng';
+import { decipher, encipher, readsAlike, type Key } from './cipher';
+import { counts, scramble, substitute } from './cryptogram';
 import { inFives, lettersOf, plainOf } from './letters';
 import { mixOrder, PICTURE_CHOICES, RUNES, ringOf, symbolsOf } from './rings';
+
+describe('the cryptogram', () => {
+  it('scrambles the alphabet from a seed, never writing a letter as itself', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const order = scramble(mulberry32(seed));
+      expect([...order].sort((one, other) => one - other)).toEqual(Array.from({ length: 26 }, (_, i) => i));
+      expect(order.every((place, letter) => place !== letter)).toBe(true);
+    }
+    expect(scramble(mulberry32(5))).toEqual(scramble(mulberry32(5)));
+    expect(scramble(mulberry32(5))).not.toEqual(scramble(mulberry32(6)));
+  });
+
+  it('writes each letter as its symbol’s place, and everything else as it is', () => {
+    // A shift of one: A is written as B, and Z as A.
+    const places = Array.from({ length: 26 }, (_, letter) => (letter + 1) % 26);
+    expect(substitute('ZEBRA, 2!', places)).toBe('AFCSB, 2!');
+  });
+
+  it('counts each symbol, the commonest first, then in order', () => {
+    expect(counts('ABBA C, DDD')).toEqual([
+      { place: 3, count: 3 },
+      { place: 0, count: 2 },
+      { place: 1, count: 2 },
+      { place: 2, count: 1 },
+    ]);
+  });
+
+  it('reads like symbols alike, as one setting of the wheel does', () => {
+    expect(readsAlike('cryptogram')).toBe(true);
+    expect(readsAlike('one')).toBe(true);
+    expect(readsAlike('keyword')).toBe(false);
+  });
+});
 
 describe('letters', () => {
   it('makes a message plain: capitals, no accents, its lines run into one', () => {

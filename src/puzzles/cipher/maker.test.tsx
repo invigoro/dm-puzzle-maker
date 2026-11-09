@@ -69,7 +69,7 @@ describe('the cipher maker', () => {
     const user = await openMaker();
     await user.type(message(), 'Under the third stair.');
     await user.click(screen.getByRole('radio', { name: /^Letters:/ }));
-    await user.click(screen.getByRole('radio', { name: /^A keyword:/ }));
+    await user.click(screen.getByRole('radio', { name: /^The wheel by a keyword:/ }));
     expect(screen.getAllByText('Give the keyword.').length).toBeGreaterThan(0);
     await user.type(screen.getByRole('textbox', { name: 'Keyword' }), 'Cellar');
     await user.type(screen.getByRole('textbox', { name: 'Mix the inner ring by a word' }), 'Dragon');
@@ -83,7 +83,7 @@ describe('the cipher maker', () => {
   it('turns as it goes, from a letter, after every word', async () => {
     const user = await openMaker();
     await user.type(message(), 'Under the third stair.');
-    await user.click(screen.getByRole('radio', { name: /^Turning as it goes:/ }));
+    await user.click(screen.getByRole('radio', { name: /^The wheel turning as it goes:/ }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'The mark starts under' }), 'K');
     await user.selectOptions(screen.getByRole('combobox', { name: 'It moves a letter on after every' }), 'word');
     const puzzle = await copiedPuzzle(user);
@@ -120,5 +120,31 @@ describe('the cipher maker', () => {
     expect(screen.getByRole('textbox', { name: 'Failing says' })).toBeInTheDocument();
     const puzzle = await copiedPuzzle(user);
     expect(puzzle).toMatchObject({ check: 'answer', wrong: 'The lock bites.', failAfter: 3 });
+  });
+  it('makes a cryptogram: no wheel, a scrambled alphabet to scramble again, and letters given away', async () => {
+    const user = await openMaker();
+    await user.type(message(), 'Under the third stair.');
+    await user.click(screen.getByRole('radio', { name: /^A cryptogram:/ }));
+    await user.click(screen.getByRole('radio', { name: /^Letters:/ }));
+    expect(screen.queryByRole('textbox', { name: 'Mix the inner ring by a word' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /^Read it for them/ })).toBeNull();
+    expect(screen.queryByRole('slider')).toBeNull();
+    expect(screen.getByRole('group', { name: 'The symbols' })).toBeInTheDocument();
+    const scrambled = () => screen.getByRole('list', { name: 'The scrambled alphabet' }).textContent;
+    const before = scrambled();
+    await user.click(screen.getByRole('button', { name: '🎲 Scramble them again' }));
+    expect(scrambled()).not.toBe(before);
+    const givenAway = screen.getByRole('group', { name: 'Letters given away' });
+    expect(within(givenAway).getAllByRole('button').map((button) => button.textContent).join('')).toBe('ADEHINRSTU');
+    await user.click(screen.getByRole('button', { name: 'Give away E' }));
+    await user.click(screen.getByRole('button', { name: 'Give away T' }));
+    await user.click(screen.getByRole('button', { name: 'Give away T' }));
+    expect(screen.getByRole('button', { name: 'Give away E' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Give away T' })).toHaveAttribute('aria-pressed', 'false');
+    const puzzle = await copiedPuzzle(user);
+    expect(puzzle).toMatchObject({ method: 'cryptogram', script: 'letters' });
+    expect(puzzle?.given?.map((pair) => pair[1])).toEqual(['E']);
+    expect(puzzle?.ring.join('')).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    expect((await designNow())?.given).toBe('E');
   });
 });

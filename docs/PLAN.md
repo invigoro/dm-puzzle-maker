@@ -18,15 +18,15 @@ kinds of puzzle followed:
 - a [trapped floor](#trapped-floor) to cross by minesweeper's rules
 
 A fifth followed: [pedestals](#pedestals), each with a riddle, and objects to choose among and set
-on them. Two more are planned:
-- a [cipher](#cipher), read with a turning wheel, or worked out as a cryptogram
-- [braziers](#braziers), where touching one flips it and its neighbours, until all are out
+on them; and a sixth, a [cipher](#cipher), read with a turning wheel, or worked out as a
+cryptogram. One more is planned: [braziers](#braziers), where touching one flips it and its
+neighbours, until all are out.
 
 The site must be static, hosted on GitHub Pages, and everything runs in the browser.
 
-**Current phase:** Phase 7, the cipher. Phases 0 to 6 and 7a (the wheel) are done and live at
-https://daedalus.invigoro.me/. Next is 7b (the cryptogram), then Phase 8 (braziers), when Tim says
-to start. The backlog under [Milestones](#milestones) holds the rest.
+**Current phase:** none in progress. Phases 0 to 7 are done and live at
+https://daedalus.invigoro.me/. Next is Phase 8 (braziers), when Tim says to start. The backlog
+under [Milestones](#milestones) holds the rest.
 
 ## The site
 
@@ -583,16 +583,21 @@ It lives in `src/puzzles/cipher/`, with the id `cipher`.
   - **The wheel by a keyword:** for each letter, the mark goes under the next letter of the
     keyword, round and round, as Vigenère's cipher has. Without the keyword it's beyond most
     tables, so the game master hides it in the game.
-  - **A cryptogram:** the symbols stand for letters in a scrambled order, from a seed with 🎲, and
-    there's no key. How hard it is comes from the message's length, from keeping the spaces between
-    words or not, and from letters given away from the start (a fragment of a translation), which
-    the game master picks.
+  - **A cryptogram:** the symbols stand for letters in a scrambled order, and there's no key.
+    Letters and runes are scrambled from a seed, with 🎲, so that no letter is written as itself;
+    pictures are the ones the game master chose for each letter. How hard it is comes from the
+    message's length, from keeping the spaces between words or not, and from letters given away
+    from the start (a fragment of a translation), which the game master picks from the message's
+    own letters.
 - **Checking:**
   - none: reading the message is the reward
   - when every box is filled: the page checks the letters written against the message, and opens
     the line for solving it
   - an answer box, for a password the message gives, with wrong tries counted and a line for them,
     as the discs and pedestals have, and failing after so many if the game master likes
+- **The symbols, and the order of the choices:** the maker asks for the cipher before the symbols,
+  as a cryptogram changes what the symbols offer: no mixing word, but its scrambled alphabet and the
+  letters given away.
 - **Reading for them:** off unless the game master turns it on, and only for the wheel. Under the
   message, it shows what the wheel reads: at its setting, turning as it goes from there, or with the
   keyword or starting word the players type. It saves tedium once they know the key, but at one
@@ -610,8 +615,11 @@ It lives in `src/puzzles/cipher/`, with the id `cipher`.
   buttons, or use the arrow keys. It clicks to each setting, the outer letter by the mark lit gold,
   and says where the mark is. Side by side with the message on a wide screen, it stays in view as
   the message scrolls; on a phone it sits above it.
-- **The cryptogram's alphabet:** each symbol, with the letter written for it so far. Letters given
-  away are fixed, and a letter given to two symbols is marked.
+- **The cryptogram's table:** in place of the wheel, below the message, which has the page's width.
+  Each symbol in the message, the commonest first, with how often it comes and a box for its
+  letter, which writes it under every symbol like it, as the message's boxes do. Letters given
+  away are written in and fixed, and a letter written for two symbols is marked, in the table and
+  the message, and said below it.
 - **The answer box**, when there's one, and the count of wrong tries.
 - **Progress:** the wheel's setting, the letters written and the tries, kept in the browser.
 
@@ -620,6 +628,9 @@ It lives in `src/puzzles/cipher/`, with the id `cipher`.
 - The link holds the message only in cipher, and the symbols as the players see them. The key isn't
   in it: not the setting, the keyword, the starting word, nor the cryptogram's alphabet beyond the
   letters given away. A player who reads the link has the same puzzle as one who reads the page.
+- A cryptogram's symbols are listed sorted (letters and runes by their order in Unicode, pictures
+  by name), so their order says nothing of which letter each is; the message's letters stand for
+  their places in that list. The letters given away are each a symbol's place and its letter.
 - The whole message, when filled boxes are checked, and a password are slow fingerprints, and the
   line for solving it is sealed with the answer, as for the pedestals.
 
@@ -755,8 +766,8 @@ src/
       Room.tsx                   # the pedestals and the floor: placing, checking, the count
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
     cipher/
-      engine/                    # letters made plain, the rings (letters, runes, pictures, mixed), the wheel's keys
-      Wheel.tsx · Reader.tsx     # the wheel, turned by dragging, keys or buttons; the message and its boxes, checked
+      engine/                    # letters made plain, the rings (letters, runes, pictures, mixed), the wheel's keys, the cryptogram's scramble
+      Wheel.tsx · Reader.tsx     # the wheel, turned by dragging, keys or buttons; the message and its boxes, the cryptogram's table, checked
       design.ts · Designer.tsx · puzzle.ts · Play.tsx · example.ts · maker.tsx · player.tsx
   ui/                            # the site's own pages
     Home.tsx · Lost.tsx · Site.tsx   # home, a link that holds nothing, and the game master's frame
@@ -958,7 +969,13 @@ other objects still fit in a Discord message.)*
   - Tests that a player link never holds the plain message, the key or the answer.
   - *Done when* a rune wheel at one setting, and a keyword wheel with an answer box, can each be
     made, sent and read on a phone.
-- **7b. The cryptogram.**
+- **7b. The cryptogram.** *(done. It's a fifth choice of cipher beside the wheel's four, as it shares
+  the message, its boxes and checking. Letters and runes are scrambled with Sattolo's shuffle,
+  which makes one long cycle, so no letter is written as itself; pictures keep the game master's
+  own choice for each letter, so a picture can hint at its letter. The players' table counts each
+  symbol, the commonest first, as counting is the chore of a cryptogram rather than its puzzle.
+  Letters given away are chosen from the message's own, so none is wasted. The example as a
+  cryptogram in pictures, with E and T given away, makes a link of about 880 characters.)*
   - The scrambled alphabet from a seed, letters given away, and spaces kept or groups of five.
   - The players' alphabet, a letter written once filling every like symbol, and the check when
     every box is filled.

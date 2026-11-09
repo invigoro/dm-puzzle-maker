@@ -13,7 +13,8 @@
  */
 import { indexOf, isLetter, letterAt, lettersOf } from './letters';
 
-export type Method = 'one' | 'turning' | 'autokey' | 'keyword';
+/** How a message is put in cipher: by the wheel, its setting moving one of four ways, or as a cryptogram, with no wheel at all (see cryptogram.ts). */
+export type Method = 'one' | 'turning' | 'autokey' | 'keyword' | 'cryptogram';
 /** When the wheel turns as it goes: after every letter, or every word. */
 export type Step = 'letter' | 'word';
 
@@ -23,7 +24,10 @@ export type Key =
   | { method: 'autokey'; primer: string }
   | { method: 'keyword'; keyword: string };
 
-export const METHODS: readonly Method[] = ['one', 'turning', 'autokey', 'keyword'];
+export const METHODS: readonly Method[] = ['one', 'turning', 'autokey', 'keyword', 'cryptogram'];
+
+/** Whether every symbol like another reads alike, so a letter written for one is written for all: at one setting, and in a cryptogram. */
+export const readsAlike = (method: Method) => method === 'one' || method === 'cryptogram';
 
 /**
  * The wheel's setting for a message's letter: which outer letter the mark sits under, from 0 for

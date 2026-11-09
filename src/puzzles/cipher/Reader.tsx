@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
 import { iconMask } from '../../ui/IconPicker';
-import { decipher, type Key, type Method, type Step } from './engine/cipher';
-import { lettersOf } from './engine/letters';
+import { decipher, readsAlike, type Key, type Method, type Step } from './engine/cipher';
+import { counts } from './engine/cryptogram';
+import { indexOf, lettersOf } from './engine/letters';
 import type { Script } from './engine/rings';
 import { slotsOf, type CipherProgress, type Checking } from './puzzle';
 import { symbolName, Wheel } from './Wheel';
@@ -26,6 +27,8 @@ interface ReaderProps {
   check: Checking;
   /** Whether the page reads the message for them. */
   reading: boolean;
+  /** A cryptogram's letters given away: each a symbol's place then its letter ("QE"). */
+  given?: readonly string[];
   wrongLine: string;
   /** After how many wrong answers the players fail: 0 for never. */
   failAfter: number;
@@ -35,18 +38,26 @@ interface ReaderProps {
   onProgress?(progress: CipherProgress): void;
 }
 
+const NONE_GIVEN: readonly string[] = [];
+
 /** What the page reads with a keyword the players give, as each kind of key calls it. */
 const READ_WITH: Partial<Record<Method, string>> = { autokey: 'The starting word', keyword: 'The keyword' };
 
 /**
  * A message in cipher, with a box under each symbol for the letter the players read there, and the
- * wheel to read it with. It's checked when every box is filled, or by an answer they give, or not
- * at all, as the game master chose.
+ * wheel to read it with; or, for a cryptogram, a table of its symbols, the commonest first, with any
+ * letters given away written in. It's checked when every box is filled, or by an answer they give,
+ * or not at all, as the game master chose.
  */
-export function Reader({ script, ring, text, method, step, start, check, reading, wrongLine, failAfter, failLine, judge, initial, onProgress }: ReaderProps) {
+export function Reader({ script, ring, text, method, step, start, check, reading, given = NONE_GIVEN, wrongLine, failAfter, failLine, judge, initial, onProgress }: ReaderProps) {
   const id = useId();
+  const cryptogram = method === 'cryptogram';
+  /** The letters given away, by their symbols' places. */
+  const givenAt = useMemo(() => new Map(given.map((pair) => [indexOf(pair[0]), pair[1]])), [given]);
   const [turns, setTurns] = useState(initial?.turns ?? start);
-  const [written, setWritten] = useState<string[]>(initial?.written ?? Array.from({ length: slotsOf(method, text) }, () => ''));
+  const [written, setWritten] = useState<string[]>(() =>
+    (initial?.written ?? Array.from({ length: slotsOf(method, text) }, () => '')).map((letter, slot) => givenAt.get(slot) ?? letter),
+  );
   const [wrong, setWrong] = useState(initial?.wrong ?? 0);
   const [solved, setSolved] = useState(initial?.solved ?? false);
   const [failed, setFailed] = useState(initial?.failed ?? false);
@@ -64,9 +75,16 @@ export function Reader({ script, ring, text, method, step, start, check, reading
 
   // Each letter of the message, in order, with its place on the inner ring and the box it's written in.
   const places = [...text].flatMap((char) => (char >= 'A' && char <= 'Z' ? [char.charCodeAt(0) - 65] : []));
-  const slotOf = (letter: number) => (method === 'one' ? places[letter] : letter);
+  const slotOf = (letter: number) => (readsAlike(method) ? places[letter] : letter);
   const guess = places.map((_, letter) => written[slotOf(letter)]).join('');
   const full = guess.length === places.length;
+  /** Whether a box holds a letter given away, which can't be changed. */
+  const isGiven = (letter: number) => cryptogram && givenAt.has(places[letter]);
+  // Letters written for more than one symbol, in a cryptogram, where each symbol is a letter of its own.
+  const used = cryptogram ? counts(text) : [];
+  const clashing = new Set(
+    used.map(({ place }) => written[place]).filter((letter, i, all) => letter !== '' && all.indexOf(letter) !== i),
+  );
 
   useEffect(() => {
     onProgress?.({ turns, written, wrong, solved, failed, reading: readWith, answer });
@@ -100,7 +118,15 @@ export function Reader({ script, ring, text, method, step, start, check, reading
   }
 
   function write(letter: number, value: string) {
+    if (isGiven(letter)) return;
     setWritten((now) => now.map((each, slot) => (slot === slotOf(letter) ? value : each)));
+    setSaid('');
+  }
+
+  /** A letter written in the cryptogram's table, for a symbol by its place. */
+  function writeFor(place: number, value: string) {
+    if (givenAt.has(place)) return;
+    setWritten((now) => now.map((each, slot) => (slot === place ? lettersOf(value).slice(-1) : each)));
     setSaid('');
   }
 
@@ -147,7 +173,7 @@ export function Reader({ script, ring, text, method, step, start, check, reading
         ? { method, setting }
         : method === 'turning'
           ? { method, setting, step: step ?? 'letter' }
-          : lettersOf(readWith) === ''
+          : method === 'cryptogram' || lettersOf(readWith) === ''
             ? null
             : method === 'autokey'
               ? { method, primer: readWith }
@@ -165,10 +191,13 @@ export function Reader({ script, ring, text, method, step, start, check, reading
   );
   const symbolOf = (char: string) => ring[char.charCodeAt(0) - 65];
   const read = reading ? readingNow() : null;
+  /** A symbol as it's drawn in a box's label or the table: a picture, a rune, or a letter. */
+  const drawn = (symbol: string) =>
+    script === 'pictures' ? <span className="icon-thumb" style={iconMask(symbol)} /> : <span className={script === 'runes' ? 'symbol rune' : 'symbol'}>{symbol}</span>;
 
   return (
-    <div className={solved ? 'game cipher solved' : 'game cipher'}>
-      <Wheel script={script} ring={ring} turns={turns} onTurn={(by) => setTurns((now) => now + by)} />
+    <div className={['game cipher', cryptogram && 'cryptogram', solved && 'solved'].filter(Boolean).join(' ')}>
+      {!cryptogram && <Wheel script={script} ring={ring} turns={turns} onTurn={(by) => setTurns((now) => now + by)} />}
       <div className="cipher-side">
         <div className="message" role="group" aria-label="The message">
           {words.map((word, w) => (
@@ -184,20 +213,18 @@ export function Reader({ script, ring, text, method, step, start, check, reading
                     );
                   }
                   const symbol = symbolOf(char);
+                  const value = written[slotOf(at)];
                   return (
-                    <label key={i} className="glyph">
-                      {script === 'pictures' ? (
-                        <span className="icon-thumb" style={iconMask(symbol)} />
-                      ) : (
-                        <span className={script === 'runes' ? 'symbol rune' : 'symbol'}>{symbol}</span>
-                      )}
+                    <label key={i} className={['glyph', isGiven(at) && 'given', clashing.has(value) && 'clash'].filter(Boolean).join(' ')}>
+                      {drawn(symbol)}
                       <input
                         ref={(box) => {
                           boxes.current[at] = box;
                         }}
-                        aria-label={`Letter ${at + 1}: ${symbolName(script, symbol)}`}
-                        value={written[slotOf(at)]}
-                        readOnly={done}
+                        aria-label={`Letter ${at + 1}: ${symbolName(script, symbol)}${isGiven(at) ? ', given' : ''}`}
+                        aria-invalid={clashing.has(value) || undefined}
+                        value={value}
+                        readOnly={done || isGiven(at)}
                         autoComplete="off"
                         autoCapitalize="characters"
                         spellCheck={false}
@@ -213,9 +240,42 @@ export function Reader({ script, ring, text, method, step, start, check, reading
           ))}
         </div>
         <p className="hint">
-          Turn the wheel, and write under each symbol the letter you read for it.
-          {method === 'one' && ' A letter written under one symbol goes under every one like it.'}
+          {cryptogram ? 'Write under each symbol the letter you think it stands for.' : 'Turn the wheel, and write under each symbol the letter you read for it.'}
+          {readsAlike(method) && ' A letter written under one symbol goes under every one like it.'}
         </p>
+        {cryptogram && (
+          <div className="cryptogram-key" role="group" aria-label="The symbols">
+            <p className="hint">Each symbol, and how often it comes, the commonest first.</p>
+            <ol>
+              {used.map(({ place, count }) => {
+                const symbol = ring[place];
+                const value = written[place];
+                return (
+                  <li key={place} className={[givenAt.has(place) && 'given', clashing.has(value) && 'clash'].filter(Boolean).join(' ')}>
+                    {drawn(symbol)}
+                    <input
+                      aria-label={`The letter for ${symbolName(script, symbol)}${givenAt.has(place) ? ', given' : ''}`}
+                      aria-invalid={clashing.has(value) || undefined}
+                      value={value}
+                      readOnly={done || givenAt.has(place)}
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      onFocus={(event) => event.target.select()}
+                      onChange={(event) => writeFor(place, event.target.value)}
+                    />
+                    <span className="count">×{count}</span>
+                  </li>
+                );
+              })}
+            </ol>
+            {clashing.size > 0 && (
+              <p className="hint clash-note">
+                {[...clashing].sort().join(', ')} {clashing.size === 1 ? 'is' : 'are each'} written for more than one symbol.
+              </p>
+            )}
+          </div>
+        )}
         {reading && (
           <div className="reading">
             {READ_WITH[method] && (

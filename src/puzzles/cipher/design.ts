@@ -5,7 +5,8 @@ import { mulberry32, randomInt, randomSeed } from '../../kit/rng';
 import { seal } from '../../kit/seal';
 import { readWords, tidyWords, type Words } from '../../kit/words';
 import { encipher, METHODS, type Key, type Method, type Step } from './engine/cipher';
-import { inFives, lettersOf, plainOf } from './engine/letters';
+import { scramble, substitute } from './engine/cryptogram';
+import { indexOf, inFives, letterAt, lettersOf, plainOf } from './engine/letters';
 import { ringOf, SCRIPTS, symbolsOf, type Script } from './engine/rings';
 import { LONGEST_LINE, LONGEST_MESSAGE, type CipherPuzzle, type Checking } from './puzzle';
 
@@ -41,7 +42,9 @@ export interface CipherDesign {
   failLine: string;
   /** Whether the page reads the message for them, at the wheel's setting or with a keyword they give. */
   reading: boolean;
-  /** The seed for where the mark sits when the players first see the wheel. */
+  /** A cryptogram's letters given away from the start, each once, as a fragment of a translation. */
+  given: string;
+  /** The seed for where the mark sits when the players first see the wheel, or for a cryptogram's scrambled alphabet. */
   seed: number;
 }
 
@@ -68,6 +71,7 @@ export function newDesign(): CipherDesign {
     failAfter: 0,
     failLine: 'The wheel locks fast, and will turn no more.',
     reading: false,
+    given: '',
     seed,
   };
 }
@@ -102,12 +106,13 @@ export function readDesign(data: unknown): CipherDesign | null {
     failAfter: FAIL_AFTER.includes(input.failAfter as number) ? (input.failAfter as number) : 0,
     failLine: lineIn(input.failLine, LONGEST_LINE, fresh.failLine),
     reading: input.reading === true,
+    given: [...new Set(lettersOf(wordIn(input.given)))].join(''),
     seed: Number.isInteger(input.seed) && (input.seed as number) >= 0 && (input.seed as number) < 2 ** 32 ? (input.seed as number) : 1,
   };
 }
 
-/** The design's key: how the wheel's setting moves along the message. */
-export function keyOf(design: CipherDesign): Key {
+/** The design's key: how the wheel's setting moves along the message. A cryptogram has no wheel, so none. */
+export function keyOf(design: CipherDesign): Key | null {
   switch (design.method) {
     case 'one':
       return { method: 'one', setting: design.setting };
@@ -117,16 +122,49 @@ export function keyOf(design: CipherDesign): Key {
       return { method: 'autokey', primer: design.primer };
     case 'keyword':
       return { method: 'keyword', keyword: design.keyword };
+    case 'cryptogram':
+      return null;
   }
 }
 
-/** The inner ring, from the place with the mark on. */
-export const ringOfDesign = (design: CipherDesign) => ringOf(symbolsOf(design.script, design.pictures), design.mix);
+/**
+ * A cryptogram's alphabet: the symbol each letter, A to Z, is written as. Letters and runes are
+ * scrambled from the seed, no letter written as itself; a picture is the one the game master chose
+ * for its letter.
+ */
+export function alphabetOf(design: CipherDesign): string[] {
+  const symbols = symbolsOf(design.script, design.pictures);
+  if (design.script === 'pictures') return [...symbols];
+  return scramble(mulberry32(design.seed)).map((place) => symbols[place]);
+}
 
-/** The message in cipher, as the player link holds it: its letters standing for the inner ring's places. */
+/**
+ * The symbols, as the player link lists them: the wheel's inner ring, from the place with the mark
+ * on; or a cryptogram's, sorted, so their order says nothing of which letter each is.
+ */
+export const ringOfDesign = (design: CipherDesign) =>
+  design.method === 'cryptogram' ? [...alphabetOf(design)].sort() : ringOf(symbolsOf(design.script, design.pictures), design.mix);
+
+/** Where each letter's symbol is, A to Z, among a cryptogram's symbols as the link lists them. */
+const placesOf = (design: CipherDesign) => {
+  const ring = ringOfDesign(design);
+  return alphabetOf(design).map((symbol) => ring.indexOf(symbol));
+};
+
+/** The message in cipher, as the player link holds it: its letters standing for the places of their symbols. */
 export function cipherOf(design: CipherDesign): string {
-  const cipher = encipher(plainOf(design.message), keyOf(design));
+  const key = keyOf(design);
+  const plain = plainOf(design.message);
+  const cipher = key ? encipher(plain, key) : substitute(plain, placesOf(design));
   return design.groups ? inFives(cipher) : cipher;
+}
+
+/** A cryptogram's letters given away that are in its message, each as its symbol's place then the letter ("QE": Q's symbol is E), in order. */
+export function givenOf(design: CipherDesign): string[] {
+  if (design.method !== 'cryptogram') return [];
+  const places = placesOf(design);
+  const letters = new Set(lettersOf(design.message));
+  return [...lettersOf(design.given)].filter((letter) => letters.has(letter)).map((letter) => `${letterAt(places[indexOf(letter)])}${letter}`).sort();
 }
 
 /** The message in cipher as the players see it, for a ring of letters: each place's letter. */
@@ -135,8 +173,9 @@ const shownOf = (design: CipherDesign) => {
   return cipherOf(design).replace(/[A-Z]/g, (place) => ring[place.charCodeAt(0) - 65]);
 };
 
-/** Where the mark sits when the players first see the wheel: from the seed, and never at the setting that reads it. */
+/** Where the mark sits when the players first see the wheel: from the seed, and never at the setting that reads it. A cryptogram has no wheel. */
 export function startOf(design: CipherDesign): number {
+  if (design.method === 'cryptogram') return 0;
   const random = mulberry32(design.seed);
   const reads = design.method === 'one' || design.method === 'turning';
   return reads ? (design.setting + 1 + randomInt(random, 25)) % 26 : randomInt(random, 26);
@@ -157,6 +196,9 @@ export function problemsOf(design: CipherDesign): string[] {
     problems.push('Turning after every word needs the spaces kept, so the players can see the words.');
   }
   if (design.check === 'answer' && lettersOf(design.password) === '') problems.push('Give the answer the players must find.');
+  if (design.method === 'cryptogram' && lettersOf(design.message) !== '' && [...lettersOf(design.message)].every((letter) => design.given.includes(letter))) {
+    problems.push('Every letter of the message is given away: leave some for the players to find.');
+  }
   // Only once the rest is sound, as a key that's missing reads nothing at all.
   if (problems.length === 0 && design.script === 'letters' && lettersOf(shownOf(design)) === lettersOf(design.message)) {
     problems.push('The message reads just as it is with this key: choose another.');
@@ -166,13 +208,14 @@ export function problemsOf(design: CipherDesign): string[] {
 
 /**
  * What a player link holds: the message in cipher, the inner ring, how the wheel moves (not the
- * key), and where it starts. Checking adds a slow fingerprint of what's checked, and the line for
- * solving it sealed with it.
+ * key), and where it starts; or a cryptogram's symbols, sorted, and the letters given away. Checking
+ * adds a slow fingerprint of what's checked, and the line for solving it sealed with it.
  */
 export async function toPuzzle(design: CipherDesign): Promise<CipherPuzzle> {
   const words = tidyWords(design.words);
   const salt = newSalt();
   const checked = checkedOf(design);
+  const given = givenOf(design);
   return {
     v: 1,
     // The line for solving it is sealed with what's checked, below, so only solving it opens it.
@@ -184,7 +227,9 @@ export async function toPuzzle(design: CipherDesign): Promise<CipherPuzzle> {
     ...(design.method === 'turning' ? { step: design.step } : {}),
     start: startOf(design),
     check: design.check,
-    ...(design.reading ? { reading: true as const } : {}),
+    // A cryptogram has no wheel to read at.
+    ...(design.reading && design.method !== 'cryptogram' ? { reading: true as const } : {}),
+    ...(given.length > 0 ? { given } : {}),
     salt,
     ...(design.check !== 'none' ? { answer: await fingerprint(checked, salt), sealed: await seal(words.success || 'Solved.', checked, salt) } : {}),
     ...(design.check === 'answer' ? { wrong: design.wrongLine.trim(), failAfter: design.failAfter, failLine: design.failLine.trim() } : {}),

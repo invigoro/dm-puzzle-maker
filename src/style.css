@@ -1793,3 +1793,118 @@ legend.label-text {
   margin-left: 0;
   border-radius: 6px;
 }
+
+/* A cryptogram: no wheel, so the message has the width, with its table of symbols below. */
+@media (min-width: 52rem) {
+  .cipher.cryptogram {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.glyph.given input,
+.cryptogram-key .given input {
+  color: var(--accent);
+  background: var(--hover);
+  border-style: dashed;
+}
+
+.glyph.clash input,
+.cryptogram-key .clash input {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.cryptogram-key {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cryptogram-key ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: 0.4rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cryptogram-key li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cryptogram-key .symbol {
+  min-width: 1.5rem;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--engraved);
+}
+
+.cryptogram-key .symbol.rune {
+  font-family: 'Noto Sans Runic', var(--serif);
+  font-weight: 400;
+}
+
+.cryptogram-key .icon-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--engraved);
+}
+
+.cryptogram-key input {
+  width: 1.9rem;
+  padding: 0.15rem 0;
+  font-family: var(--serif);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cryptogram-key .count {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.game .hint.clash-note {
+  color: var(--danger);
+}
+
+/* The maker's scrambled alphabet: each letter, and the symbol it's written as. */
+.picture-alphabet .written {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.picture-alphabet .written.rune {
+  font-family: 'Noto Sans Runic', var(--serif);
+  font-weight: 400;
+}
+
+.field .label {
+  font-weight: 600;
+}
+
+.given-letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.given-letters button {
+  min-width: 2.2rem;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.given-letters button[aria-pressed='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}

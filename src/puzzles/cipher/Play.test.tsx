@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetIcons } from '../../kit/icons';
@@ -180,5 +180,62 @@ describe('without checking', () => {
     for (const [n, letter] of [[1, 'g'], [2, 'o'], [3, 'h'], [5, 'm'], [6, 'e']] as const) await write(user, n, letter);
     await new Promise((done) => setTimeout(done, 200));
     await waitFor(() => expect(status()).toBeEmptyDOMElement());
+  });
+});
+
+describe('a cryptogram', () => {
+  // Each letter is written as its own picture: G as the hourglass, O as the skeleton key, and so on.
+  const pictures = PICTURE_CHOICES.slice(0, 26);
+  const named = (letter: string) => pictures[letter.charCodeAt(0) - 65].replace(/-/g, ' ');
+  const cryptogram: Partial<CipherDesign> = { method: 'cryptogram', script: 'pictures', pictures, given: 'O' };
+  const forSymbol = (letter: string) => screen.getByRole('textbox', { name: new RegExp(`^The letter for ${named(letter)}`) });
+
+  it('has no wheel, and a table of its symbols, the commonest first', async () => {
+    await open(cryptogram);
+    expect(screen.queryByRole('slider')).toBeNull();
+    const table = screen.getByRole('group', { name: 'The symbols' });
+    const rows = within(table).getAllByRole('listitem');
+    expect(rows).toHaveLength(5);
+    // G and O come three times each, and H, M and E once.
+    expect(rows.map((row) => row.textContent)).toEqual(['×3', '×3', '×1', '×1', '×1']);
+  });
+
+  it('writes in the letters given away, which can’t be changed', async () => {
+    const { user } = await open(cryptogram);
+    expect(box(2)).toHaveValue('O');
+    expect(box(2)).toHaveAccessibleName(`Letter 2: ${named('O')}, given`);
+    expect(box(2)).toHaveAttribute('readonly');
+    expect(forSymbol('O')).toHaveValue('O');
+    await user.click(box(2));
+    await user.keyboard('x');
+    expect(box(8)).toHaveValue('O');
+  });
+
+  it('writes a letter for every symbol like it, from the table or the message, and marks one written twice', async () => {
+    const { user } = await open(cryptogram);
+    await user.type(forSymbol('G'), 'g');
+    expect(box(1)).toHaveValue('G');
+    expect(box(9)).toHaveValue('G');
+    await write(user, 3, 'g');
+    expect(forSymbol('H')).toHaveValue('G');
+    expect(box(1)).toHaveAttribute('aria-invalid', 'true');
+    expect(forSymbol('H')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('G is written for more than one symbol.')).toBeInTheDocument();
+    await write(user, 3, 'h');
+    expect(box(1)).not.toHaveAttribute('aria-invalid');
+    expect(screen.queryByText(/written for more than one symbol/)).toBeNull();
+    await write(user, 5, 'm');
+    await user.keyboard('e');
+    expect(await screen.findByText('The hearth stone lifts.', {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it('keeps the letters written, and the given ones, in the browser', async () => {
+    const { user, puzzle } = await open(cryptogram);
+    await user.type(forSymbol('M'), 'm');
+    cleanup();
+    render(<>{(await pageFor({ page: 'play', kind: 'cipher', data: puzzle })).content}</>);
+    await screen.findByRole('group', { name: 'The message' });
+    expect(box(5)).toHaveValue('M');
+    expect(box(2)).toHaveValue('O');
   });
 });

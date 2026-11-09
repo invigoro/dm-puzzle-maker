@@ -3,7 +3,7 @@ import { fingerprint } from '../../kit/check';
 import { isIconName } from '../../kit/icons';
 import { readSealed, unseal, type Sealed } from '../../kit/seal';
 import { readWords, type Words } from '../../kit/words';
-import { METHODS, type Method, type Step } from './engine/cipher';
+import { METHODS, readsAlike, type Method, type Step } from './engine/cipher';
 import { isLetter } from './engine/letters';
 import { RUNES, SCRIPTS, type Script } from './engine/rings';
 
@@ -20,13 +20,14 @@ export const LONGEST_LINE = 200;
 /**
  * A cipher as players get it: the message in cipher and the wheel's inner ring, with no key. The
  * message's letters A to Z stand for the inner ring's places, so `ring` says what's drawn for each;
- * everything else in it is shown as it is.
+ * everything else in it is shown as it is. A cryptogram's symbols are sorted, so their order says
+ * nothing.
  */
 export interface CipherPuzzle {
   v: 1;
   words: Words;
   script: Script;
-  /** The inner ring's 26 symbols, from the place with the mark on: letters, runes, or icon names. */
+  /** The inner ring's 26 symbols, from the place with the mark on, or a cryptogram's: letters, runes, or icon names. */
   ring: string[];
   text: string;
   /** How the key moves the wheel along the message, which the players' boxes follow, but not the key itself. */
@@ -38,6 +39,8 @@ export interface CipherPuzzle {
   check: Checking;
   /** Whether the page reads the message at the wheel's setting, or with a keyword the players give. */
   reading?: true;
+  /** A cryptogram's letters given away: each a symbol's place then its letter ("QE": Q's symbol is E). */
+  given?: string[];
   salt: string;
   /** A slow fingerprint of what's checked: the message's letters, or the answer's. */
   answer?: string;
@@ -66,11 +69,22 @@ function ringIn(value: unknown, script: Script): string[] | null {
   return fits && new Set(value).size === 26 ? (value as string[]) : null;
 }
 
+/** A cryptogram's letters given away, from a link: each a place and a letter, no place nor letter twice, or null. */
+function givenIn(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 25) return null;
+  if (!value.every((pair) => typeof pair === 'string' && /^[A-Z]{2}$/.test(pair))) return null;
+  const pairs = value as string[];
+  return new Set(pairs.map((pair) => pair[0])).size === pairs.length && new Set(pairs.map((pair) => pair[1])).size === pairs.length ? pairs : null;
+}
+
 /** A puzzle from a player link, checked, or null if the link doesn't hold one. */
 export function readPuzzle(data: unknown): CipherPuzzle | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
   const input = data as Record<string, unknown>;
   const { script, text, method, step, start, check, reading, salt, answer, wrong, failAfter, failLine } = input;
+  // Letters are given away only in a cryptogram, which has no wheel to read at.
+  const given = input.given === undefined ? undefined : method === 'cryptogram' ? givenIn(input.given) : null;
+  if (given === null || (method === 'cryptogram' && reading !== undefined)) return null;
   if (input.v !== 1 || !SCRIPTS.includes(script as Script)) return null;
   const ring = ringIn(input.ring, script as Script);
   // Letters A to Z are the ring's places, and there must be one; nothing in it may be a control character.
@@ -98,6 +112,7 @@ export function readPuzzle(data: unknown): CipherPuzzle | null {
     start: start as number,
     check,
     ...(reading ? { reading: true as const } : {}),
+    ...(given ? { given } : {}),
     salt,
     ...(check !== 'none' ? { answer: answer as string, sealed: sealed! } : {}),
     ...(check === 'answer' ? { wrong: wrong as string, failAfter: failAfter as number, failLine: failLine as string } : {}),
@@ -114,7 +129,7 @@ export const lineFor = async (puzzle: CipherPuzzle, letters: string) => (puzzle.
 export interface CipherProgress {
   /** How far the wheel's turned, as a count of letters, so it never spins the long way round. */
   turns: number;
-  /** A letter, or '' for none, for each box: one for each symbol at one setting, or for each letter of the message. */
+  /** A letter, or '' for none, for each box: one for each symbol at one setting and in a cryptogram, or for each letter of the message. */
   written: string[];
   wrong: number;
   solved: boolean;
@@ -125,8 +140,8 @@ export interface CipherProgress {
   answer: string;
 }
 
-/** How many boxes a puzzle's letters are written in: one for each symbol at one setting, as like symbols read alike, or one for each letter. */
-export const slotsOf = (method: Method, text: string) => (method === 'one' ? 26 : text.replace(/[^A-Z]/g, '').length);
+/** How many boxes a puzzle's letters are written in: one for each symbol where like symbols read alike, or one for each letter. */
+export const slotsOf = (method: Method, text: string) => (readsAlike(method) ? 26 : text.replace(/[^A-Z]/g, '').length);
 
 /** Progress from untrusted data, for this puzzle, or null if it isn't any. */
 export function readProgress(puzzle: CipherPuzzle, data: unknown): CipherProgress | null {

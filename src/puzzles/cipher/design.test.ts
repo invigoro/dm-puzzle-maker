@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { playerHash, readRoute } from '../../kit/route';
-import { checkedOf, cipherOf, newDesign, problemsOf, readDesign, ringOfDesign, startOf, toPuzzle, type CipherDesign } from './design';
+import { alphabetOf, checkedOf, cipherOf, givenOf, newDesign, problemsOf, readDesign, ringOfDesign, startOf, toPuzzle, type CipherDesign } from './design';
 import { decipher } from './engine/cipher';
 import { lettersOf, plainOf } from './engine/letters';
 import { PICTURE_CHOICES, RUNES } from './engine/rings';
@@ -170,5 +170,93 @@ describe('progress', () => {
     // At one setting, there's a box for each symbol.
     const one = await sent({ method: 'one' });
     expect(readProgress(one, { ...kept, written: Array.from({ length: 26 }, () => '') })).not.toBeNull();
+  });
+});
+
+describe('a cryptogram', () => {
+  const cryptogram: CipherDesign = { ...design, method: 'cryptogram', given: 'ETQ' };
+  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  /** A cryptogram read back from its link, with the alphabet only its maker knows. */
+  const solve = (puzzle: CipherPuzzle, alphabet: readonly string[]) =>
+    puzzle.text.replace(/[A-Z]/g, (place) => ALPHABET[alphabet.indexOf(puzzle.ring[place.charCodeAt(0) - 65])]);
+
+  it('scrambles letters and runes from its seed, never writing a letter as itself', () => {
+    const alphabet = alphabetOf(cryptogram);
+    expect([...alphabet].sort().join('')).toBe(ALPHABET);
+    expect(alphabet.every((symbol, letter) => symbol !== ALPHABET[letter])).toBe(true);
+    expect(alphabetOf({ ...cryptogram })).toEqual(alphabet);
+    expect(alphabetOf({ ...cryptogram, seed: 12 })).not.toEqual(alphabet);
+    expect([...alphabetOf({ ...cryptogram, script: 'runes' })].sort()).toEqual([...RUNES].sort());
+  });
+
+  it('writes each letter as the game master’s own picture for it', () => {
+    const pictures = PICTURE_CHOICES.slice(0, 26);
+    expect(alphabetOf({ ...cryptogram, script: 'pictures', pictures })).toEqual(pictures);
+  });
+
+  it('sends its symbols sorted, the same whatever the scramble, so their order says nothing', async () => {
+    const puzzle = await sent(cryptogram);
+    expect(puzzle).toMatchObject({ method: 'cryptogram', start: 0 });
+    expect(puzzle.ring.join('')).toBe(ALPHABET);
+    expect((await sent({ ...cryptogram, seed: 12 })).ring.join('')).toBe(ALPHABET);
+    const pictures = PICTURE_CHOICES.slice(0, 26);
+    expect((await sent({ ...cryptogram, script: 'pictures', pictures })).ring).toEqual([...pictures].sort());
+    expect(solve(puzzle, alphabetOf(cryptogram))).toBe(plainOf(design.message));
+    expect(solve(await sent({ ...cryptogram, script: 'runes' }), alphabetOf({ ...cryptogram, script: 'runes' }))).toBe(plainOf(design.message));
+  });
+
+  it('gives away only the letters chosen that are in the message, each with its symbol', async () => {
+    const alphabet = alphabetOf(cryptogram);
+    const ring = ringOfDesign(cryptogram);
+    const given = givenOf(cryptogram);
+    // Q isn't in the message, so isn't given.
+    expect(given.map((pair) => pair[1]).sort()).toEqual(['E', 'T']);
+    for (const [place, letter] of given) expect(ring[place.charCodeAt(0) - 65]).toBe(alphabet[letter.charCodeAt(0) - 65]);
+    expect((await sent(cryptogram)).given).toEqual(given);
+    expect((await sent({ ...cryptogram, given: '' })).given).toBeUndefined();
+    expect(givenOf({ ...cryptogram, method: 'one' })).toEqual([]);
+  });
+
+  it('holds nothing of the scramble but the letters given away', async () => {
+    const link = JSON.stringify(await toPuzzle(cryptogram));
+    for (const secret of ['MEET', 'WEIR', '"seed":', '"given":"', 'ETQ', '"reading"', 'The note is clear']) expect(link).not.toContain(secret);
+    expect(JSON.stringify(await toPuzzle({ ...cryptogram, reading: true }))).not.toContain('"reading"');
+  });
+
+  it('leaves the players something to find', () => {
+    expect(problemsOf(cryptogram)).toEqual([]);
+    expect(problemsOf({ ...cryptogram, given: [...new Set(lettersOf(design.message))].join('') })).toEqual([
+      'Every letter of the message is given away: leave some for the players to find.',
+    ]);
+    // Its letters never read as they are.
+    expect(problemsOf({ ...cryptogram, script: 'letters', given: '' })).toEqual([]);
+  });
+
+  it('reads back the letters given away, each once', () => {
+    expect(readDesign({ ...cryptogram, given: 'eTe7' })?.given).toBe('ET');
+    expect(readDesign({ ...cryptogram, given: 4 })?.given).toBe('');
+  });
+
+  it('turns away a link with given letters that can’t be', async () => {
+    const good = JSON.parse(JSON.stringify(await toPuzzle(cryptogram)));
+    expect(readPuzzle(good)).not.toBeNull();
+    for (const change of [
+      { given: ['AE', 'AT'] },
+      { given: ['AE', 'BE'] },
+      { given: ['A'] },
+      { given: [] },
+      { given: 'AE' },
+      { reading: true },
+    ]) {
+      expect(readPuzzle({ ...good, ...change })).toBeNull();
+    }
+    const wheel = JSON.parse(JSON.stringify(await toPuzzle(design)));
+    expect(readPuzzle({ ...wheel, given: ['AE'] })).toBeNull();
+  });
+
+  it('keeps a box for each symbol', async () => {
+    const puzzle = await sent(cryptogram);
+    const kept = { turns: 0, written: Array.from({ length: 26 }, () => ''), wrong: 0, solved: false, failed: false, reading: '', answer: '' };
+    expect(readProgress(puzzle, kept)).toEqual(kept);
   });
 });
